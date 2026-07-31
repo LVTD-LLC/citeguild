@@ -25,7 +25,7 @@ def test_track_event_uses_event_first_posthog_capture_signature(monkeypatch):
                 "distinct_id": "7",
                 "properties": {
                     "event_version": 1,
-                    "environment": "dev",
+                    "environment": tasks.settings.ENVIRONMENT,
                     "profile_id": 7,
                     "current_state": "signed_up",
                     "dataset_id": 3,
