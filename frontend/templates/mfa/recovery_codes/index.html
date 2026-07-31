@@ -1,0 +1,75 @@
+{% extends "mfa/recovery_codes/base.html" %}
+{% load static %}
+{% block mfa_content %}
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Recovery codes</h1>
+            <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                Save these one-time codes somewhere safe. They let you sign in if you lose access to your passkey.
+            </p>
+        </div>
+        <a href="{% url 'mfa_index' %}"
+           class="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300">Back to passkeys</a>
+    </div>
+    <div class="mt-8 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {{ unused_codes|length }} of {{ total_count }} recovery codes available.
+        </p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            Each code can be used once. Generate a new set if these are lost or mostly used.
+        </p>
+    </div>
+    {% if can_view_codes and unused_codes %}
+        <div class="mt-6">
+            <label for="recovery_codes"
+                   class="block text-sm font-medium text-gray-900 dark:text-gray-100">Unused codes</label>
+            <textarea id="recovery_codes" rows="{{ unused_codes|length }}" readonly class="mt-2 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm leading-6 text-gray-900 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100">{% for code in unused_codes %}{{ code }}{% if not forloop.last %}
+{% endif %}
+{% endfor %}
+</textarea>
+        </div>
+    {% elif unused_codes %}
+        <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
+            These recovery codes have already been shown. Generate a new set if you need codes you can save again.
+        </div>
+    {% else %}
+        <div class="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-100">
+            No unused recovery codes remain. Generate a new set before you need a fallback sign-in method.
+        </div>
+    {% endif %}
+    {% if mfa_recovery_codes_show_once and can_view_codes %}
+        <div class="mt-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+            <label class="flex gap-3 text-sm text-gray-700 dark:text-gray-200"
+                   for="codes_saved">
+                <input id="codes_saved"
+                       type="checkbox"
+                       class="mt-1 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                <span>
+                    <span class="font-medium text-gray-900 dark:text-gray-100">I have saved my recovery codes</span>
+                    <span class="mt-1 block text-gray-600 dark:text-gray-300">You will not be able to view this set again after leaving this page.</span>
+                </span>
+            </label>
+        </div>
+    {% endif %}
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        {% if can_download_codes %}
+            <a href="{% url 'mfa_download_recovery_codes' %}"
+               class="inline-flex justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">Download codes</a>
+        {% endif %}
+        {% if can_generate_codes %}
+            <a href="{% url 'mfa_generate_recovery_codes' %}"
+               class="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800">Generate new codes</a>
+        {% endif %}
+    </div>
+    {% if mfa_recovery_codes_show_once and can_view_codes %}
+        <script src="{% static 'mfa/js/recovery_codes.js' %}"></script>
+        <script src="{% static 'account/js/onload.js' %}"></script>
+        <script data-allauth-onload="allauth.recoveryCodes.forms.viewForm" type="application/json">{
+      "ids": {
+        "saveConfirmation": "codes_saved",
+        "recoveryCodes": "recovery_codes"
+      }
+    }
+        </script>
+    {% endif %}
+{% endblock mfa_content %}

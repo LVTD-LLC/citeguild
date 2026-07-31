@@ -1,0 +1,136 @@
+[project]
+name = "citeguild"
+version = "0.1.0"
+description = "AI-native editorial source network for relevant agent-discovered citations"
+authors = [{ name = "LVTD LLC", email = "rasul@lvtd.dev" }]
+requires-python = ">=3.14.5,<4.0"
+dependencies = [
+    "boto3>=1.43.34",
+    "django>=6.0.5",
+    "django-allauth>=65.16.1",
+    "django-anymail>=15.0",
+    "django-environ>=0.13.0",
+    "django-extensions>=4.1",
+    "django-htmx>=1.27.0",
+    "django-ninja>=1.6.2",
+    "django-q2>=1.10.0",
+    "django-storages>=1.14.6",
+    "django-widget-tweaks>=1.5.1",
+    "fido2>=2.2.0,<3",
+    "gunicorn>=26.0.0",
+    "fastmcp>=2.14.0",
+    "starlette>=0.50.0",
+    "uvicorn-worker>=0.4.0",
+"ipython>=9.13.0",
+    "hypothesis>=6.163.0",
+    "markdown>=3.10.2",
+    "pillow>=12.2.0",
+    "psycopg[binary]>=3.3.4",
+    "pytest>=9.0.3",
+    "pytest-django>=4.12.0",
+    "redis>=7.4.0",
+    "requests>=2.32.5",
+    "tqdm>=4.67.3",
+    "whitenoise>=6.12.0",
+    "sentry-sdk>=2.59.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.42.1",
+    "opentelemetry-sdk>=1.42.1",
+    "posthog>=7.21.2",
+    "stripe>=15.1.0",
+    "django-mjml>=1.5",
+    "pydantic-ai-slim[openai]>=1.93.0",
+    "pgvector>=0.4.2",
+    "python-frontmatter>=1.1.0",
+    "pyyaml>=6.0.3",
+    "pygments>=2.20.0",
+]
+
+[dependency-groups]
+dev = [
+    "djlint>=1.36.4",
+    "mutmut>=3.6.0",
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.16",
+    "schemathesis>=4.23.0",
+    "ty>=0.0.34",
+]
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[tool.ruff]
+line-length = 100
+# Avoid emitting Python 3.14-only formatting that external review tooling may not parse yet.
+target-version = "py313"
+exclude = ["**/migrations/*.py"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "B",    # flake8-bugbear
+    "I",    # isort
+    "DJ",   # django-specific rules
+    "UP",   # pyupgrade
+    "C90",  # mccabe complexity
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/*.py" = ["E501", "F401", "F403", "F405"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "citeguild"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pyscn.output]
+directory = ".pyscn/reports"
+
+[tool.pyscn.analysis]
+exclude_patterns = [
+    "**/migrations/**",
+    "**/tests/**",
+    "**/tests.py",
+    "**/test_*.py",
+    "**/*_test.py",
+    "**/__pycache__/**",
+    ".venv/**",
+    "venv/**",
+    "env/**",
+]
+
+[tool.pyscn.complexity]
+max_complexity = 15
+
+[tool.pyscn.clones]
+min_lines = 20
+similarity_threshold = 0.90
+
+[tool.mutmut]
+source_paths = ["apps/", "citeguild/"]
+only_mutate = [
+    "apps/api/services.py",
+    "apps/core/utils.py",
+]
+do_not_mutate = [
+    "**/migrations/*.py",
+    "**/tests/*.py",
+    "**/tests.py",
+    "**/test_*.py",
+]
+also_copy = ["conftest.py", "pytest.ini", "frontend/", "mutmut_config.py"]
+pytest_add_cli_args = ["-p", "mutmut_config"]
+
+[tool.djlint]
+profile="django"
+ignore = "H031,H006,H023,H021,H011,T002,H005,H014,H016,H030,T001"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []

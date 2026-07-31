@@ -1,0 +1,35 @@
+{% extends 'pages/docs/base_docs.html' %}
+{% block meta %}
+    <title>{{ page_title }} - {{ category_title }} | CiteGuild Documentation</title>
+    <meta name="description"
+          content="{% if meta_description %}{{ meta_description }}{% else %}{{ page_title }} documentation for CiteGuild{% endif %}" />
+    {% if author %}<meta name="author" content="{{ author }}" />{% endif %}
+    <meta name="robots" content="noindex, nofollow" />
+    {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}" />{% endif %}
+{% endblock meta %}
+{% block docs_content %}
+    {{ content|safe }}
+    <nav class="not-prose mt-12 border-t border-gray-200 pt-8 dark:border-gray-800"
+         aria-label="Docs pages navigation">
+        <div class="flex gap-4 justify-between">
+            <div class="flex-1">
+                {% if previous_page %}
+                    <a href="{{ previous_page.url }}"
+                       class="app-focus block rounded-2xl border border-gray-200 p-4 no-underline transition hover:border-gray-300 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-gray-900">
+                        <div class="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">← Previous</div>
+                        <div class="text-base font-bold text-gray-800 dark:text-gray-100">{{ previous_page.page_title }}</div>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="flex-1">
+                {% if next_page %}
+                    <a href="{{ next_page.url }}"
+                       class="app-focus block rounded-2xl border border-gray-200 p-4 text-right no-underline transition hover:border-gray-300 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-gray-900">
+                        <div class="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">Next →</div>
+                        <div class="text-base font-bold text-gray-800 dark:text-gray-100">{{ next_page.page_title }}</div>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+{% endblock docs_content %}

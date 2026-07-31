@@ -1,0 +1,43 @@
+{% extends 'base_app.html' %}
+{% block content %}
+    <div class="mx-auto max-w-[1400px] px-4 py-10 sm:px-6 lg:px-8"
+         data-docs-page>
+        <div class="flex flex-col gap-8 xl:flex-row xl:gap-12">
+            <aside class="flex-shrink-0 xl:w-72" aria-label="Documentation sections">
+                <nav class="sticky top-24 space-y-8 pb-8">
+                    {% for section in navigation %}
+                        <section class="space-y-3"
+                                 aria-labelledby="docs-section-{{ forloop.counter }}">
+                            <h2 id="docs-section-{{ forloop.counter }}"
+                                class="px-4 text-xs font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">{{ section.category }}</h2>
+                            <ul class="space-y-1">
+                                {% for page in section.pages %}
+                                    <li>
+                                        <a href="{{ page.url }}"
+                                           class="app-focus block rounded-xl px-4 py-2.5 text-[15px] leading-snug transition {% if current_category == section.category_slug and current_page == page.slug %}bg-green-50 font-bold text-green-700 shadow-sm dark:bg-green-950/40 dark:text-green-300{% else %}text-gray-700 hover:bg-gray-100 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white{% endif %}">{{ page.title }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                    {% endfor %}
+                </nav>
+            </aside>
+            <main class="min-w-0 flex-1" id="docs-main-content">
+                <article class="prose prose-lg max-w-none prose-gray prose-headings:font-black prose-a:text-green-700 prose-a:no-underline hover:prose-a:underline prose-code:rounded prose-code:bg-transparent prose-code:px-0 prose-code:py-0 prose-code:text-gray-800 prose-code:before:content-none prose-code:after:content-none prose-pre:my-0 prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-gray-950 prose-pre:p-5 prose-pre:pr-20 prose-pre:text-gray-100 prose-pre:shadow-sm dark:prose-invert dark:prose-a:text-green-300 dark:prose-code:bg-transparent dark:prose-code:text-gray-100 docs-code-blocks"
+                         data-toc-content>
+                    {% block docs_content %}
+                    {% endblock docs_content %}
+                </article>
+            </main>
+            <aside class="hidden flex-shrink-0 xl:block xl:w-64"
+                   data-toc-sidebar
+                   aria-label="Page table of contents">
+                <nav class="sticky top-24 space-y-4">
+                    <h2 class="px-3 text-xs font-black uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">On this page</h2>
+                    <ul class="space-y-0" data-toc-list>
+                    </ul>
+                </nav>
+            </aside>
+        </div>
+    </div>
+{% endblock content %}

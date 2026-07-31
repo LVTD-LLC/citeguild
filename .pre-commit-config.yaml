@@ -1,0 +1,29 @@
+exclude: .*migrations\/.*
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+
+- repo: local
+  hooks:
+    - id: ruff-check
+      name: ruff check
+      entry: uv run ruff check --force-exclude
+      language: system
+      args: [ --fix ]
+      types_or: [python, pyi, jupyter]
+      require_serial: true
+    - id: ruff-format
+      name: ruff format
+      entry: uv run ruff format --force-exclude
+      language: system
+      types_or: [python, pyi, jupyter]
+      require_serial: true
+    - id: djlint-django
+      name: djLint for Django
+      entry: uv run djlint --profile=django --reformat
+      language: system
+      types_or: [html]

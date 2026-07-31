@@ -1,0 +1,31 @@
+ARG UV_VERSION=0.11.15
+
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
+
+FROM node:24.15.0 AS assets
+
+WORKDIR /app
+COPY . .
+
+RUN npm ci
+RUN npm run build
+
+FROM python:3.14.5
+
+WORKDIR /app
+
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY --from=uv /uv /uvx /bin/
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --locked --no-dev --no-install-project
+
+COPY . .
+RUN chmod +x deployment/entrypoint.sh
+COPY --from=assets /app/frontend/static/ ./frontend/static/
+
+EXPOSE 80
+
+CMD ["sh", "deployment/entrypoint.sh"]

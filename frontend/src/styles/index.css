@@ -1,0 +1,105 @@
+@import "tailwindcss";
+@import "./pygments.css";
+@config "../../../tailwind.config.js";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  blockquote {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  .app-focus {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950;
+  }
+
+  .app-card {
+    @apply rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900;
+  }
+
+  .app-panel {
+    @apply rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950/70;
+  }
+
+  .app-button-primary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-xl bg-green-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-green-500 dark:text-gray-950 dark:hover:bg-green-400 dark:focus-visible:ring-offset-gray-950;
+  }
+
+  .app-button-secondary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800 dark:focus-visible:ring-offset-gray-950;
+  }
+
+  .app-button-danger {
+    @apply inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-gray-950;
+  }
+
+  .app-input {
+    @apply rounded-xl border-gray-300 bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 dark:placeholder:text-gray-300 dark:focus-visible:ring-offset-gray-950;
+  }
+
+  .app-text-muted {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+
+  .app-label-caps {
+    @apply text-xs font-bold uppercase tracking-[0.08em];
+  }
+
+  .app-code-panel {
+    @apply rounded-xl border border-white/10 bg-gray-950 p-3 text-sm text-gray-50;
+  }
+
+  .shortcut-kbd {
+    @apply ml-2 h-5 min-w-5 items-center justify-center rounded-md border border-gray-300 bg-gray-50 px-1.5 text-[11px] font-bold leading-none text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300;
+  }
+
+
+  .docs-code-blocks pre {
+    @apply border border-gray-800 bg-gray-950 text-gray-50;
+  }
+
+  .docs-code-blocks pre code {
+    @apply bg-transparent p-0 text-gray-50;
+  }
+}
+
+/* Force fenced docs blocks to stay readable over Tailwind Typography and Pygments defaults. */
+.docs-code-blocks pre,
+.docs-code-blocks pre code,
+.docs-code-blocks pre code * {
+  color: #f8fafc !important;
+  opacity: 1 !important;
+}
+
+.docs-code-blocks pre,
+.docs-code-blocks pre code {
+  background-color: #020617 !important;
+}
+
+.docs-code-blocks pre code {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-weight: 500 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}

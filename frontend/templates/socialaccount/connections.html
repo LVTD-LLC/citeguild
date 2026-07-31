@@ -1,0 +1,117 @@
+{% extends "base_app.html" %}
+{% load socialaccount %}
+{% block meta %}
+    <title>Connected accounts | CiteGuild</title>
+    <meta name="robots" content="noindex, nofollow" />
+{% endblock meta %}
+{% block content %}
+    {% get_providers as socialaccount_providers %}
+    <div class="px-4 py-12 mx-auto max-w-3xl sm:px-6 lg:px-8"
+         data-social-account-connections>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Connected accounts</h1>
+                    <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        Manage third-party sign-in providers connected to your CiteGuild account.
+                    </p>
+                </div>
+                <a href="{% url 'settings' %}"
+                   class="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300">Back to settings</a>
+            </div>
+            {% if form.non_field_errors or form.account.errors %}
+                <div class="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                    {% for error in form.account.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <section class="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-700 dark:bg-gray-800/50"
+                     aria-labelledby="connected-accounts-heading">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h2 id="connected-accounts-heading"
+                            class="text-lg font-semibold text-gray-900 dark:text-gray-100">Your connected providers</h2>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                            {% if form.accounts %}
+                                You can use these accounts to sign in.
+                            {% else %}
+                                No third-party accounts are connected yet.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% if form.accounts %}
+                    <form class="mt-5 space-y-4"
+                          method="post"
+                          action="{% url 'socialaccount_connections' %}">
+                        {% csrf_token %}
+                        <fieldset class="space-y-3">
+                            <legend class="sr-only">Connected third-party accounts</legend>
+                            {% for account in form.accounts %}
+                                {% with provider_account=account.get_provider_account %}
+                                    <label for="account_{{ account.pk }}"
+                                           class="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+                                        <input id="account_{{ account.pk }}"
+                                               type="radio"
+                                               name="account"
+                                               value="{{ account.pk }}"
+                                               {% if forloop.first %}checked{% endif %}
+                                               class="mt-1 h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500">
+                                        <span class="min-w-0 flex-1">
+                                            <span class="flex flex-wrap items-center gap-2">
+                                                <span class="break-all font-medium text-gray-900 dark:text-gray-100">{{ provider_account }}</span>
+                                                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                                    {{ provider_account.get_brand.name }}
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                {% endwith %}
+                            {% endfor %}
+                        </fieldset>
+                        <button type="submit"
+                                onclick="return confirm('Remove this connected account? You may lose access if this is your only sign-in method.')"
+                                class="inline-flex justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:border-red-900/70 dark:bg-gray-900 dark:text-red-300 dark:hover:bg-red-950/40 dark:focus:ring-offset-gray-900">
+                            Remove selected account
+                        </button>
+                    </form>
+                {% endif %}
+            </section>
+            <section class="mt-6 rounded-xl border border-green-200 bg-green-50 p-5 dark:border-green-900/70 dark:bg-green-950/20"
+                     aria-labelledby="add-connected-account-heading">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 id="add-connected-account-heading"
+                            class="text-lg font-semibold text-gray-900 dark:text-gray-100">Add a third-party account</h2>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Connect another provider to use it for sign-in.</p>
+                    </div>
+                    {% if socialaccount_providers %}
+                        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
+                            {% for provider in socialaccount_providers %}
+                                {% provider_login_url provider process='connect' as provider_url %}
+                                <form method="post" action="{{ provider_url }}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="inline-flex justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                                        Connect {{ provider.name }}
+                                    </button>
+                                </form>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <button type="button"
+                                disabled
+                                aria-disabled="true"
+                                class="inline-flex cursor-not-allowed justify-center rounded-md border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+                            Social auth unavailable
+                        </button>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </div>
+{% endblock content %}

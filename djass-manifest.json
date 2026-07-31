@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-07-31T22:32:00Z",
+  "generator": {
+    "service": "https://djass.dev",
+    "api_version": "v1",
+    "hosted_job_ids": [23, 24],
+    "hosted_job_status": "failed",
+    "fallback": "Generated locally from the current template after the identical payload passed local reproduction.",
+    "template_repository": "https://github.com/LVTD-LLC/django-saas-starter",
+    "template_commit": "62d0f44c84b179a18313b120eeb9f11e087f57fe"
+  },
+  "answers": {
+    "project_name": "CiteGuild",
+    "project_slug": "citeguild",
+    "caprover_app_name": "citeguild",
+    "repo_url": "https://github.com/LVTD-LLC/citeguild",
+    "project_description": "AI-native editorial source network for relevant agent-discovered citations",
+    "author_name": "LVTD LLC",
+    "author_email": "rasul@lvtd.dev",
+    "author_url": "https://lvtd.dev",
+    "project_main_color": "green",
+    "use_posthog": "y",
+    "use_sentry": "y",
+    "use_healthchecks": "y",
+    "use_apprise": "y",
+    "use_chatwoot": "y",
+    "use_mjml": "y",
+    "use_stripe": "y",
+    "use_s3": "y",
+    "use_keyboard_shortcuts": "y",
+    "generate_blog": "y",
+    "generate_docs": "y",
+    "use_ai": "y",
+    "use_mcp": "y",
+    "use_ci": "y",
+    "use_reviewgate": "y",
+    "use_digitalocean": "n"
+  }
+}
