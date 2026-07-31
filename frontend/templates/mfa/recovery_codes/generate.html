@@ -1,0 +1,38 @@
+{% extends "mfa/recovery_codes/base.html" %}
+{% block mfa_content %}
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Generate recovery codes</h1>
+            <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                Create a fresh set of one-time backup codes for your account.
+            </p>
+        </div>
+        <a href="{% url 'mfa_index' %}"
+           class="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300">Back to passkeys</a>
+    </div>
+    <div class="mt-8 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+        <p class="text-sm text-gray-700 dark:text-gray-200">
+            Recovery codes are the fallback for passkey-protected accounts. Store them in a password manager or another private place you can reach without this device.
+        </p>
+        {% if unused_code_count %}
+            <p class="mt-3 text-sm font-medium text-red-700 dark:text-red-300">
+                Generating new codes will invalidate your {{ unused_code_count }} existing unused code{{ unused_code_count|pluralize }}.
+            </p>
+        {% endif %}
+    </div>
+    <form class="mt-8 space-y-6"
+          method="post"
+          action="{% url 'mfa_generate_recovery_codes' %}">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+        <div class="flex flex-col gap-3 sm:flex-row">
+            <button type="submit"
+                    class="inline-flex justify-center rounded-md {% if unused_code_count %}bg-red-600 hover:bg-red-700 focus:ring-red-500{% else %}bg-green-600 hover:bg-green-700 focus:ring-green-500{% endif %} px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                Generate recovery codes
+            </button>
+            <a href="{% url 'mfa_index' %}"
+               class="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800">Cancel</a>
+        </div>
+    </form>
+{% endblock mfa_content %}

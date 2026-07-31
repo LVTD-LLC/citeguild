@@ -1,0 +1,143 @@
+services:
+  db:
+    image: rasulkireev/custom-postgres:18
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${LOCAL_POSTGRES_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=citeguild
+      - POSTGRES_USER=citeguild
+      - POSTGRES_PASSWORD=citeguild
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U citeguild"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.6.3-alpine
+    command: redis-server --requirepass citeguild
+    ports:
+      - "${LOCAL_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=citeguild
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-python
+    working_dir: /app
+    command: sh -c "uv run --no-sync python manage.py migrate && uv run --no-sync python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "${LOCAL_WEB_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      frontend:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  workers:
+    build:
+      context: .
+      dockerfile: Dockerfile-python
+    working_dir: /app
+    command: uv run --no-sync python manage.py qcluster
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+
+  frontend:
+    image: node:24.15.0
+    working_dir: /app
+    command: sh -c "rm -f frontend/static/.assets-ready && npm install && npm run watch"
+    volumes:
+      - .:/app
+    healthcheck:
+      test: ["CMD-SHELL", "test -f frontend/static/.assets-ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  mailhog:
+    image: mailhog/mailhog
+    expose:
+      - 1025
+      - 8025
+    ports:
+      - "${LOCAL_MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${LOCAL_MAILHOG_UI_PORT:-8025}:8025"
+
+  stripe:
+    image: stripe/stripe-cli:latest
+    command: [
+      "listen",
+      "--forward-to", "http://backend:8000/stripe/webhook/"
+    ]
+    environment:
+      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_DEVICE_NAME=cleanapp_docker
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    env_file:
+      - .env
+
+
+  mjml:
+    image: danihodovic/mjml-server
+    ports:
+      - "${LOCAL_MJML_PORT:-15500}:15500"
+
+
+  minio:
+    image: minio/minio
+    ports:
+      - "${LOCAL_MINIO_API_PORT:-9000}:9000"
+      - "${LOCAL_MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: citeguild-user
+      MINIO_ROOT_PASSWORD: citeguild-password
+    command: server --console-address ":9001" /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5 &&
+      /usr/bin/mc config host add myminio http://minio:9000 citeguild citeguild &&
+      /usr/bin/mc mb myminio/citeguild-dev &&
+      /usr/bin/mc anonymous set download myminio/citeguild-dev &&
+      exit 0;
+      "
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

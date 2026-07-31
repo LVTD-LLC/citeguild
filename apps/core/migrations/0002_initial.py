@@ -1,0 +1,202 @@
+import uuid
+
+import django.db.models.deletion
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ("core", "0001_enable_extensions"),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name="Profile",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("uuid", models.UUIDField(default=uuid.uuid4, editable=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "api_key_prefix",
+                    models.CharField(
+                        blank=True,
+                        default=None,
+                        max_length=32,
+                        null=True,
+                        unique=True,
+                    ),
+                ),
+                ("api_key_hash", models.CharField(blank=True, default="", max_length=128)),
+                (
+                    "stripe_subscription_id",
+                    models.CharField(
+                        blank=True,
+                        default="",
+                        help_text="The user's Stripe subscription id, if it exists",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "stripe_customer_id",
+                    models.CharField(
+                        blank=True,
+                        default="",
+                        help_text="The user's Stripe customer id, if it exists",
+                        max_length=255,
+                    ),
+                ),
+
+                (
+                    "state",
+                    models.CharField(
+                        choices=[
+                            ("stranger", "Stranger"),
+                            ("signed_up", "Signed Up"),
+                            ("free", "Free"),
+                            ("trial_started", "Trial Started"),
+                            ("trial_ended", "Trial Ended"),
+                            ("subscribed", "Subscribed"),
+                            ("cancelled", "Cancelled"),
+                            ("churned", "Churned"),
+
+                            ("account_deleted", "Account Deleted"),
+                        ],
+                        default="stranger",
+                        help_text="The current state of the user's profile",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ProfileStateTransition",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("uuid", models.UUIDField(default=uuid.uuid4, editable=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "from_state",
+                    models.CharField(
+                        choices=[
+                            ("stranger", "Stranger"),
+                            ("signed_up", "Signed Up"),
+                            ("free", "Free"),
+                            ("trial_started", "Trial Started"),
+                            ("trial_ended", "Trial Ended"),
+                            ("subscribed", "Subscribed"),
+                            ("cancelled", "Cancelled"),
+                            ("churned", "Churned"),
+
+                            ("account_deleted", "Account Deleted"),
+                        ],
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "to_state",
+                    models.CharField(
+                        choices=[
+                            ("stranger", "Stranger"),
+                            ("signed_up", "Signed Up"),
+                            ("free", "Free"),
+                            ("trial_started", "Trial Started"),
+                            ("trial_ended", "Trial Ended"),
+                            ("subscribed", "Subscribed"),
+                            ("cancelled", "Cancelled"),
+                            ("churned", "Churned"),
+
+                            ("account_deleted", "Account Deleted"),
+                        ],
+                        max_length=255,
+                    ),
+                ),
+                ("backup_profile_id", models.IntegerField()),
+                ("metadata", models.JSONField(blank=True, null=True)),
+                (
+                    "profile",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="state_transitions",
+                        to="core.profile",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="EmailSent",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("uuid", models.UUIDField(default=uuid.uuid4, editable=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "email_address",
+                    models.EmailField(help_text="The recipient email address", max_length=254),
+                ),
+                (
+                    "email_type",
+                    models.CharField(
+                        choices=[
+                            ("EMAIL_CONFIRMATION", "Email Confirmation"),
+                            ("WELCOME", "Welcome"),
+                        ],
+                        help_text="Type of email sent",
+                        max_length=50,
+                    ),
+                ),
+                (
+                    "profile",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Associated user profile, if applicable",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="emails_sent",
+                        to="core.profile",
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Email Sent",
+                "verbose_name_plural": "Emails Sent",
+                "ordering": ["-created_at"],
+            },
+        ),
+    ]

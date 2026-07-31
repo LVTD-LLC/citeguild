@@ -89,6 +89,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 - Structlog, django-structlog, and structlog-sentry dependencies.
 
 ### Fixed
+- PostHog task tests now assert the configured runtime environment instead of
+  assuming every test run uses the development environment.
+- Test settings now allow the WSGI hosts used by Django and Schemathesis so the
+  OpenAPI property suite can load the schema in CI.
 - S3-compatible media storage now includes the direct `boto3` runtime dependency
   required by `django-storages`.
 - Local Docker Compose now waits for the frontend watcher to finish its first asset build, and `npm run watch` now keeps browser modules in sync while editing JavaScript.

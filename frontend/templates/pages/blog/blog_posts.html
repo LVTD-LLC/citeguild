@@ -1,0 +1,48 @@
+{% extends "base_landing.html" %}
+{% block meta %}
+    <title>{{ blog_title }}</title>
+    <meta name="description" content="{{ blog_description }}" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="{{ canonical_url }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ blog_title }}" />
+    <meta property="og:url" content="{{ canonical_url }}" />
+    <meta property="og:description" content="{{ blog_description }}" />
+    <meta property="og:image" content="{{ blog_image_url }}" />
+    <meta property="og:site_name" content="CiteGuild" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{{ blog_title }}" />
+    <meta name="twitter:description" content="{{ blog_description }}" />
+    <meta name="twitter:image" content="{{ blog_image_url }}" />
+{% endblock meta %}
+{% block content %}
+    <div class="container px-4 py-8 mx-auto md:relative">
+        <div class="mx-auto max-w-3xl">
+            <h1 class="mb-4 text-3xl font-bold text-center">{{ blog_title }}</h1>
+            <p class="mb-8 text-center text-gray-600">{{ blog_description }}</p>
+            {% if blog_posts %}
+                <div class="space-y-4">
+                    {% for post in blog_posts %}
+                        <a href="{{ post.get_absolute_url }}"
+                           class="block rounded-lg transition duration-150 ease-in-out hover:bg-gray-100">
+                            <article class="p-4">
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+                                    <time datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"M j, Y" }}</time>
+                                    <span>{{ post.reading_time_minutes }} min read</span>
+                                </div>
+                                <h2 class="mt-2 mb-2 text-2xl font-semibold text-gray-900">{{ post.title }}</h2>
+                                <p class="text-gray-600">{{ post.description }}</p>
+                            </article>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center text-gray-600">No blog posts available at the moment.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
+{% block schema %}
+    <script type="application/ld+json">{{ schema_json|safe }}</script>
+{% endblock schema %}

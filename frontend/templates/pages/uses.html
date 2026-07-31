@@ -1,0 +1,61 @@
+{% extends "base_landing.html" %}
+{% load static %}
+{% block meta %}
+    <title>Technology Stack | CiteGuild</title>
+    <meta name="description"
+          content="The core technologies and services used by CiteGuild." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="{{ public_site_url }}/uses" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Technology Stack | CiteGuild" />
+    <meta property="og:url" content="{{ public_site_url }}/uses" />
+    <meta property="og:description"
+          content="The core technologies and services used by CiteGuild." />
+    <meta property="og:image"
+          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=CiteGuild&subtitle=Technology%20stack" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Technology Stack | CiteGuild" />
+    <meta name="twitter:description"
+          content="The core technologies and services used by CiteGuild." />
+    <meta name="twitter:image"
+          content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=CiteGuild&subtitle=Technology%20stack" />
+{% endblock meta %}
+{% block content %}
+    <div class="container px-4 py-8 mx-auto prose">
+        <h1>Technology stack</h1>
+        <p>CiteGuild is built with reliable, well-supported tools that keep the product simple to run and easy to extend.</p>
+        <ul>
+            <li><strong><a href="https://sentry.io/" target="_blank" rel="noopener noreferrer">Sentry</a>:</strong> For error tracking and performance monitoring, ensuring a smooth user experience.</li>
+            <li><strong><a href="https://www.python.org/"
+   target="_blank"
+   rel="noopener noreferrer">Python 3.14.5</a>:</strong> The backend runtime.</li>
+            <li><strong><a href="https://www.djangoproject.com/"
+   target="_blank"
+   rel="noopener noreferrer">Django 6.0.5</a>:</strong> Our primary web framework, providing a robust foundation for our backend.</li>
+            <li><strong><a href="https://django-q2.readthedocs.io/"
+   target="_blank"
+   rel="noopener noreferrer">Django-Q2</a>:</strong> A task queue and scheduler for Django, helping us manage background tasks efficiently.</li>
+            <li><strong><a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">Node.js 24.15.0 LTS</a>:</strong> The frontend build runtime.</li>
+            <li><strong><a href="https://caprover.com/"
+   target="_blank"
+   rel="noopener noreferrer">CapRover</a>:</strong> Our deployment and server management tool, simplifying our DevOps processes.</li>
+            <li><strong><a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>:</strong> For version control and collaborative development of our codebase.</li>
+            <li><strong><a href="https://redis.io/" target="_blank" rel="noopener noreferrer">Redis 8.6.3</a>:</strong> An in-memory data structure store, used as a database, cache, and message broker.</li>
+            <li><strong><a href="https://www.postgresql.org/"
+   target="_blank"
+   rel="noopener noreferrer">PostgreSQL 18</a>:</strong> Our primary relational database management system.</li>
+            <li><strong><a href="https://openrouter.ai/"
+   target="_blank"
+   rel="noopener noreferrer">OpenRouter</a>:</strong> Routing AI features across supported model providers.</li>
+            <li><strong><a href="https://htmx.org/" target="_blank" rel="noopener noreferrer">HTMX</a>:</strong> For server-rendered partial updates that keep Django templates in charge.</li>
+            <li><strong><a href="https://alpinejs.dev/"
+   target="_blank"
+   rel="noopener noreferrer">Alpine.js</a>:</strong> For small browser-only UI state like dropdowns, modals, and theme controls.</li>
+            <li><strong><a href="https://whitenoise.evans.io/"
+   target="_blank"
+   rel="noopener noreferrer">WhiteNoise</a>:</strong> For efficient serving of static files.</li>
+        </ul>
+        <p>If you have questions about these technology choices, contact us at <a href="mailto:rasul%40lvtd.dev">rasul@lvtd.dev</a>.</p>
+    </div>
+{% endblock content %}

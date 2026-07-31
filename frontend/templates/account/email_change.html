@@ -1,0 +1,82 @@
+{% extends 'base_app.html' %}
+{% load widget_tweaks %}
+{% block meta %}
+    <title>Email Address | CiteGuild</title>
+    <meta name="robots" content="noindex, nofollow" />
+{% endblock meta %}
+{% block content %}
+    <div class="px-4 py-12 mx-auto max-w-3xl sm:px-6 lg:px-8">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Email address</h1>
+                    <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">Change the email address used to sign in to your account.</p>
+                </div>
+                <a href="{% url 'settings' %}"
+                   class="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300">Back to settings</a>
+            </div>
+            {% if not emailaddresses %}
+                <p class="mt-8 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900/60 dark:bg-yellow-950/30 dark:text-yellow-200">No email address is currently associated with your account.</p>
+            {% endif %}
+            <div class="mt-8 space-y-4">
+                {% if current_emailaddress %}
+                    <div>
+                        <label for="current-email"
+                               class="block text-sm font-medium text-gray-700 dark:text-gray-300">Current email</label>
+                        <input id="current-email"
+                               type="email"
+                               value="{{ current_emailaddress.email }}"
+                               disabled
+                               class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-950 dark:text-gray-300 sm:text-sm">
+                    </div>
+                {% endif %}
+                {% if new_emailaddress %}
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+                        <p class="text-sm font-medium text-amber-900 dark:text-amber-100">
+                            {% if current_emailaddress %}
+                                Changing to
+                            {% else %}
+                                Current email
+                            {% endif %}
+                        </p>
+                        <p class="mt-1 break-all text-sm text-amber-900 dark:text-amber-100">{{ new_emailaddress.email }}</p>
+                        <p class="mt-2 text-sm text-amber-800 dark:text-amber-200">This email address is still pending verification.</p>
+                        <form class="mt-4 flex flex-col gap-2 sm:flex-row"
+                              method="post"
+                              action="{% url 'account_email' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="email" value="{{ new_emailaddress.email }}">
+                            <button type="submit"
+                                    name="action_send"
+                                    class="inline-flex justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">Re-send Verification</button>
+                            {% if current_emailaddress %}
+                                <button type="submit"
+                                        name="action_remove"
+                                        class="inline-flex justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 dark:border-red-900/70 dark:bg-gray-900 dark:text-red-300 dark:hover:bg-red-950/40">Cancel Change</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+            {% if can_add_email %}
+                <div class="mt-10 border-t border-gray-200 pt-8 dark:border-gray-800">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Change email</h2>
+                    <form class="mt-4 space-y-4"
+                          method="post"
+                          action="{% url 'account_email' %}">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div>
+                            {{ form.email.errors }}
+                            <label for="{{ form.email.id_for_label }}" class="sr-only">New email address</label>
+                            {% render_field form.email placeholder="New email address" type="email" autocomplete="email" class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 sm:text-sm" %}
+                        </div>
+                        <button type="submit"
+                                name="action_add"
+                                class="inline-flex justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">Change Email</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
