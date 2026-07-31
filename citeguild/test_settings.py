@@ -19,6 +19,7 @@ PASSWORD_HASHERS = [
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 MEDIA_ROOT = str(TEST_RUNTIME_ROOT / "media")
+ALLOWED_HOSTS = [*base_settings.ALLOWED_HOSTS, "localhost", "testserver"]
 
 STORAGES = {
     **base_settings.STORAGES,
