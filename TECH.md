@@ -127,6 +127,10 @@ Later deployment tasks must still validate the complete feature path, health
 contracts, backups, and recovery. Do not document a component as deployed
 merely because its client code exists.
 
+The typed environment matrix, fail-fast production rules, and secret-safe
+web/worker fingerprint contract live in
+[`docs/configuration.md`](docs/configuration.md).
+
 ## Commands
 
 First-time host setup with Compose-backed services:

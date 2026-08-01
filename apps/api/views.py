@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.http import HttpRequest
@@ -88,6 +89,7 @@ def healthcheck(request: HttpRequest):
     payload = {
         "healthy": healthy,
         "checks": checks,
+        "configuration_fingerprint": settings.CITEGUILD_CONFIG_FINGERPRINT,
     }
 
     if healthy:

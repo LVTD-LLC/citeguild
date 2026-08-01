@@ -25,6 +25,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- A shared typed runtime configuration contract now validates production
+  database, Redis, Qdrant, Stripe feature-gate, embedding, crawler, scheduler,
+  and process settings, with a secret-safe fingerprint reported by web and
+  worker startup.
 - ADR 0001 defines the CiteGuild MVP systems of record, domain entities,
   lifecycle states, stable identifiers, unique constraints, idempotent worker
   boundaries, shared API/MCP/CLI search contract, failure recovery, and
