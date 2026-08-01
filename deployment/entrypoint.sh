@@ -19,6 +19,8 @@ while getopts ":sw" option; do
 done
 shift $((OPTIND - 1))
 
+export APP_PROCESS_TYPE="$process_type"
+
 if [ -z "$process_type" ]; then
     if [ "${ENVIRONMENT:-}" = "prod" ]; then
         echo "APP_PROCESS_TYPE must be set to 'server' or 'worker' when ENVIRONMENT=prod." >&2
@@ -27,6 +29,8 @@ if [ -z "$process_type" ]; then
 
     process_type="server"
 fi
+
+uv run --no-sync python manage.py config_fingerprint
 
 wait_for_database() {
     echo "Waiting for database..."

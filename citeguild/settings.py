@@ -20,6 +20,7 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
+from citeguild.config import RuntimeConfig
 from citeguild.sentry_utils import (
     CustomLoggingIntegration,
     before_send,
@@ -37,9 +38,12 @@ env = environ.Env(
     DEBUG=(bool, False)
 )
 
-# Options: dev, prod
-ENVIRONMENT = env("ENVIRONMENT")
-APP_PROCESS_TYPE = env("APP_PROCESS_TYPE", default="server")
+CITEGUILD_CONFIG = RuntimeConfig.from_mapping(env.ENVIRON)
+CITEGUILD_CONFIG_FINGERPRINT = CITEGUILD_CONFIG.fingerprint
+
+# Options: dev, test, prod
+ENVIRONMENT = CITEGUILD_CONFIG.environment
+APP_PROCESS_TYPE = CITEGUILD_CONFIG.process_type
 DEFAULT_SERVICE_NAME = "citeguild-worker" if APP_PROCESS_TYPE == "worker" else "citeguild-web"
 SERVICE_NAME = env("SERVICE_NAME", default=DEFAULT_SERVICE_NAME)
 SERVICE_VERSION = env("SERVICE_VERSION", default="")
@@ -100,12 +104,12 @@ POSTHOG_SERVICE_VERSION = (
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = CITEGUILD_CONFIG.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-SITE_URL = env("SITE_URL")
+SITE_URL = CITEGUILD_CONFIG.site_url
 SITE_HOST = SITE_URL.replace("http://", "").replace("https://", "").split("/")[0].split(":")[0]
 BLOG_POSTS_DIR = BASE_DIR / "apps" / "pages" / "posts"
 
@@ -652,6 +656,18 @@ AI_MODELS = {
     "smart": env("OPENROUTER_MODEL_SMART", default="anthropic/claude-sonnet-4.5"),
 }
 
-QDRANT_URL = env("QDRANT_URL", default="").strip()
-QDRANT_API_KEY = env("QDRANT_API_KEY", default="")
-QDRANT_TIMEOUT_SECONDS = env.float("QDRANT_TIMEOUT_SECONDS", default=5.0)
+QDRANT_URL = CITEGUILD_CONFIG.qdrant_url
+QDRANT_API_KEY = CITEGUILD_CONFIG.qdrant_api_key
+QDRANT_TIMEOUT_SECONDS = CITEGUILD_CONFIG.qdrant_timeout_seconds
+QDRANT_COLLECTION = CITEGUILD_CONFIG.qdrant_collection
+EMBEDDING_MODEL = CITEGUILD_CONFIG.embedding_model
+EMBEDDING_DIMENSIONS = CITEGUILD_CONFIG.embedding_dimensions
+CRAWL_REQUEST_TIMEOUT_SECONDS = CITEGUILD_CONFIG.crawl_request_timeout_seconds
+CRAWL_MAX_REDIRECTS = CITEGUILD_CONFIG.crawl_max_redirects
+CRAWL_MAX_SITEMAP_BYTES = CITEGUILD_CONFIG.crawl_max_sitemap_bytes
+CRAWL_MAX_SITEMAP_ENTRIES = CITEGUILD_CONFIG.crawl_max_sitemap_entries
+CRAWL_MAX_PAGE_BYTES = CITEGUILD_CONFIG.crawl_max_page_bytes
+CRAWL_CONCURRENCY = CITEGUILD_CONFIG.crawl_concurrency
+RECONCILE_INTERVAL_HOURS = CITEGUILD_CONFIG.reconcile_interval_hours
+CITEGUILD_INDEXING_ENABLED = CITEGUILD_CONFIG.indexing_enabled
+CITEGUILD_BILLING_ENABLED = CITEGUILD_CONFIG.billing_enabled
