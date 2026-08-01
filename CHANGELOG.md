@@ -29,6 +29,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
   lifecycle states, stable identifiers, unique constraints, idempotent worker
   boundaries, shared API/MCP/CLI search contract, failure recovery, and
   CapRover deployment topology.
+- CiteGuild can now construct a shared authenticated Qdrant client from
+  environment configuration, without creating collections or writing vectors.
+- Production now has a private, API-key-authenticated Qdrant 1.18.3 service
+  with persistent storage and matching web/worker connection configuration.
 
 ### Fixed
 

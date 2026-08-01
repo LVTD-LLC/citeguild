@@ -651,3 +651,7 @@ AI_MODELS = {
     "fast": env("OPENROUTER_MODEL_FAST", default="openai/gpt-5-nano"),
     "smart": env("OPENROUTER_MODEL_SMART", default="anthropic/claude-sonnet-4.5"),
 }
+
+QDRANT_URL = env("QDRANT_URL", default="").strip()
+QDRANT_API_KEY = env("QDRANT_API_KEY", default="")
+QDRANT_TIMEOUT_SECONDS = env.float("QDRANT_TIMEOUT_SECONDS", default=5.0)

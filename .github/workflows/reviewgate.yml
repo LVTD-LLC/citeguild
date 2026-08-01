@@ -33,7 +33,9 @@ jobs:
       - uses: LVTD-LLC/reviewgate@main
         with:
           openrouter_api_key: ${{ secrets.OPENROUTER_API_KEY }}
-          model: openrouter/free
+          model: deepseek/deepseek-v4-flash
+          verify_blockers: true
+          verifier_model: openrouter/free
           min_severity: P4
 
   rereview:

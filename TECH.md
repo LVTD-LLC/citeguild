@@ -120,9 +120,12 @@ MVP production is not complete until these CapRover components are healthy:
 - Qdrant with durable storage and non-public access
 
 The current `.github/workflows/deploy.yml` builds one image and deploys app and
-workers; later deployment tasks must provision and validate the remaining
-services, health checks, backups, internal networking, secrets, and persistence.
-Do not document a component as deployed merely because its client code exists.
+workers. Production Qdrant is provisioned as the private
+`citeguild-qdrant` CapRover service on port 6333, pinned to Qdrant 1.18.3 with
+the persistent `citeguild-qdrant-data` volume and API-key authentication.
+Later deployment tasks must still validate the complete feature path, health
+contracts, backups, and recovery. Do not document a component as deployed
+merely because its client code exists.
 
 ## Commands
 
