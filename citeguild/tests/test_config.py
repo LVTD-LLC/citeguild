@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 from io import StringIO
 
+import environ
 import pytest
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -44,6 +46,24 @@ def test_local_configuration_uses_safe_bounded_defaults() -> None:
     assert config.crawl_max_sitemap_entries == 50_000
     assert config.crawl_max_redirects == 5
     assert config.reconcile_interval_hours == 24
+
+
+def test_runtime_configuration_reads_values_loaded_from_dotenv(monkeypatch) -> None:
+    dotenv_values = {
+        "ENVIRONMENT": "dev",
+        "SECRET_KEY": "dotenv-local-only",
+        "SITE_URL": "http://localhost:8765",
+    }
+    for name in dotenv_values:
+        monkeypatch.delenv(name, raising=False)
+    environ.Env.read_env(
+        StringIO("\n".join(f"{name}={value}" for name, value in dotenv_values.items()))
+    )
+
+    config = RuntimeConfig.from_mapping(os.environ)
+
+    assert config.secret_key == "dotenv-local-only"
+    assert config.site_url == "http://localhost:8765"
 
 
 @pytest.mark.parametrize("process_type", ["server", "worker"])
