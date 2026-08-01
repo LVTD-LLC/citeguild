@@ -22,8 +22,8 @@ development guidance.
   `pg_stat_statements` migrations.
 - Docker, Fly.io, Render, and CapRover deployment files.
 
-- Tool-neutral `AGENTS.md`, `DESIGN.md`, and bundled `.agents/skills/`
-  workflows for humans and coding agents.
+- Tool-neutral `AGENTS.md` plus focused `PRODUCT.md`, `TECH.md`, `STRUCTURE.md`,
+  `DESIGN.md`, and `ANALYTICS.md` contracts for humans and coding agents.
 
 - ReviewGate AI reviews for same-repository pull requests.
 
@@ -295,6 +295,10 @@ cannot create superuser-only Postgres extensions.
 ```text
 .
 |-- AGENTS.md                         # Tool-neutral coding-agent guidance
+|-- PRODUCT.md                        # Product, pricing, MVP, and non-goals
+|-- TECH.md                           # Architecture, security, and deployment contract
+|-- STRUCTURE.md                      # Domain boundaries and placement rules
+|-- ANALYTICS.md                      # Metrics, events, identity, and privacy contract
 |-- DESIGN.md                         # Design-system source of truth
 |-- Makefile                          # Local, Compose, test, and analysis commands
 |-- apps/
@@ -693,9 +697,15 @@ conflict with text entry.
 
 ## AI-Assisted Development
 
-The generated project keeps coding-agent guidance tool-neutral:
+The CiteGuild repository keeps coding-agent guidance tool-neutral and separates
+durable context by concern:
 
 - `AGENTS.md` is the canonical repo guidance for coding agents.
+- `PRODUCT.md` is the canonical pricing, workflow, scope, and non-goal contract.
+- `TECH.md` is the canonical architecture, security, integration, deployment,
+  and command contract.
+- `STRUCTURE.md` is the canonical file-placement and domain-boundary guide.
+- `ANALYTICS.md` is the canonical metrics, event, identity, and privacy contract.
 - `DESIGN.md` is the canonical design-system source of truth.
 - `docs/quality.md` is the local CI path and touched-area quality command
   matrix for humans and coding agents.
@@ -732,9 +742,10 @@ The generated project keeps coding-agent guidance tool-neutral:
 - The hosted app serves runtime MCP setup instructions at `/AGENTS.md`.
 
 
-Do not add IDE-specific or agent-vendor-specific instruction files unless your
-team explicitly standardizes on one tool. Keep durable project workflow, test,
-security, architecture, and design rules in `AGENTS.md` and `DESIGN.md`.
+Do not add IDE-specific or agent-vendor-specific instruction files unless the
+team explicitly standardizes on one tool. Codex, Claude Code, Gemini, and other
+agents should read the same canonical files rather than maintain duplicate
+copies that drift.
 
 `make pyscn-check` runs a CI-friendly static analysis gate for complexity and
 dead code. `make pyscn-analyze` creates a local `.pyscn/` report with broader
@@ -878,7 +889,7 @@ make pyscn-check
 Run focused pytest checks:
 
 ```bash
-make terminal-test apps/core/tests/test_example.py
+make terminal-test apps/core/tests/test_api_keys.py
 make terminal-test -- -k keyword -q
 ```
 

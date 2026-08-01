@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: "CiteGuild"
-description: "Default SaaS design system for CiteGuild. Replace these tokens and notes as the product identity matures."
+description: "Calm, trustworthy product system for CiteGuild's source-discovery and indexing workflows."
 colors:
   primary: "#15803D"
   primary-hover: "#166534"
@@ -180,21 +180,21 @@ components:
 
 This file is the project-level design source of truth for humans and AI coding agents. It follows the public Google Labs Code [`DESIGN.md`](https://github.com/google-labs-code/design.md) alpha format: YAML design tokens first, then markdown guidance explaining how to apply them.
 
-The default style is intentionally generic for a modern Django SaaS product: clean, trustworthy, accessible, and easy to customize after generation. Treat this as a starting point, not a permanent brand identity. The default register is product UI with marketing surfaces: authenticated screens should feel quiet and task-focused, while landing/pricing pages can be more expressive without becoming decorative.
+CiteGuild should feel like dependable research infrastructure, not an SEO marketplace or a growth-hack dashboard. The authenticated product is quiet, precise, and status-oriented; marketing surfaces can explain the network effect more expressively, but must keep the promise grounded in relevant source discovery.
 
-When the product direction is clearer, update this file before making broad UI changes. Keep the tokens and prose aligned so different agents and tools produce consistent interfaces.
+The primary user may be a person configuring sites or an agent consuming search. Human screens should make the system state legible: subscription eligibility, sitemap health, indexing progress, active/inactive article counts, agent connection, and detected citations. Never imply that a citation is promised or that CiteGuild caused a detected link.
 
 ## Colors
 
-The default palette uses practical SaaS neutrals with one confident primary color.
+The palette uses practical neutrals with a confident green for healthy discovery and indexing actions.
 
-- **Primary (#15803D):** Main action color for CTAs, selected states, success-adjacent highlights, and the most important conversion path.
+- **Primary (#15803D):** Main action color for subscription, Add Site, Copy Prompt, selected states, and healthy discovery/indexing signals.
 - **Secondary (#0F172A):** Deep slate for headlines, app chrome, and high-contrast UI surfaces.
 - **Accent (#2563EB):** Secondary action/link color. Use it for navigation emphasis and informational affordances, not the main conversion path.
 - **Neutral/Surface (#F8FAFC / #FFFFFF / #F1F5F9):** Light surfaces for pages, cards, forms, dashboards, and marketing sections.
 - **Semantic colors:** Green for success, amber for warning, red for destructive or error states.
 
-If your generated project needs a different brand, start by changing `primary`, `primary-hover`, `primary-soft`, and `accent`, then review button, badge, and link components.
+Do not use green to suggest guaranteed SEO growth or a promised backlink. Detected citations, retrieval scores, and indexing state need explicit labels and supporting text rather than color-only meaning.
 
 Check contrast whenever colors move. Body copy, helper text, labels, placeholders, and disabled-but-readable text must meet WCAG AA contrast on both light and dark surfaces. Gray text on tinted backgrounds often fails; use a darker shade of the surface hue or move closer to `text`.
 
@@ -220,6 +220,10 @@ Use simple responsive layouts that work well for server-rendered Django pages.
 - Forms should be narrow enough to scan comfortably. Dashboards can use wider containers, but avoid dense data walls without hierarchy.
 - Design empty, loading, error, and success states as first-class UI, not afterthoughts.
 - Give fixed-format UI, such as toolbars, icon buttons, counters, tables, and cards, stable dimensions so hover states, labels, and dynamic content do not shift the layout.
+- Make the dashboard sequence obvious: subscribe, add a sitemap-backed site,
+  wait for indexing, connect an agent, then inspect detected network activity.
+- Prefer a scannable site list and status detail over a dense generic KPI wall.
+  Put recent actionable sync failures near the affected site.
 
 ## Elevation & Depth
 
@@ -250,6 +254,19 @@ The default shape language is friendly but restrained.
 - **Navigation:** Simple top nav with clear product name, primary links, auth/account actions, and accessible mobile behavior.
 - **Tables/lists:** Prioritize scanability: sticky or repeated context where needed, muted metadata, and explicit empty states.
 - **Docs/code blocks:** Monospace code, copyable commands when possible, and examples that match the generated project structure.
+- **Site status:** Show sitemap URL/domain, last successful sync, indexed,
+  inactive, pending, and failed counts with text labels and timestamps. Never
+  communicate state by color alone.
+- **Copy Prompt:** Treat this as the primary post-indexing onboarding action.
+  Provide clear copy success/failure feedback and link to MCP, CLI, and API
+  setup choices.
+- **Search results:** Lead with title and canonical domain, then a bounded
+  excerpt/summary, relevance indication, and last-seen time. The interface
+  helps the agent assess fit; it must not present an automatic "insert link"
+  action.
+- **Detected citations:** Use “detected citation” or “detected link,” show source
+  and target pages plus first/last seen and active state, and avoid causal or
+  guaranteed-placement language.
 
 Every interactive component needs default, hover, focus-visible, active or selected when relevant, disabled, loading or pending when relevant, and error states. If a control can submit, delete, copy, save, authenticate, or navigate, design the state after success and failure before shipping it.
 
@@ -275,12 +292,19 @@ Before shipping generated-project UI changes:
 
 ## Do's and Don'ts
 
-- Do update this file when the brand, UI conventions, or component rules change.
+- Do update this file when the brand, product vocabulary, UI conventions, or component rules change.
 - Do keep YAML tokens and markdown descriptions consistent.
 - Do preserve WCAG AA contrast for text, buttons, alerts, and form states.
 - Do design for both anonymous marketing pages and authenticated SaaS app screens.
 - Do keep guidance agent-neutral: useful to humans and any coding agent.
-- Don't hard-code maintainer names, domains, or one project's positioning into reusable UI guidance.
+- Do use “site” in customer-facing UI; use “project” only where an API or
+  internal model deliberately exposes that term.
+- Do say “detected citation” for an observed member-to-member relationship and
+  “relevance” for search ordering.
+- Don't use backlink-marketplace conventions such as credits, exchange
+  balances, guaranteed placements, DR promises, outreach inboxes, or
+  reciprocity status.
+- Don't describe inactive articles as deleted; their history is retained.
 - Don't introduce a new font, color, radius, or shadow style for a single screen without updating the design system.
 - Don't make AI-agent instructions vendor-specific; use plain project conventions and file paths.
 - Don't let generated pages depend on remote design assets unless the project explicitly adds them.
