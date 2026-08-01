@@ -93,10 +93,11 @@ make terminal-worker
 make terminal-assets
 ```
 
-The web process runs migrations and then starts Django on
-`http://localhost:8000`. The worker process starts Django Q2. The asset watcher
-keeps Tailwind CSS and browser modules current while templates, CSS, and
-JavaScript change.
+The web process runs migrations and then starts the project's ASGI application
+on `http://localhost:8000`, so Django UI, API, OAuth discovery, and MCP routes
+are all available from the same local server. The worker process starts Django
+Q2. The asset watcher keeps Tailwind CSS and browser modules current while
+templates, CSS, and JavaScript change.
 
 ## Common Commands
 

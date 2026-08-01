@@ -18,10 +18,11 @@ make ci-local
 `make ci-local` runs, in order:
 
 1. `make python-quality`
-2. `make frontend-check`
-3. `make migrations-check`
-4. `make django-check`
-5. `make coverage-high-risk -- -q`
+2. `make type-check`
+3. `make frontend-check`
+4. `make migrations-check`
+5. `make django-check`
+6. `make coverage-high-risk -- -q`
 
 This path expects the same host prerequisites as terminal development: uv,
 Node.js, a reachable PostgreSQL database, and Redis when runtime settings need
@@ -43,7 +44,7 @@ PGSandbox database.
 | Docs, README, or agent instructions | Review the rendered Markdown path | Run focused tests only when docs rendering, routes, or navigation changed |
 | Deployment, Docker, CapRover, Fly.io, or DigitalOcean config | Run the smallest changed deploy command or syntax check available | Read the relevant deployment skill/docs and run `make ci-local` before PR |
 | Disposable Postgres verification | `DATABASE_URL="<pgsandbox connection string>" make test-local-postgres` | Delete the sandbox after checks and never commit sandbox URLs |
-| Type visibility | `make type-check` | Treat output as a map unless the project has established a typed baseline |
+| Typed baseline | `make type-check` | Expand `TYPE_CHECK_PATHS` deliberately as a module becomes low-noise |
 
 ## Property-based tests
 
@@ -87,7 +88,7 @@ rather than a plain `@pytest.mark.django_db` test.
 | `make lint-python` | Runs Ruff lint checks without applying fixes. |
 | `make format-check` | Runs Ruff format check without rewriting files. |
 | `make template-check` | Runs djLint in check mode for Django templates. |
-| `make type-check` | Runs ty over the app and project packages for typing visibility. |
+| `make type-check` | Runs ty inside the locked project environment over the low-noise typed baseline. |
 
 ## Coverage Baseline Policy
 
@@ -179,6 +180,7 @@ same Makefile targets:
 
 ```bash
 make python-quality
+make type-check
 make frontend-check
 make migrations-check
 make django-check

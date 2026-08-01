@@ -57,6 +57,9 @@ jobs:
       - name: Python quality
         run: make python-quality
 
+      - name: Type check
+        run: make type-check
+
   frontend:
     name: Frontend
     runs-on: ubuntu-latest

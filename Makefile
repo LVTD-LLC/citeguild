@@ -7,7 +7,16 @@ PYTHON_RUN ?= uv run python
 PYTEST_RUN ?= uv run pytest
 MUTMUT_RUN ?= uv run mutmut
 PYSCN_VERSION ?= 1.24.0
-TY_VERSION ?= 0.0.34
+TYPE_CHECK_PATHS = \
+	apps/api/schemas.py \
+	apps/core/agents/base.py \
+	apps/core/ai_observability.py \
+	apps/core/model_utils.py \
+	apps/core/notifications.py \
+	apps/mcp_server/server.py \
+	apps/pages/services.py \
+	citeguild/logging_utils.py \
+	citeguild/sentry_utils.py
 PYSCN_PATHS ?= apps citeguild manage.py
 COVERAGE_FAIL_UNDER ?= 0
 COVERAGE_RUN ?= uv run --with coverage coverage run --source=apps,citeguild -m pytest
@@ -35,7 +44,7 @@ LOCAL_MINIO_CONSOLE_PORT ?= 9001
 
 DJANGO_RUNSERVER_HOST ?= 0.0.0.0
 DJANGO_RUNSERVER_PORT ?= $(LOCAL_WEB_PORT)
-LOCAL_COMPOSE_SERVICES = db redis mailhog mjml minio createbuckets
+LOCAL_COMPOSE_SERVICES = db redis mailhog mjml minio
 DOCKER_COMPOSE = docker compose -f docker-compose-local.yml
 
 .PHONY: \
@@ -83,6 +92,7 @@ serve:
 
 agent-services:
 	$(DOCKER_COMPOSE) up -d $(LOCAL_COMPOSE_SERVICES)
+	$(DOCKER_COMPOSE) run --rm createbuckets
 
 agent-services-down:
 	$(DOCKER_COMPOSE) stop $(LOCAL_COMPOSE_SERVICES)
@@ -94,7 +104,7 @@ terminal-setup:
 
 terminal-web:
 	uv run python manage.py migrate
-	uv run python manage.py runserver $(DJANGO_RUNSERVER_HOST):$(DJANGO_RUNSERVER_PORT)
+	uv run uvicorn citeguild.asgi:application --host $(DJANGO_RUNSERVER_HOST) --port $(DJANGO_RUNSERVER_PORT) --reload
 
 terminal-worker:
 	uv run python manage.py qcluster
@@ -137,6 +147,7 @@ test:
 
 ci-local:
 	$(MAKE) python-quality
+	$(MAKE) type-check
 	$(MAKE) frontend-check
 	$(MAKE) migrations-check
 	$(MAKE) django-check
@@ -186,7 +197,7 @@ mutation-results:
 	$(MUTMUT_RUN) results
 
 type-check:
-	uvx ty@$(TY_VERSION) check apps citeguild
+	uv run ty check $(TYPE_CHECK_PATHS)
 
 test-local-postgres:
 	@if [ -z "$$DATABASE_URL" ]; then \

@@ -798,7 +798,7 @@ Create or update a Sentry dashboard for CiteGuild page-load performance. Use the
 | `make agent-services` | Start Compose-managed backing services only. |
 | `make agent-services-down` | Stop Compose-managed backing services without deleting volumes. |
 | `make terminal-setup` | Run `uv sync --locked`, `npm ci`, and `npm run build`. |
-| `make terminal-web` | Apply migrations and run Django on `DJANGO_RUNSERVER_HOST:DJANGO_RUNSERVER_PORT`. |
+| `make terminal-web` | Apply migrations and run the ASGI app (UI, API, and MCP) on `DJANGO_RUNSERVER_HOST:DJANGO_RUNSERVER_PORT`. |
 | `make terminal-worker` | Start the Django Q2 worker. |
 | `make terminal-assets` | Watch Tailwind CSS and browser modules. |
 | `make terminal-manage <command>` | Run a Django management command on the host. |
@@ -813,6 +813,7 @@ Create or update a Sentry dashboard for CiteGuild page-load performance. Use the
 | `make test` | Run pytest inside the backend Compose container. |
 | `make test-local-postgres` | Run checks against an existing `DATABASE_URL`, usually from PGSandbox MCP. |
 | `make coverage-high-risk` | Run coverage on selected high-risk files with a configurable baseline. |
+| `make type-check` | Run ty inside the locked project environment over the low-noise typed baseline. |
 | `make pyscn-check` | Run the CI-friendly pyscn static analysis gate. |
 | `make pyscn-analyze` | Generate a local `.pyscn/` structural analysis report. |
 | `make restart-worker` | Recreate the local worker container. |
@@ -832,13 +833,14 @@ Run the host-level local CI path:
 make ci-local
 ```
 
-This runs Python quality, frontend lint/build, migration drift checks, Django
-system checks, pytest, and high-risk coverage visibility.
+This runs Python quality, the typed baseline, frontend lint/build, migration
+drift checks, Django system checks, pytest, and high-risk coverage visibility.
 
 Run targeted checks while developing:
 
 ```bash
 make python-quality
+make type-check
 make frontend-check
 make migrations-check
 make django-check
