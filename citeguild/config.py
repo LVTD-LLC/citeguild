@@ -78,6 +78,7 @@ class RuntimeConfig:
     qdrant_url: str = field(repr=False)
     qdrant_api_key: str = field(repr=False)
     stripe_secret_key: str = field(repr=False)
+    stripe_context: str = field(repr=False)
     stripe_webhook_secret: str = field(repr=False)
     stripe_price_id_monthly: str = field(repr=False)
 
@@ -118,6 +119,7 @@ class RuntimeConfig:
             qdrant_url=_text(values, "QDRANT_URL"),
             qdrant_api_key=_text(values, "QDRANT_API_KEY"),
             stripe_secret_key=_text(values, "STRIPE_SECRET_KEY"),
+            stripe_context=_text(values, "STRIPE_CONTEXT"),
             stripe_webhook_secret=_text(values, "STRIPE_WEBHOOK_SECRET"),
             stripe_price_id_monthly=_text(values, "STRIPE_PRICE_ID_MONTHLY"),
         )
@@ -171,6 +173,7 @@ class RuntimeConfig:
     def _validate_billing(self) -> None:
         for name, value in (
             ("STRIPE_SECRET_KEY", self.stripe_secret_key),
+            ("STRIPE_CONTEXT", self.stripe_context),
             ("STRIPE_WEBHOOK_SECRET", self.stripe_webhook_secret),
             ("STRIPE_PRICE_ID_MONTHLY", self.stripe_price_id_monthly),
         ):

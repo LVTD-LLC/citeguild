@@ -531,7 +531,7 @@ Optional feature variables:
 | `AWS_S3_ENDPOINT_URL`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME` | S3-compatible media storage. |
 
 
-| `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_YEARLY`, `WEBHOOK_UUID` | Stripe Checkout, Billing Portal, and webhook verification. |
+| `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_CONTEXT`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_MONTHLY`, `WEBHOOK_UUID` | Stripe Checkout, Billing Portal, explicit account routing, and webhook verification for the single $10 monthly plan. |
 
 
 | `MJML_URL` | MJML HTTP server for email rendering. |
@@ -1079,10 +1079,10 @@ Configure these variables:
 
 ```env
 STRIPE_SECRET_KEY=
+STRIPE_CONTEXT=
 STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_ID_MONTHLY=
-STRIPE_PRICE_ID_YEARLY=
 WEBHOOK_UUID=
 ```
 

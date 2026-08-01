@@ -35,6 +35,11 @@ class Profile(BaseModel):
         default="",
         help_text="The user's Stripe customer id, if it exists",
     )
+    stripe_subscription_status = models.CharField(max_length=32, blank=True, default="")
+    stripe_current_period_end = models.DateTimeField(null=True, blank=True)
+    stripe_cancel_at_period_end = models.BooleanField(default=False)
+    stripe_last_event_created = models.PositiveBigIntegerField(default=0)
+    stripe_last_event_id = models.CharField(max_length=255, blank=True, default="")
 
     state = models.CharField(
         max_length=255,
@@ -89,10 +94,19 @@ class Profile(BaseModel):
 
     @property
     def has_active_subscription(self):
-        return self.state in [
-            ProfileStates.SUBSCRIBED,
-            ProfileStates.CANCELLED,
-        ] or (self.user.is_superuser and settings.ENVIRONMENT == "prod")
+        return self.stripe_subscription_status in {"active", "past_due"} or (
+            self.user.is_superuser and settings.ENVIRONMENT == "prod"
+        )
+
+
+class StripeWebhookEvent(BaseModel):
+    event_id = models.CharField(max_length=255, unique=True)
+    event_type = models.CharField(max_length=255)
+    event_created = models.PositiveBigIntegerField(default=0)
+    outcome = models.CharField(max_length=32, default="processed")
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class ProfileStateTransition(BaseModel):
