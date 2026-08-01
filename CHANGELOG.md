@@ -23,6 +23,13 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
   tenant-isolation boundaries, CapRover topology, real validation commands,
   and the Rowset/PR ship workflow.
 
+### Added
+
+- CiteGuild can now construct a shared authenticated Qdrant client from
+  environment configuration, without creating collections or writing vectors.
+- Production now has a private, API-key-authenticated Qdrant 1.18.3 service
+  with persistent storage and matching web/worker connection configuration.
+
 ### Fixed
 
 - The agent development preflight now runs a low-noise typed baseline inside

@@ -15,6 +15,7 @@ TYPE_CHECK_PATHS = \
 	apps/core/notifications.py \
 	apps/mcp_server/server.py \
 	apps/pages/services.py \
+	apps/search/qdrant.py \
 	citeguild/logging_utils.py \
 	citeguild/sentry_utils.py
 PYSCN_PATHS ?= apps citeguild manage.py
