@@ -177,6 +177,9 @@ def test_production_settings_attach_posthog_handler():
         {
             "ENVIRONMENT": "prod",
             "POSTHOG_API_KEY": "phc_test_project_token",
+            "QDRANT_API_KEY": "qdrant-test-key",
+            "QDRANT_URL": "http://qdrant:6333",
+            "REDIS_PASSWORD": "redis-test-password",
         }
     )
     environment.pop("POSTHOG_LOGS_ENABLED", None)
