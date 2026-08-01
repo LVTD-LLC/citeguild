@@ -23,6 +23,8 @@ already been implemented.
 - `frontend/src/styles/`: Tailwind/global styles governed by `DESIGN.md`.
 - `deployment/`, `docker-compose-*.yml`, `.github/workflows/`: image, runtime,
   service, CI, review, and deployment configuration.
+- `docs/architecture/`: accepted and proposed architecture decisions that
+  coordinate multiple product domains or external systems.
 - `docs/quality.md`: verification command contract.
 - `.agents/skills/`: reusable project workflows, not one-task instructions.
 
@@ -83,6 +85,8 @@ name, update this file in the same PR rather than creating parallel concepts.
 
 - Product decisions and non-goals: `PRODUCT.md` and the linked Outline memo.
 - Architecture/security/deployment invariants: `TECH.md`.
+- Detailed cross-domain decisions: numbered ADRs under `docs/architecture/`,
+  linked from `TECH.md`.
 - UI system and product interaction language: `DESIGN.md`.
 - Events, funnels, identity, and privacy: `ANALYTICS.md`.
 - Repo-wide agent workflow: `AGENTS.md`.

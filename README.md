@@ -290,6 +290,11 @@ cannot create superuser-only Postgres extensions.
 
 ## Architecture
 
+The target CiteGuild MVP domain model, PostgreSQL/Qdrant ownership, lifecycle
+states, job boundaries, idempotency rules, shared search contract, and CapRover
+topology are defined in [ADR 0001: Define the MVP domain and service
+boundaries](docs/architecture/0001-mvp-domain-and-service-boundaries.md).
+
 ### Directory Structure
 
 ```text

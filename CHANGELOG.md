@@ -23,6 +23,13 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
   tenant-isolation boundaries, CapRover topology, real validation commands,
   and the Rowset/PR ship workflow.
 
+### Added
+
+- ADR 0001 defines the CiteGuild MVP systems of record, domain entities,
+  lifecycle states, stable identifiers, unique constraints, idempotent worker
+  boundaries, shared API/MCP/CLI search contract, failure recovery, and
+  CapRover deployment topology.
+
 ### Fixed
 
 - The agent development preflight now runs a low-noise typed baseline inside
