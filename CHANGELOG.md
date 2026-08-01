@@ -13,6 +13,16 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-08-01
+
+### Fixed
+
+- The agent development preflight now runs a low-noise typed baseline inside
+  the locked project environment, and GitHub CI executes the same check.
+- Local MinIO startup now uses the current client command and credentials and
+  bucket settings that match `.env.agent.example`.
+- Host and Compose development servers now run the ASGI application so the
+  documented local path exposes UI, API, OAuth discovery, and MCP together.
 
 ## 2026-07-31
 ### Changed
