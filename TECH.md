@@ -4,6 +4,10 @@ This file records the target MVP architecture and the constraints that should
 survive individual tasks. `PRODUCT.md` owns product decisions; `STRUCTURE.md`
 owns file placement; `docs/quality.md` owns the full command matrix.
 
+The detailed model, lifecycle, idempotency, job, and shared search decision is
+[ADR 0001: Define the MVP domain and service
+boundaries](docs/architecture/0001-mvp-domain-and-service-boundaries.md).
+
 ## Current Baseline vs Target
 
 The repository currently contains the generated Django SaaS foundation: auth,

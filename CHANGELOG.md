@@ -25,6 +25,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- ADR 0001 defines the CiteGuild MVP systems of record, domain entities,
+  lifecycle states, stable identifiers, unique constraints, idempotent worker
+  boundaries, shared API/MCP/CLI search contract, failure recovery, and
+  CapRover deployment topology.
 - CiteGuild can now construct a shared authenticated Qdrant client from
   environment configuration, without creating collections or writing vectors.
 - Production now has a private, API-key-authenticated Qdrant 1.18.3 service
