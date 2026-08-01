@@ -15,6 +15,14 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-08-01
 
+### Changed
+
+- Replaced generic generated agent context with aligned CiteGuild product,
+  architecture, structure, design, and analytics contracts covering the
+  $10/month sitemap-to-search MVP, explicit non-goals, hostile-content and
+  tenant-isolation boundaries, CapRover topology, real validation commands,
+  and the Rowset/PR ship workflow.
+
 ### Fixed
 
 - The agent development preflight now runs a low-noise typed baseline inside
