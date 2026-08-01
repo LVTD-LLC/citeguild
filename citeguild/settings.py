@@ -38,7 +38,7 @@ env = environ.Env(
     DEBUG=(bool, False)
 )
 
-CITEGUILD_CONFIG = RuntimeConfig.from_mapping(os.environ)
+CITEGUILD_CONFIG = RuntimeConfig.from_mapping(env.ENVIRON)
 CITEGUILD_CONFIG_FINGERPRINT = CITEGUILD_CONFIG.fingerprint
 
 # Options: dev, test, prod
