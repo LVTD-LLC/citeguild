@@ -6,6 +6,10 @@ clients, so invalid production configuration fails before either process
 accepts work. Both processes print the same secret-safe fingerprint at startup;
 the web healthcheck also exposes it as `configuration_fingerprint`.
 
+`django-environ` loads the local `.env` file into the process environment
+before this contract is constructed. Existing OS/container variables retain
+precedence over `.env`, matching the scaffold's established behavior.
+
 ## Component Matrix
 
 | Component | Variables | Production contract |
