@@ -574,14 +574,14 @@ def construct_stripe_event(request):
         return None, HttpResponseBadRequest("Missing Stripe-Signature header")
 
     try:
-        return (
-            stripe.Webhook.construct_event(
-                payload=request.body,
-                sig_header=sig_header,
-                secret=settings.STRIPE_WEBHOOK_SECRET,
-            ),
-            None,
+        event = stripe.Webhook.construct_event(
+            payload=request.body,
+            sig_header=sig_header,
+            secret=settings.STRIPE_WEBHOOK_SECRET,
         )
+        if hasattr(event, "to_dict"):
+            event = event.to_dict()
+        return event, None
     except ValueError:
         logger.warning(
             "stripe.webhook.process.completed",

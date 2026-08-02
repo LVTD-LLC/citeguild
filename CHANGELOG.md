@@ -43,6 +43,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Fixed
 
+- Stripe SDK Event objects are normalized to plain dictionaries after signature
+  verification so production webhooks use the same safe contract as tests.
 - The agent development preflight now runs a low-noise typed baseline inside
   the locked project environment, and GitHub CI executes the same check.
 - Local MinIO startup now uses the current client command and credentials and
