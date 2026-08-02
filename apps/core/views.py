@@ -14,7 +14,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
@@ -30,8 +30,9 @@ from apps.core.analytics import (
     track_event,
 )
 from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
-from apps.core.forms import ProfileUpdateForm
+from apps.core.forms import ProfileUpdateForm, SiteCreateForm
 from apps.core.models import Profile, StripeWebhookEvent
+from apps.core.projects import ProjectHostConflict, ProjectService
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -157,16 +158,61 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        profile, _created = Profile.objects.get_or_create(user=self.request.user)
         payment_status = self.request.GET.get("payment")
         if payment_status == "success":
-            messages.success(self.request, "Thanks for subscribing, I hope you enjoy the app!")
-            context["show_confetti"] = True
+            if profile.has_active_subscription:
+                messages.success(self.request, "Your subscription is active. Add your first site.")
+                context["show_confetti"] = True
+            else:
+                context["subscription_pending"] = True
         elif payment_status == "failed":
-            messages.error(self.request, "Something went wrong with the payment.")
+            messages.error(self.request, "Checkout was not completed. You can try again.")
 
+        context["profile"] = profile
+        context["has_subscription"] = profile.has_active_subscription
+        context["projects"] = ProjectService.for_owner(profile)
+        context["site_form"] = kwargs.get("site_form") or SiteCreateForm()
         context["agent_setup_prompt"] = build_agent_setup_prompt(self.request)
         context["agent_instructions_url"] = build_absolute_public_url("/AGENTS.md")
         return context
+
+    def post(self, request, *args, **kwargs):
+        profile, _created = Profile.objects.get_or_create(user=request.user)
+        if not profile.has_active_subscription:
+            messages.error(request, "Subscribe before adding a site.")
+            return redirect("pricing")
+
+        form = SiteCreateForm(request.POST)
+        if form.is_valid():
+            try:
+                project = ProjectService.create(owner=profile, **form.cleaned_data)
+            except ProjectHostConflict as error:
+                form.add_error("sitemap_url", error)
+            except ValidationError as error:
+                form.add_error(None, error)
+            except PermissionDenied:
+                logger.warning(
+                    "project.create.completed",
+                    extra={
+                        "event.name": "project.create.completed",
+                        "user_id": request.user.id,
+                        "profile_id": profile.id,
+                        "operation.status": "subscription_became_inactive",
+                        "outcome": "failure",
+                    },
+                )
+                messages.error(
+                    request,
+                    "Your subscription became inactive. Update billing before adding a site.",
+                )
+                return redirect("pricing")
+            else:
+                messages.success(request, f"{project.name} was added. Indexing will start soon.")
+                return redirect("home")
+
+        context = self.get_context_data(site_form=form)
+        return self.render_to_response(context, status=400)
 
 
 class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

@@ -178,7 +178,7 @@ def test_dashboard_does_not_show_email_confirmation_reminder(client):
     assert response.status_code == 200
     content = response.content.decode()
     assert "Your email is not yet confirmed" not in content
-    assert "Welcome to CiteGuild" in content
+    assert "Your sites" in content
 
 
 def test_settings_requires_email_confirmation_before_passkey_setup(client):

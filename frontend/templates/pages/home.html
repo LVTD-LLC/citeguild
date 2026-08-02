@@ -1,60 +1,156 @@
 {% extends "base_app.html" %}
+{% block meta %}
+    <title>Dashboard | CiteGuild</title>
+    <meta name="robots" content="noindex, nofollow" />
+{% endblock meta %}
 {% block content %}
     <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div class="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <p class="app-label-caps text-green-600 dark:text-green-400">Dashboard</p>
-                <h1 class="mt-2 text-4xl font-black tracking-tight text-gray-900 dark:text-gray-100">Welcome to CiteGuild</h1>
-                <p class="app-text-muted mt-4 max-w-2xl text-lg leading-8">
-                    This is your main app dashboard. Start with a clear primary workflow, expose the next useful action, and keep project-specific setup close to where users need it.
-                </p>
+                <h1 class="mt-2 text-4xl font-black tracking-tight text-gray-900 dark:text-gray-100">Your sites</h1>
+                <p class="app-text-muted mt-3 max-w-2xl text-base leading-7">Add a sitemap once. CiteGuild will make its eligible articles searchable by agents as indexing becomes available.</p>
             </div>
-            <a href="{% url 'docs_home' %}" class="app-button-secondary">View docs</a>
+            {% if has_subscription %}
+                <a href="#add-site" class="app-button-primary">Add site</a>
+            {% endif %}
         </div>
-        <section class="mb-10 rounded-2xl border border-green-200 bg-green-50 p-6 dark:border-green-900/60 dark:bg-green-950/30"
-                 aria-labelledby="agent-setup-heading">
-            <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                <div class="max-w-2xl">
-                    <p class="app-label-caps text-green-700 dark:text-green-300">Agent setup</p>
-                    <h2 id="agent-setup-heading"
-                        class="mt-2 text-2xl font-black text-gray-900 dark:text-gray-100">Teach your AI agent to use CiteGuild</h2>
-                    <p class="mt-3 text-sm leading-6 text-gray-700 dark:text-gray-300">
-                        Copy this prompt into your coding agent. It includes the hosted MCP URL, REST user endpoint, and a tool-neutral instructions file the agent can read for OAuth setup.
-                    </p>
-                    <p class="mt-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100">
-                        OAuth is preferred. Store fallback API keys in local environment variables, not URLs, source code, logs, or committed config.
-                    </p>
-                </div>
-                <a href="{{ agent_instructions_url }}"
-                   class="app-button-secondary border-green-300 text-green-800 hover:bg-green-100 dark:border-green-800 dark:text-green-200 dark:hover:bg-green-950">
-                    View agent instructions
-                </a>
+        {% if subscription_pending %}
+            <section class="app-card border-amber-200 p-6 dark:border-amber-900/60"
+                     aria-labelledby="subscription-pending-heading"
+                     aria-live="polite">
+                <p class="app-label-caps text-amber-700 dark:text-amber-300">Payment received</p>
+                <h2 id="subscription-pending-heading" class="mt-2 text-2xl font-bold">Confirming your subscription</h2>
+                <p class="app-text-muted mt-3">Stripe is confirming access. This normally takes a few seconds.</p>
+                <a href="{% url 'home' %}" class="app-button-secondary mt-5">Check again</a>
+            </section>
+        {% elif not has_subscription %}
+            <section class="app-card p-6 sm:p-8" aria-labelledby="subscribe-heading">
+                <p class="app-label-caps text-green-600 dark:text-green-400">Start here</p>
+                <h2 id="subscribe-heading" class="mt-2 text-2xl font-bold">Subscribe to add your sites</h2>
+                <p class="app-text-muted mt-3 max-w-2xl">CiteGuild is $10 per month for unlimited sites. There is no trial or free tier.</p>
+                <form method="post"
+                      action="{% url 'user_upgrade_checkout_session' %}"
+                      class="mt-6">
+                    {% csrf_token %}
+                    <button type="submit" class="app-button-primary">Subscribe for $10/month</button>
+                </form>
+            </section>
+        {% else %}
+            <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.7fr)]">
+                <section aria-labelledby="site-list-heading">
+                    <div class="flex items-center justify-between gap-4">
+                        <h2 id="site-list-heading" class="text-2xl font-bold">Sites</h2>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ projects|length }} total</span>
+                    </div>
+                    {% if projects %}
+                        <ul class="mt-4 space-y-4">
+                            {% for project in projects %}
+                                <li class="app-card p-5">
+                                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                        <div class="min-w-0">
+                                            <h3 class="truncate text-lg font-bold">{{ project.name }}</h3>
+                                            <p class="mt-1 truncate text-sm text-gray-600 dark:text-gray-300">{{ project.normalized_host }}</p>
+                                        </div>
+                                        <span class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">
+                                            {{ project.get_state_display }}
+                                        </span>
+                                    </div>
+                                    <dl class="mt-5 grid grid-cols-2 gap-4 border-t border-gray-200 pt-4 text-sm dark:border-gray-800">
+                                        <div>
+                                            <dt class="text-gray-500 dark:text-gray-400">Indexed articles</dt>
+                                            <dd class="mt-1 font-semibold">
+                                                {{ project.active_article_count }}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-gray-500 dark:text-gray-400">Indexing</dt>
+                                            <dd class="mt-1 font-semibold">
+                                                {% if project.state == 'suspended' %}Paused{% elif project.last_error_code %}Needs attention{% elif project.last_sync_at %}Ready{% else %}Pending{% endif %}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="app-card mt-4 p-8 text-center">
+                            <h3 class="text-lg font-bold">No sites yet</h3>
+                            <p class="app-text-muted mt-2">Add your sitemap to create the first site in your account.</p>
+                            <a href="#add-site" class="app-button-primary mt-5">Add your first site</a>
+                        </div>
+                    {% endif %}
+                </section>
+                <aside class="space-y-6">
+                    <section id="add-site"
+                             class="app-card scroll-mt-28 p-6"
+                             aria-labelledby="add-site-heading">
+                        <h2 id="add-site-heading" class="text-xl font-bold">Add site</h2>
+                        <p class="app-text-muted mt-2 text-sm">Use the public XML sitemap for the publication you control.</p>
+                        <form method="post"
+                              action="{% url 'home' %}#add-site"
+                              class="mt-5 space-y-4"
+                              x-data="{ submitting: false }"
+                              @submit="submitting = true"
+                              :aria-busy="submitting.toString()">
+                            {% csrf_token %}
+                            {{ site_form.non_field_errors }}
+                            <div>
+                                {{ site_form.name.errors }}
+                                <label for="{{ site_form.name.id_for_label }}"
+                                       class="block text-sm font-semibold">{{ site_form.name.label }}</label>
+                                {{ site_form.name }}
+                            </div>
+                            <div>
+                                {{ site_form.sitemap_url.errors }}
+                                <label for="{{ site_form.sitemap_url.id_for_label }}"
+                                       class="block text-sm font-semibold">{{ site_form.sitemap_url.label }}</label>
+                                {{ site_form.sitemap_url }}
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">HTTP and HTTPS sitemap URLs are supported.</p>
+                            </div>
+                            <button type="submit"
+                                    class="app-button-primary w-full"
+                                    :disabled="submitting">
+                                <span x-show="!submitting">Add site</span>
+                                <span x-cloak x-show="submitting" role="status">Adding site…</span>
+                            </button>
+                        </form>
+                    </section>
+                    <section class="app-panel p-5" aria-labelledby="billing-heading">
+                        <h2 id="billing-heading" class="font-bold">Billing</h2>
+                        <p class="app-text-muted mt-2 text-sm">One $10 monthly subscription. Unlimited sites.</p>
+                        {% if profile.stripe_customer_id %}
+                            <form method="post"
+                                  action="{% url 'create_customer_portal_session' %}"
+                                  class="mt-4">
+                                {% csrf_token %}
+                                <button type="submit" class="app-button-secondary w-full">Manage billing</button>
+                            </form>
+                        {% endif %}
+                    </section>
+                </aside>
             </div>
-            <div class="mt-6">
-                <label for="agent-setup-prompt"
-                       class="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-100">Copy/paste prompt</label>
+        {% endif %}
+        <details class="app-panel mt-10 p-5">
+            <summary class="cursor-pointer font-bold">Connect an AI agent</summary>
+            <div class="mt-5">
+                <label for="agent-setup-prompt" class="mb-2 block text-sm font-medium">Copy/paste prompt</label>
                 <textarea id="agent-setup-prompt"
                           readonly
-                          rows="10"
-                          aria-describedby="agent-setup-help"
-                          class="app-input block w-full border-green-200 p-4 font-mono text-xs leading-5 dark:border-green-900">{{ agent_setup_prompt }}</textarea>
+                          rows="8"
+                          class="app-input block w-full font-mono text-xs">{{ agent_setup_prompt }}</textarea>
                 <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p id="agent-setup-help"
-                       class="text-xs leading-5 text-gray-600 dark:text-gray-400">Best path: remote MCP over HTTPS with OAuth. Legacy clients can use X-API-Key from a local environment variable.</p>
+                    <a href="{{ agent_instructions_url }}"
+                       class="text-sm font-semibold text-green-700 dark:text-green-300">View agent instructions</a>
                     <button type="button"
                             data-copy-button
                             data-copy-source="#agent-setup-prompt"
-                            class="app-button-primary">
+                            class="app-button-secondary">
                         <span data-copy-label>Copy prompt</span>
                     </button>
                 </div>
             </div>
-        </section>
-        <section class="app-card p-6" aria-labelledby="next-steps-heading">
-            <h2 id="next-steps-heading"
-                class="text-xl font-bold text-gray-900 dark:text-gray-100">Next steps</h2>
-            <p class="app-text-muted mt-2 text-sm leading-6">Replace this card with the first high-value action in your product. Keep examples, API URLs, and implementation details in docs instead of crowding the dashboard.</p>
-        </section>
+        </details>
     </div>
     {% if show_confetti %}
         <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
