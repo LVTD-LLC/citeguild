@@ -4,7 +4,7 @@ from django.db import models
 from django_q.tasks import async_task
 
 from apps.core.base_models import BaseModel
-from apps.core.choices import EmailType, ProfileStates
+from apps.core.choices import EmailType, ProfileStates, ProjectStates
 from apps.core.model_utils import (
     generate_api_key,
     get_api_key_prefix,
@@ -107,6 +107,57 @@ class StripeWebhookEvent(BaseModel):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class Project(BaseModel):
+    """One account-owned site submitted to the CiteGuild corpus."""
+
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="projects")
+    name = models.CharField(max_length=120)
+    sitemap_url = models.URLField(max_length=2048)
+    normalized_sitemap_url = models.URLField(max_length=2048)
+    normalized_host = models.CharField(max_length=253, unique=True)
+    state = models.CharField(
+        max_length=20, choices=ProjectStates.choices, default=ProjectStates.ACTIVE
+    )
+    suspension_reason = models.CharField(max_length=255, blank=True, default="")
+    suspended_at = models.DateTimeField(null=True, blank=True)
+    last_sync_uuid = models.UUIDField(null=True, blank=True)
+    current_sync_uuid = models.UUIDField(null=True, blank=True)
+    last_sync_at = models.DateTimeField(null=True, blank=True)
+    current_sync_started_at = models.DateTimeField(null=True, blank=True)
+    article_count = models.PositiveIntegerField(default=0)
+    active_article_count = models.PositiveIntegerField(default=0)
+    last_error_code = models.CharField(max_length=64, blank=True, default="")
+
+    class Meta:
+        ordering = ["name", "id"]
+        indexes = [
+            models.Index(fields=["owner", "state"], name="core_proj_owner_state_idx"),
+            models.Index(fields=["state", "last_sync_at"], name="core_proj_sync_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_project_uuid_unique"),
+        ]
+
+    @property
+    def is_sync_eligible(self):
+        return self.state == ProjectStates.ACTIVE and self.owner.has_active_subscription
+
+
+class ProjectStateTransition(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="state_transitions")
+    actor = models.ForeignKey(
+        Profile,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="project_state_changes",
+    )
+    from_state = models.CharField(max_length=20, choices=ProjectStates.choices)
+    to_state = models.CharField(max_length=20, choices=ProjectStates.choices)
+    reason = models.CharField(max_length=255, blank=True, default="")
+    metadata = models.JSONField(default=dict, blank=True)
 
 
 class ProfileStateTransition(BaseModel):
