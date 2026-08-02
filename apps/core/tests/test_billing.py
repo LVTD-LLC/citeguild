@@ -124,6 +124,7 @@ def test_checkout_is_fixed_post_only_contract(
     assert params["mode"] == "subscription"
     assert params["line_items"] == [{"price": "price_monthly", "quantity": 1}]
     assert params["metadata"]["plan"] == "single_monthly"
+    assert params["subscription_data"]["metadata"]["price_id"] == "price_monthly"
     assert params["stripe_context"] == "acct_lvtd"
     assert "allow_promotion_codes" not in params
     assert params["idempotency_key"].startswith("citeguild-checkout-")

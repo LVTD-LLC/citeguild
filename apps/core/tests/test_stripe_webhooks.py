@@ -3,11 +3,17 @@ import pytest
 from apps.core.choices import ProfileStates
 from apps.core.models import Profile
 from apps.core.stripe_webhooks import (
+    handle_checkout_completed,
     handle_created_subscription,
     handle_deleted_subscription,
     handle_updated_subscription,
 )
 from apps.core.tests.test_helpers import build_subscription_event
+
+
+@pytest.fixture(autouse=True)
+def configured_monthly_price(settings):
+    settings.STRIPE_PRICE_ID_MONTHLY = "price_monthly"
 
 
 @pytest.mark.django_db
@@ -27,6 +33,98 @@ def test_active_subscription_grants_access_synchronously(profile):
     assert profile.stripe_subscription_status == "active"
     assert profile.state == ProfileStates.SUBSCRIBED
     assert profile.has_active_subscription is True
+
+
+@pytest.mark.django_db
+def test_other_product_subscription_cannot_grant_access(profile):
+    event = build_subscription_event(
+        status="active",
+        metadata={"profile_id": profile.id, "plan": "single_monthly"},
+        price_id="price_other_product",
+        created=200,
+    )
+
+    handle_created_subscription(event)
+
+    profile.refresh_from_db()
+    assert profile.stripe_subscription_status == ""
+    assert profile.stripe_subscription_id == ""
+    assert profile.has_active_subscription is False
+
+
+@pytest.mark.django_db
+def test_subscription_without_price_items_cannot_change_access(profile):
+    Profile.objects.filter(id=profile.id).update(
+        stripe_subscription_status="active",
+        stripe_subscription_id="sub_citeguild",
+    )
+    event = build_subscription_event(
+        status="canceled",
+        metadata={"profile_id": profile.id, "plan": "single_monthly"},
+        created=200,
+        items={},
+    )
+
+    handle_deleted_subscription(event)
+
+    profile.refresh_from_db()
+    assert profile.stripe_subscription_status == "active"
+    assert profile.stripe_subscription_id == "sub_citeguild"
+    assert profile.has_active_subscription is True
+
+
+@pytest.mark.django_db
+def test_other_product_checkout_cannot_associate_stripe_ids(profile):
+    event = {
+        "id": "evt_checkout_other",
+        "type": "checkout.session.completed",
+        "created": 200,
+        "data": {
+            "object": {
+                "mode": "subscription",
+                "customer": "cus_other",
+                "subscription": "sub_other",
+                "metadata": {
+                    "profile_id": profile.id,
+                    "price_id": "price_other_product",
+                    "plan": "single_monthly",
+                },
+            }
+        },
+    }
+
+    handle_checkout_completed(event)
+
+    profile.refresh_from_db()
+    assert profile.stripe_customer_id == ""
+    assert profile.stripe_subscription_id == ""
+
+
+@pytest.mark.django_db
+def test_citeguild_checkout_associates_stripe_ids(profile):
+    event = {
+        "id": "evt_checkout_citeguild",
+        "type": "checkout.session.completed",
+        "created": 200,
+        "data": {
+            "object": {
+                "mode": "subscription",
+                "customer": "cus_citeguild",
+                "subscription": "sub_citeguild",
+                "metadata": {
+                    "profile_id": profile.id,
+                    "price_id": "price_monthly",
+                    "plan": "single_monthly",
+                },
+            }
+        },
+    }
+
+    handle_checkout_completed(event)
+
+    profile.refresh_from_db()
+    assert profile.stripe_customer_id == "cus_citeguild"
+    assert profile.stripe_subscription_id == "sub_citeguild"
 
 
 @pytest.mark.django_db
