@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Added a dedicated real-service MVP acceptance lane covering paid site
+  submission, article indexing, semantic search, detected links, Redis, pinned
+  dependency audits, documented risk coverage, and explicit smoke budgets.
 - Added a documented, allowlisted paid-to-citation PostHog contract with
   server-truth conversions, deterministic retry deduplication, safe reliability
   and unit-cost inputs, and privacy tests that exclude content, URLs, and PII.
