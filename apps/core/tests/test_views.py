@@ -3,6 +3,15 @@ from allauth.account.models import EmailAddress
 from django.test import override_settings
 from django.urls import reverse
 
+from apps.core.models import Project
+from apps.core.projects import ProjectService
+
+
+def subscribe(profile):
+    profile.stripe_subscription_status = "active"
+    profile.stripe_customer_id = "cus_test"
+    profile.save(update_fields=["stripe_subscription_status", "stripe_customer_id", "updated_at"])
+
 
 @pytest.mark.django_db
 class TestHomeView:
@@ -28,6 +37,92 @@ class TestHomeView:
         assert "/AGENTS.md" in content
         assert "CITEGUILD_API_KEY" in content
         assert "?api_key=" not in content
+
+    def test_unsubscribed_user_sees_checkout_not_add_site_form(self, auth_client):
+        response = auth_client.get(reverse("home"))
+        content = response.content.decode()
+
+        assert "Subscribe for $10/month" in content
+        assert 'id="add-site"' not in content
+
+    def test_payment_success_shows_confirmation_until_webhook_grants_access(self, auth_client):
+        response = auth_client.get(reverse("home"), {"payment": "success"})
+
+        assert "Confirming your subscription" in response.content.decode()
+
+    def test_subscribed_user_sees_empty_state_and_accessible_add_site_form(
+        self, auth_client, profile
+    ):
+        subscribe(profile)
+
+        response = auth_client.get(reverse("home"))
+        content = response.content.decode()
+
+        assert "No sites yet" in content
+        assert 'id="add-site"' in content
+        assert 'for="id_name"' in content
+        assert 'for="id_sitemap_url"' in content
+        assert ':aria-busy="submitting.toString()"' in content
+        assert "Manage billing" in content
+
+    def test_subscribed_user_can_add_site_from_dashboard(self, auth_client, profile):
+        subscribe(profile)
+
+        response = auth_client.post(
+            reverse("home"),
+            {"name": "Example", "sitemap_url": "https://EXAMPLE.com/sitemap.xml"},
+            follow=True,
+        )
+
+        assert response.status_code == 200
+        assert "Example was added" in response.content.decode()
+        project = Project.objects.get(owner=profile)
+        assert project.normalized_host == "example.com"
+
+    def test_unsubscribed_user_cannot_post_site(self, auth_client):
+        response = auth_client.post(
+            reverse("home"),
+            {"name": "Blocked", "sitemap_url": "https://blocked.example/sitemap.xml"},
+        )
+
+        assert response.status_code == 302
+        assert response.url == reverse("pricing")
+        assert not Project.objects.exists()
+
+    def test_site_list_is_owner_scoped(self, auth_client, profile, django_user_model):
+        subscribe(profile)
+        ProjectService.create(
+            owner=profile, name="Mine", sitemap_url="https://mine.example/sitemap.xml"
+        )
+        other = django_user_model.objects.create_user(username="other-dashboard", password="test")
+        subscribe(other.profile)
+        ProjectService.create(
+            owner=other.profile,
+            name="Other private site",
+            sitemap_url="https://other.example/sitemap.xml",
+        )
+
+        content = auth_client.get(reverse("home")).content.decode()
+
+        assert "Mine" in content
+        assert "Other private site" not in content
+
+    def test_duplicate_site_error_is_clear_and_does_not_create_a_second_row(
+        self, auth_client, profile
+    ):
+        subscribe(profile)
+        ProjectService.create(
+            owner=profile, name="Existing", sitemap_url="https://example.com/sitemap.xml"
+        )
+
+        response = auth_client.post(
+            reverse("home"),
+            {"name": "Duplicate", "sitemap_url": "https://EXAMPLE.com/other.xml"},
+        )
+
+        assert response.status_code == 400
+        assert "already belongs to a CiteGuild project" in response.content.decode()
+        assert Project.objects.count() == 1
 
     def test_rotate_api_key_stores_hash_and_shows_key_once(self, auth_client, profile):
         response = auth_client.post(reverse("rotate_api_key"), follow=True)

@@ -40,3 +40,29 @@ class ProfileUpdateForm(forms.ModelForm):
             user.save(update_fields=["first_name", "last_name"])
             profile.save()
         return profile
+
+
+class SiteCreateForm(forms.Form):
+    name = forms.CharField(
+        label="Site name",
+        max_length=120,
+        strip=True,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "organization",
+                "placeholder": "Example publication",
+                "class": "app-input mt-1 block w-full",
+            }
+        ),
+    )
+    sitemap_url = forms.URLField(
+        label="Sitemap URL",
+        max_length=2048,
+        widget=forms.URLInput(
+            attrs={
+                "autocomplete": "url",
+                "placeholder": "https://example.com/sitemap.xml",
+                "class": "app-input mt-1 block w-full",
+            }
+        ),
+    )

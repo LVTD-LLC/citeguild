@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -28,6 +29,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Add the subscription-aware dashboard onboarding shell, owner-scoped site
+  list, and accessible Add Site flow.
 - Account-owned `Project` records now model submitted sites with global
   normalized-host uniqueness, unlimited paid-account membership, owner-scoped
   services, suspension/reactivation audit history, and sync eligibility gates.
