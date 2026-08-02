@@ -37,11 +37,52 @@
                 </form>
             </section>
         {% else %}
+            <section class="mb-8" aria-labelledby="account-summary-heading">
+                <h2 id="account-summary-heading" class="sr-only">Account indexing summary</h2>
+                <dl class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                    <div class="app-panel p-4">
+                        <dt class="text-xs text-gray-500 dark:text-gray-400">Sites</dt>
+                        <dd class="mt-1 text-2xl font-bold">
+                            {{ dashboard.summary.site_count }}
+                        </dd>
+                    </div>
+                    <div class="app-panel p-4">
+                        <dt class="text-xs text-gray-500 dark:text-gray-400">Indexed</dt>
+                        <dd class="mt-1 text-2xl font-bold">
+                            {{ dashboard.summary.indexed_article_count }}
+                        </dd>
+                    </div>
+                    <div class="app-panel p-4">
+                        <dt class="text-xs text-gray-500 dark:text-gray-400">Pending</dt>
+                        <dd class="mt-1 text-2xl font-bold">
+                            {{ dashboard.summary.pending_article_count }}
+                        </dd>
+                    </div>
+                    <div class="app-panel p-4">
+                        <dt class="text-xs text-gray-500 dark:text-gray-400">Inactive</dt>
+                        <dd class="mt-1 text-2xl font-bold">
+                            {{ dashboard.summary.inactive_article_count }}
+                        </dd>
+                    </div>
+                    <div class="app-panel p-4">
+                        <dt class="text-xs text-gray-500 dark:text-gray-400">Links given</dt>
+                        <dd class="mt-1 text-2xl font-bold">
+                            {{ dashboard.summary.detected_links_given }}
+                        </dd>
+                    </div>
+                    <div class="app-panel p-4">
+                        <dt class="text-xs text-gray-500 dark:text-gray-400">Links received</dt>
+                        <dd class="mt-1 text-2xl font-bold">
+                            {{ dashboard.summary.detected_links_received }}
+                        </dd>
+                    </div>
+                </dl>
+            </section>
             <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.7fr)]">
                 <section aria-labelledby="site-list-heading">
                     <div class="flex items-center justify-between gap-4">
                         <h2 id="site-list-heading" class="text-2xl font-bold">Sites</h2>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ projects|length }} total</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ dashboard.summary.site_count }} total</span>
                     </div>
                     {% if projects %}
                         <ul class="mt-4 space-y-4">
@@ -51,12 +92,16 @@
                                         <div class="min-w-0">
                                             <h3 class="truncate text-lg font-bold">{{ project.name }}</h3>
                                             <p class="mt-1 truncate text-sm text-gray-600 dark:text-gray-300">{{ project.normalized_host }}</p>
+                                            <a href="{{ project.normalized_sitemap_url }}"
+                                               class="mt-1 block truncate text-xs text-green-700 dark:text-green-300"
+                                               target="_blank"
+                                               rel="noopener noreferrer">{{ project.normalized_sitemap_url }}</a>
                                         </div>
                                         <span class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">
                                             {{ project.get_state_display }}
                                         </span>
                                     </div>
-                                    <dl class="mt-5 grid grid-cols-2 gap-4 border-t border-gray-200 pt-4 text-sm dark:border-gray-800">
+                                    <dl class="mt-5 grid grid-cols-2 gap-4 border-t border-gray-200 pt-4 text-sm sm:grid-cols-4 dark:border-gray-800">
                                         <div>
                                             <dt class="text-gray-500 dark:text-gray-400">Indexed articles</dt>
                                             <dd class="mt-1 font-semibold">
@@ -64,12 +109,54 @@
                                             </dd>
                                         </div>
                                         <div>
-                                            <dt class="text-gray-500 dark:text-gray-400">Indexing</dt>
+                                            <dt class="text-gray-500 dark:text-gray-400">Pending this sync</dt>
                                             <dd class="mt-1 font-semibold">
-                                                {% if project.state == 'suspended' %}Paused{% elif project.last_error_code %}Needs attention{% elif project.last_sync_at %}Ready{% else %}Pending{% endif %}
+                                                {{ project.latest_sync_pending_count }}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-gray-500 dark:text-gray-400">Failed this sync</dt>
+                                            <dd class="mt-1 font-semibold">
+                                                {{ project.latest_sync_failed_count }}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-gray-500 dark:text-gray-400">Inactive history</dt>
+                                            <dd class="mt-1 font-semibold">
+                                                {{ project.inactive_article_count }}
                                             </dd>
                                         </div>
                                     </dl>
+                                    <div class="mt-4 text-sm text-gray-600 dark:text-gray-300"
+                                         aria-live="polite">
+                                        <p>
+                                            <span class="font-semibold">Sync:</span>
+                                            {% if project.state == 'suspended' %}
+                                                Paused
+                                            {% elif project.latest_sync_state %}
+                                                {{ project.latest_sync_state|capfirst }}
+                                            {% elif project.last_sync_at %}
+                                                Ready
+                                            {% else %}
+                                                Waiting for first sync
+                                            {% endif %}
+                                        </p>
+                                        {% if project.latest_sync_total_count %}
+                                            <p class="mt-1">
+                                                {{ project.latest_sync_succeeded_count }} succeeded ·
+                                                {{ project.latest_sync_pending_count }} pending ·
+                                                {{ project.latest_sync_failed_count }} failed ·
+                                                {{ project.latest_sync_total_count }} total
+                                            </p>
+                                        {% endif %}
+                                        {% if project.latest_sync_completed_at %}
+                                            <p class="mt-1">Last completed {{ project.latest_sync_completed_at|date:"Y-m-d H:i T" }}</p>
+                                        {% elif project.latest_sync_started_at %}
+                                            <p class="mt-1">Started {{ project.latest_sync_started_at|date:"Y-m-d H:i T" }}</p>
+                                        {% elif project.last_sync_at %}
+                                            <p class="mt-1">Last sync {{ project.last_sync_at|date:"Y-m-d H:i T" }}</p>
+                                        {% endif %}
+                                    </div>
                                     {% if project.inactive_article_count %}
                                         <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
                                             {{ project.inactive_article_count }} inactive in history
@@ -78,18 +165,32 @@
                                             {% if project.excluded_article_count %}· {{ project.excluded_article_count }} excluded by page{% endif %}
                                         </p>
                                     {% endif %}
-                                    {% if project.state == 'active' and project.last_error_code %}
+                                    {% if project.state == 'active' and project.last_error_code or project.state == 'active' and project.latest_sync_error_code %}
                                         <form method="post"
                                               action="{% url 'retry_site_sync' project.uuid %}"
                                               class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-800">
                                             {% csrf_token %}
-                                            <p class="mb-3 text-sm text-red-700 dark:text-red-300">Last sync failed: {{ project.last_error_code }}</p>
+                                            <p class="mb-3 text-sm text-red-700 dark:text-red-300">Last sync failed: {% firstof project.latest_sync_error_code project.last_error_code %}</p>
                                             <button type="submit" class="app-button-secondary">Retry sync</button>
                                         </form>
                                     {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
+                        <nav class="mt-4 flex items-center justify-between gap-4 text-sm"
+                             aria-label="Sites pagination">
+                            {% if projects.has_previous %}
+                                <a href="?site_page={{ projects.previous_page_number }}#site-list-heading"
+                                   class="app-button-secondary">Previous sites</a>
+                            {% else %}
+                                <span></span>
+                            {% endif %}
+                            <span>Page {{ projects.number }} of {{ projects.paginator.num_pages }}</span>
+                            {% if projects.has_next %}
+                                <a href="?site_page={{ projects.next_page_number }}#site-list-heading"
+                                   class="app-button-secondary">Next sites</a>
+                            {% endif %}
+                        </nav>
                     {% else %}
                         <div class="app-card mt-4 p-8 text-center">
                             <h3 class="text-lg font-bold">No sites yet</h3>
@@ -147,6 +248,106 @@
                     </section>
                 </aside>
             </div>
+            <section class="mt-10" aria-labelledby="detected-activity-heading">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="app-label-caps text-green-600 dark:text-green-400">Network activity</p>
+                        <h2 id="detected-activity-heading" class="mt-2 text-2xl font-bold">Detected citations</h2>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Detected, not attributed. CiteGuild does not guarantee placements.</p>
+                </div>
+                <div class="mt-4 grid gap-6 lg:grid-cols-2">
+                    <section class="app-card p-5" aria-labelledby="links-given-heading">
+                        <h3 id="links-given-heading" class="text-lg font-bold">Detected links given</h3>
+                        {% if dashboard.links_given %}
+                            <ul class="mt-4 divide-y divide-gray-200 dark:divide-gray-800">
+                                {% for link in dashboard.links_given %}
+                                    <li class="py-4 first:pt-0 last:pb-0">
+                                        <p class="break-words text-sm font-semibold">
+                                            <a href="{{ link.source_article.normalized_canonical_url }}"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
+                                               class="text-green-700 dark:text-green-300">{{ link.source_article.title|default:link.source_article.normalized_canonical_url }}</a>
+                                            <span aria-hidden="true">→</span>
+                                            <a href="{{ link.normalized_destination_url }}"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
+                                               class="text-green-700 dark:text-green-300">
+                                                {% if link.target_article %}{{ link.target_article.title|default:link.normalized_destination_url }}{% else %}{{ link.target_project.normalized_host }}{% endif %}
+                                            </a>
+                                        </p>
+                                        <p class="mt-2 break-words text-sm text-gray-700 dark:text-gray-200">Anchor: {{ link.anchor_text|default:"No anchor text" }}</p>
+                                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            First detected {{ link.first_detected_at|date:"Y-m-d" }} · Last detected {{ link.last_detected_at|date:"Y-m-d" }} · {% if link.is_active %}Active{% else %}Historical{% endif %}
+                                        </p>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="app-text-muted mt-4 text-sm">No detected links given yet.</p>
+                        {% endif %}
+                        <nav class="mt-5 flex items-center justify-between gap-4 text-sm"
+                             aria-label="Detected links given pagination">
+                            {% if dashboard.links_given.has_previous %}
+                                <a href="?given_page={{ dashboard.links_given.previous_page_number }}#links-given-heading"
+                                   class="app-button-secondary">Previous</a>
+                            {% else %}
+                                <span></span>
+                            {% endif %}
+                            <span>Page {{ dashboard.links_given.number }} of {{ dashboard.links_given.paginator.num_pages }}</span>
+                            {% if dashboard.links_given.has_next %}
+                                <a href="?given_page={{ dashboard.links_given.next_page_number }}#links-given-heading"
+                                   class="app-button-secondary">Next</a>
+                            {% endif %}
+                        </nav>
+                    </section>
+                    <section class="app-card p-5" aria-labelledby="links-received-heading">
+                        <h3 id="links-received-heading" class="text-lg font-bold">Detected links received</h3>
+                        {% if dashboard.links_received %}
+                            <ul class="mt-4 divide-y divide-gray-200 dark:divide-gray-800">
+                                {% for link in dashboard.links_received %}
+                                    <li class="py-4 first:pt-0 last:pb-0">
+                                        <p class="break-words text-sm font-semibold">
+                                            <a href="{{ link.source_article.normalized_canonical_url }}"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
+                                               class="text-green-700 dark:text-green-300">{{ link.source_article.title|default:link.source_article.project.normalized_host }}</a>
+                                            <span aria-hidden="true">→</span>
+                                            <a href="{{ link.normalized_destination_url }}"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
+                                               class="text-green-700 dark:text-green-300">
+                                                {% if link.target_article %}{{ link.target_article.title|default:link.normalized_destination_url }}{% else %}{{ link.target_project.normalized_host }}{% endif %}
+                                            </a>
+                                        </p>
+                                        <p class="mt-1 break-all text-xs text-gray-500 dark:text-gray-400">Source: {{ link.source_article.normalized_canonical_url }}</p>
+                                        <p class="mt-2 break-words text-sm text-gray-700 dark:text-gray-200">Anchor: {{ link.anchor_text|default:"No anchor text" }}</p>
+                                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            First detected {{ link.first_detected_at|date:"Y-m-d" }} · Last detected {{ link.last_detected_at|date:"Y-m-d" }} · {% if link.is_active %}Active{% else %}Historical{% endif %}
+                                        </p>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="app-text-muted mt-4 text-sm">No detected links received yet.</p>
+                        {% endif %}
+                        <nav class="mt-5 flex items-center justify-between gap-4 text-sm"
+                             aria-label="Detected links received pagination">
+                            {% if dashboard.links_received.has_previous %}
+                                <a href="?received_page={{ dashboard.links_received.previous_page_number }}#links-received-heading"
+                                   class="app-button-secondary">Previous</a>
+                            {% else %}
+                                <span></span>
+                            {% endif %}
+                            <span>Page {{ dashboard.links_received.number }} of {{ dashboard.links_received.paginator.num_pages }}</span>
+                            {% if dashboard.links_received.has_next %}
+                                <a href="?received_page={{ dashboard.links_received.next_page_number }}#links-received-heading"
+                                   class="app-button-secondary">Next</a>
+                            {% endif %}
+                        </nav>
+                    </section>
+                </div>
+            </section>
         {% endif %}
         {% if projects %}
             <details class="app-panel mt-10 p-5">
