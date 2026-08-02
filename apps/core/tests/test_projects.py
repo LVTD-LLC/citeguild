@@ -1,5 +1,5 @@
 import pytest
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 
 from apps.core.choices import ProjectStates
 from apps.core.models import Project, ProjectStateTransition
@@ -103,3 +103,77 @@ def test_lost_subscription_makes_active_project_ineligible(profile):
     profile.save(update_fields=["stripe_subscription_status", "updated_at"])
 
     assert project.is_sync_eligible is False
+
+
+@pytest.mark.django_db
+def test_owner_can_update_project_and_normalized_fields(profile):
+    subscribe(profile)
+    project = ProjectService.create(
+        owner=profile, name="Before", sitemap_url="https://before.example/sitemap.xml"
+    )
+
+    project = ProjectService.update(
+        owner=profile,
+        project_uuid=project.uuid,
+        name="After",
+        sitemap_url="https://AFTER.example:443/news-sitemap.xml#ignored",
+    )
+
+    assert project.name == "After"
+    assert project.normalized_host == "after.example"
+    assert project.normalized_sitemap_url == "https://after.example/news-sitemap.xml"
+
+
+@pytest.mark.django_db
+def test_update_enforces_owner_name_and_host_constraints(profile, django_user_model):
+    subscribe(profile)
+    project = ProjectService.create(
+        owner=profile, name="Owner", sitemap_url="https://owner.example/sitemap.xml"
+    )
+    ProjectService.create(
+        owner=profile, name="Claimed", sitemap_url="https://claimed.example/sitemap.xml"
+    )
+    other_user = django_user_model.objects.create_user(username="other-update", password="test")
+    subscribe(other_user.profile)
+
+    with pytest.raises(Project.DoesNotExist):
+        ProjectService.update(
+            owner=other_user.profile,
+            project_uuid=project.uuid,
+            name="Takeover",
+            sitemap_url="https://takeover.example/sitemap.xml",
+        )
+    with pytest.raises(ValidationError, match="name is required"):
+        ProjectService.update(
+            owner=profile,
+            project_uuid=project.uuid,
+            name="  ",
+            sitemap_url=project.sitemap_url,
+        )
+    with pytest.raises(ProjectHostConflict, match="operator resolution"):
+        ProjectService.update(
+            owner=profile,
+            project_uuid=project.uuid,
+            name="Conflict",
+            sitemap_url="https://CLAIMED.example/other.xml",
+        )
+
+
+@pytest.mark.django_db
+def test_reactivate_clears_suspension_and_records_audit_transition(profile):
+    subscribe(profile)
+    project = ProjectService.create(
+        owner=profile, name="Example", sitemap_url="https://example.com/sitemap.xml"
+    )
+    ProjectService.suspend(owner=profile, project_uuid=project.uuid, reason="operator_review")
+
+    project = ProjectService.reactivate(owner=profile, project_uuid=project.uuid)
+
+    assert project.state == ProjectStates.ACTIVE
+    assert project.suspension_reason == ""
+    assert project.suspended_at is None
+    transitions = list(project.state_transitions.order_by("created_at"))
+    assert [(item.from_state, item.to_state) for item in transitions] == [
+        (ProjectStates.ACTIVE, ProjectStates.SUSPENDED),
+        (ProjectStates.SUSPENDED, ProjectStates.ACTIVE),
+    ]
