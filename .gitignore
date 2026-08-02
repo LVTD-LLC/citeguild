@@ -24,6 +24,9 @@ __pycache__/
 build/
 develop-eggs/
 static/
+!apps/core/static/
+!apps/core/static/images/
+!apps/core/static/images/citeguild-logo.svg
 assets/css/main.css
 dist/
 downloads/

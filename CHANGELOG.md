@@ -13,6 +13,13 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-08-02
+
+### Changed
+
+- The browser favicon, public and authenticated navigation, and publisher
+  metadata now use the CiteGuild guild mark.
+
 ## 2026-08-01
 
 ### Fixed

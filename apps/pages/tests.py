@@ -13,6 +13,17 @@ from django.urls import reverse
 pytestmark = pytest.mark.django_db
 
 
+def test_landing_page_uses_citeguild_logo_for_navigation_and_favicon(client):
+    response = client.get(reverse("landing"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    logo_url = "/static/images/citeguild-logo.svg"
+    assert f'href="{logo_url}"' in content
+    assert f'src="{logo_url}"' in content
+    assert "data:image/svg+xml" not in content
+
+
 def mark_password_reauthenticated(client, username):
     session = client.session
     session["account_authentication_methods"] = [
