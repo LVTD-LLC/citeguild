@@ -28,6 +28,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Account-owned `Project` records now model submitted sites with global
+  normalized-host uniqueness, unlimited paid-account membership, owner-scoped
+  services, suspension/reactivation audit history, and sync eligibility gates.
 - A shared typed runtime configuration contract now validates production
   database, Redis, Qdrant, Stripe feature-gate, embedding, crawler, scheduler,
   and process settings, with a secret-safe fingerprint reported by web and

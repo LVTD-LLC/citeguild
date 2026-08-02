@@ -21,3 +21,8 @@ class ProfileStates(models.TextChoices):
 class EmailType(models.TextChoices):
     EMAIL_CONFIRMATION = "EMAIL_CONFIRMATION", "Email Confirmation"
     WELCOME = "WELCOME", "Welcome"
+
+
+class ProjectStates(models.TextChoices):
+    ACTIVE = "active", "Active"
+    SUSPENDED = "suspended", "Suspended"
