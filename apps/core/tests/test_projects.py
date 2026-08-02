@@ -106,7 +106,7 @@ def test_lost_subscription_makes_active_project_ineligible(profile):
 
 
 @pytest.mark.django_db
-def test_owner_can_update_project_and_normalized_fields(profile):
+def test_project_service_update_changes_name_and_normalized_fields(profile):
     subscribe(profile)
     project = ProjectService.create(
         owner=profile, name="Before", sitemap_url="https://before.example/sitemap.xml"
@@ -125,7 +125,9 @@ def test_owner_can_update_project_and_normalized_fields(profile):
 
 
 @pytest.mark.django_db
-def test_update_enforces_owner_name_and_host_constraints(profile, django_user_model):
+def test_project_service_update_enforces_owner_name_and_host_constraints(
+    profile, django_user_model
+):
     subscribe(profile)
     project = ProjectService.create(
         owner=profile, name="Owner", sitemap_url="https://owner.example/sitemap.xml"
@@ -160,7 +162,7 @@ def test_update_enforces_owner_name_and_host_constraints(profile, django_user_mo
 
 
 @pytest.mark.django_db
-def test_reactivate_clears_suspension_and_records_audit_transition(profile):
+def test_project_service_reactivate_clears_suspension_and_records_audit_transition(profile):
     subscribe(profile)
     project = ProjectService.create(
         owner=profile, name="Example", sitemap_url="https://example.com/sitemap.xml"
