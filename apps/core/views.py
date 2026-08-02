@@ -434,7 +434,7 @@ def create_checkout_session(request):
             {"plan": MONTHLY_PRICE.plan, "checkout_mode": "subscription"},
             source_function="create_checkout_session",
         )
-    return redirect(checkout_session.url, code=303)
+    return HttpResponse(status=303, headers={"Location": checkout_session.url})
 
 
 @login_required
@@ -467,7 +467,7 @@ def create_customer_portal_session(request):
         messages.error(request, "Unable to open the billing portal. Please try again.")
         return redirect("pricing")
 
-    return redirect(session.url, code=303)
+    return HttpResponse(status=303, headers={"Location": session.url})
 
 
 class AdminPanelView(UserPassesTestMixin, TemplateView):
