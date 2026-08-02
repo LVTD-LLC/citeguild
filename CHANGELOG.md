@@ -18,6 +18,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- A versioned shared semantic-search service now embeds bounded queries, searches
+  the active paid-member corpus, applies language and exact-domain exclusions,
+  reauthorizes every Qdrant hit through PostgreSQL, and returns deterministic
+  public-safe results with content-free latency and failure telemetry.
 - Initial sitemap syncs now orchestrate fetch, extraction, PostgreSQL article
   persistence, whole-article embedding, and Qdrant upsert as one retryable page
   workflow. Progress reaches success only after durable search publication;

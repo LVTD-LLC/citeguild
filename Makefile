@@ -16,6 +16,7 @@ TYPE_CHECK_PATHS = \
 	apps/mcp_server/server.py \
 	apps/pages/services.py \
 	apps/search/qdrant.py \
+	apps/search/service.py \
 	citeguild/config.py \
 	citeguild/logging_utils.py \
 	citeguild/sentry_utils.py

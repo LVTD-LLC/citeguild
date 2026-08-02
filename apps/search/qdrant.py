@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from datetime import datetime
 from functools import cache
 from uuid import UUID
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 from django_q.tasks import async_task
 from qdrant_client import QdrantClient, models
@@ -55,6 +56,8 @@ class ArticleSearchHit:
     canonical_url: str
     site_host: str
     language: str
+    content: str
+    last_seen_at: datetime
 
 
 @dataclass(frozen=True)
@@ -289,18 +292,27 @@ def _authorized_search_hits(
     authorized_project_uuids: set[UUID],
     limit: int,
 ) -> list[ArticleSearchHit]:
+    eligible_owner = Q(project__owner__stripe_subscription_status__in=("active", "past_due"))
+    if settings.ENVIRONMENT == "prod":
+        eligible_owner |= Q(project__owner__user__is_superuser=True)
     authorized_articles = {
         article.uuid: article
         for article in ARTICLE_OBJECTS.filter(
+            eligible_owner,
             uuid__in=[value for value, _score in scored_uuids],
             project__uuid__in=authorized_project_uuids,
             project__state=ProjectStates.ACTIVE,
             state=ArticleStates.ACTIVE,
             is_active=True,
+            extraction_state=ExtractionStates.READY,
+            embedding__state=ArticleEmbeddingStates.SUCCEEDED,
+            embedding__content_hash=F("content_hash"),
+            embedding__model=settings.EMBEDDING_MODEL,
+            embedding__dimensions=settings.EMBEDDING_DIMENSIONS,
         ).select_related("project")
     }
     hits = []
-    for article_uuid, score in scored_uuids:
+    for article_uuid, score in sorted(scored_uuids, key=lambda item: (-item[1], str(item[0]))):
         article = authorized_articles.get(article_uuid)
         if article is None:
             continue
@@ -312,6 +324,8 @@ def _authorized_search_hits(
                 canonical_url=article.normalized_canonical_url,
                 site_host=article.project.normalized_host,
                 language=article.language,
+                content=article.content,
+                last_seen_at=article.last_seen_at,
             )
         )
         if len(hits) >= limit:
@@ -325,6 +339,7 @@ def semantic_search(
     authorized_project_uuids: set[UUID],
     language: str | None = None,
     site_host: str | None = None,
+    excluded_site_hosts: set[str] | None = None,
     limit: int = 10,
     client: QdrantClient | None = None,
 ) -> list[ArticleSearchHit]:
@@ -349,13 +364,21 @@ def semantic_search(
         conditions.append(
             models.FieldCondition(key="site_host", match=models.MatchValue(value=site_host))
         )
+    excluded_conditions = []
+    if excluded_site_hosts:
+        excluded_conditions.append(
+            models.FieldCondition(
+                key="site_host",
+                match=models.MatchAny(any=sorted(excluded_site_hosts)),
+            )
+        )
 
     client = client or get_qdrant_client()
     validate_article_collection(client=client)
     response = client.query_points(
         collection_name=settings.QDRANT_COLLECTION,
         query=vector,
-        query_filter=models.Filter(must=conditions),
+        query_filter=models.Filter(must=conditions, must_not=excluded_conditions),
         limit=min(limit * 3, 150),
         with_payload=True,
         with_vectors=False,
@@ -364,7 +387,9 @@ def semantic_search(
     for point in response.points:
         payload = point.payload or {}
         try:
-            scored_uuids.append((UUID(str(payload["article_uuid"])), float(point.score)))
+            score = float(point.score)
+            if math.isfinite(score):
+                scored_uuids.append((UUID(str(payload["article_uuid"])), score))
         except (KeyError, TypeError, ValueError, AttributeError):
             continue
     if not scored_uuids:
