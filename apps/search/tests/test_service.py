@@ -1,6 +1,7 @@
 from dataclasses import asdict, dataclass
 
 import pytest
+from django.test import override_settings
 from qdrant_client import QdrantClient
 
 from apps.core.article_embeddings import EmbeddingError, EmbeddingResponse
@@ -206,6 +207,20 @@ def test_search_enforces_subscription_input_and_limit_bounds(profile, search_cli
     with pytest.raises(SearchError) as raised:
         service.search(profile=profile, query="valid query")
     assert raised.value.code == "subscription_required"
+
+
+@pytest.mark.django_db
+@override_settings(ENVIRONMENT="prod")
+def test_production_superuser_project_is_search_eligible(profile):
+    from apps.search.service import _eligible_project_uuids
+
+    project = create_project(profile, "operator-corpus.example")
+    profile.stripe_subscription_status = "canceled"
+    profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    profile.user.is_superuser = True
+    profile.user.save(update_fields=["is_superuser"])
+
+    assert project.uuid in _eligible_project_uuids()
 
 
 @pytest.mark.django_db
