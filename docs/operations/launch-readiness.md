@@ -158,4 +158,3 @@ not sufficient; operators also watch business-workflow progress and queue age.
   inspect every source, and CiteGuild must never promise placement or SEO safety.
 - The initial production dogfood corpus is small. Latency and relevance results
   do not establish behavior at customer scale.
-
