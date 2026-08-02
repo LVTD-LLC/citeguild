@@ -58,7 +58,7 @@ def build_absolute_public_url(path: str) -> str:
     return f"{base_url}/{path.lstrip('/')}"
 
 
-def build_agent_setup_prompt(request):
+def build_agent_setup_prompt():
     """Build the dashboard copy/paste prompt for connecting a coding agent."""
     mcp_url = build_absolute_public_url("/mcp/")
     search_api_url = build_absolute_public_url("/api/v1/search")
@@ -180,7 +180,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["has_subscription"] = profile.has_active_subscription
         context["projects"] = ProjectService.for_owner(profile)
         context["site_form"] = kwargs.get("site_form") or SiteCreateForm()
-        context["agent_setup_prompt"] = build_agent_setup_prompt(self.request)
+        context["agent_setup_prompt"] = build_agent_setup_prompt()
         context["agent_instructions_url"] = build_absolute_public_url("/AGENTS.md")
         context["agent_docs_url"] = build_absolute_public_url("/docs/features/mcp/")
         return context

@@ -274,7 +274,7 @@ def test_build_absolute_public_url_preserves_localhost_http():
 def test_agent_setup_prompt_uses_current_safe_search_contract():
     from apps.core.views import build_agent_setup_prompt
 
-    prompt = build_agent_setup_prompt(None)
+    prompt = build_agent_setup_prompt()
 
     assert "https://citeguild.example/mcp/" in prompt
     assert "https://citeguild.example/api/v1/search" in prompt
