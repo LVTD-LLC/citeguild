@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from django.conf import settings
@@ -18,10 +19,22 @@ MONTHLY_PRICE = MonthlyPriceContract()
 
 def validate_monthly_price(price) -> None:
     """Fail closed if Stripe configuration drifts from the public $10 contract."""
+    if not isinstance(price, Mapping):
+        to_dict = getattr(price, "to_dict", None)
+        if not callable(to_dict):
+            raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
+        price = to_dict()
+    if not isinstance(price, Mapping):
+        raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
+
     recurring = price.get("recurring") or {}
     metadata = price.get("metadata") or {}
     product = price.get("product") or {}
+    if not all(isinstance(value, Mapping) for value in (recurring, metadata, product)):
+        raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
     product_metadata = product.get("metadata") or {}
+    if not isinstance(product_metadata, Mapping):
+        raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
     valid = (
         price.get("id") == settings.STRIPE_PRICE_ID_MONTHLY
         and price.get("active") is True
