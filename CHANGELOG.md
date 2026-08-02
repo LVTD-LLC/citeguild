@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- PostgreSQL now retains tenant-owned article identities, normalized content
+  hashes, source URL aliases, append-only crawl attempts, lifecycle timestamps,
+  and reconciled outbound-link observations without storing raw HTML.
 - Page workers now deterministically extract bounded article text and canonical
   metadata with Trafilatura, persist immutable extraction results, honor
   noindex directives, and reject unsupported, empty, oversized, or off-host

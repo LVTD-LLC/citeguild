@@ -346,6 +346,20 @@ def test_recovery_requeues_stale_worker_state(sync_request, monkeypatch, setting
 
 
 @pytest.mark.django_db
+def test_recovery_finalizes_completed_page_work(sync_request, monkeypatch):
+    work = _page_work(sync_request)
+    work.state = PageCrawlStates.SUCCEEDED
+    work.completed_at = timezone.now()
+    work.save(update_fields=["state", "completed_at", "updated_at"])
+    monkeypatch.setattr("apps.core.crawl_jobs.dispatch_page_work", lambda sync_uuid: 0)
+
+    recover_crawl_jobs()
+
+    sync_request.refresh_from_db()
+    assert sync_request.state == ProjectSyncStates.SUCCEEDED
+
+
+@pytest.mark.django_db
 def test_recovery_schedule_is_named_and_idempotent(monkeypatch):
     monkeypatch.setattr(
         "apps.core.management.commands.ensure_crawl_schedules.recover_crawl_jobs",
