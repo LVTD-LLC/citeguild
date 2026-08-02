@@ -486,6 +486,59 @@ class OutboundLinkObservation(BaseModel):
         ]
 
 
+class DetectedNetworkLink(BaseModel):
+    """A member-to-member link detected from one durable crawl observation."""
+
+    observation = models.OneToOneField(
+        OutboundLinkObservation,
+        on_delete=models.CASCADE,
+        related_name="detected_network_link",
+    )
+    source_article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name="detected_links_given",
+    )
+    target_project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="detected_links_received",
+    )
+    target_article = models.ForeignKey(
+        Article,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="detected_links_received",
+    )
+    normalized_destination_url = models.URLField(max_length=2048)
+    anchor_text = models.CharField(max_length=300, blank=True, default="")
+    first_detected_at = models.DateTimeField()
+    last_detected_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    inactive_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "detected network link"
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_detected_link_uuid_unique"),
+            models.UniqueConstraint(
+                fields=["source_article", "normalized_destination_url"],
+                name="core_detected_link_source_url_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["source_article", "is_active"], name="core_detected_source_idx"),
+            models.Index(fields=["target_project", "is_active"], name="core_detected_project_idx"),
+            models.Index(fields=["target_article", "is_active"], name="core_detected_target_idx"),
+        ]
+
+    @property
+    def detection_kind(self) -> str:
+        """Prevent consumers from presenting observed links as attributed conversions."""
+        return "detected"
+
+
 class SitemapInventory(BaseModel):
     """Immutable candidate set promoted only after a complete successful parse."""
 

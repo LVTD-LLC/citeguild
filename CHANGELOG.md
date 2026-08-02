@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Normalized outbound observations now resolve into durable detected network
+  links with historical URL matching, lifecycle reconciliation, owner-scoped
+  detail queries, and page/site citation aggregates without attribution claims.
 - Outbound article links now strip an explicit allowlist of campaign tracking
   identifiers while preserving query semantics and atomic observation history.
 - Confirmed article lifecycle reconciliation now handles repeated sitemap

@@ -5,6 +5,7 @@ from apps.core.models import (
     ArticleCrawlAttempt,
     ArticleEmbedding,
     ArticleSourceURL,
+    DetectedNetworkLink,
     EmailSent,
     OutboundLinkObservation,
     PageCrawlWork,
@@ -29,3 +30,4 @@ admin.site.register(ArticleSourceURL)
 admin.site.register(ArticleCrawlAttempt)
 admin.site.register(ArticleEmbedding)
 admin.site.register(OutboundLinkObservation)
+admin.site.register(DetectedNetworkLink)
