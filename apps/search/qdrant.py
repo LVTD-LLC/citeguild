@@ -84,16 +84,18 @@ def _vector_params(collection_info):
     return vectors
 
 
-def validate_article_collection(*, client: QdrantClient | None = None) -> None:
+def validate_article_collection(*, client: QdrantClient | None = None):
     client = client or get_qdrant_client()
     collection = settings.QDRANT_COLLECTION
     if not client.collection_exists(collection):
         raise QdrantContractError("collection_missing")
-    params = _vector_params(client.get_collection(collection))
+    collection_info = client.get_collection(collection)
+    params = _vector_params(collection_info)
     if params.size != settings.EMBEDDING_DIMENSIONS:
         raise QdrantContractError("collection_dimension_mismatch")
     if params.distance != models.Distance.COSINE:
         raise QdrantContractError("collection_distance_mismatch")
+    return collection_info
 
 
 def ensure_article_collection(*, client: QdrantClient | None = None) -> bool:
@@ -116,15 +118,27 @@ def ensure_article_collection(*, client: QdrantClient | None = None) -> bool:
             if not client.collection_exists(collection):
                 raise QdrantContractError("collection_create_failed") from error
 
-    validate_article_collection(client=client)
+    collection_info = validate_article_collection(client=client)
 
     for field_name, field_schema in PAYLOAD_INDEXES.items():
-        client.create_payload_index(
-            collection_name=collection,
-            field_name=field_name,
-            field_schema=field_schema,
-            wait=True,
-        )
+        existing = collection_info.payload_schema.get(field_name)
+        if existing:
+            if existing.data_type != field_schema:
+                raise QdrantContractError("payload_index_schema_mismatch")
+            continue
+        try:
+            client.create_payload_index(
+                collection_name=collection,
+                field_name=field_name,
+                field_schema=field_schema,
+                wait=True,
+            )
+        except Exception as error:
+            # A concurrent bootstrapper may have created the index first.
+            concurrent = client.get_collection(collection).payload_schema.get(field_name)
+            if concurrent and concurrent.data_type == field_schema:
+                continue
+            raise QdrantContractError("payload_index_create_failed") from error
     return created
 
 

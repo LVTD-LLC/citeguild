@@ -110,6 +110,52 @@ def test_collection_creation_is_idempotent_and_uses_cosine():
     assert vectors.distance == models.Distance.COSINE
 
 
+@override_settings(QDRANT_COLLECTION="test-articles", EMBEDDING_DIMENSIONS=3)
+def test_existing_payload_indexes_are_not_recreated():
+    from apps.search.qdrant import PAYLOAD_INDEXES, ensure_article_collection
+
+    client = memory_client()
+    client.create_collection(
+        "test-articles",
+        vectors_config=models.VectorParams(size=3, distance=models.Distance.COSINE),
+    )
+    collection_info = client.get_collection("test-articles")
+    collection_info.payload_schema = {
+        name: models.PayloadIndexInfo(data_type=schema, points=0)
+        for name, schema in PAYLOAD_INDEXES.items()
+    }
+    with (
+        patch.object(client, "get_collection", return_value=collection_info),
+        patch.object(client, "create_payload_index") as create_payload_index,
+    ):
+        assert ensure_article_collection(client=client) is False
+
+    create_payload_index.assert_not_called()
+
+
+@override_settings(QDRANT_COLLECTION="test-articles", EMBEDDING_DIMENSIONS=3)
+def test_incompatible_payload_index_fails_with_stable_error():
+    from apps.search.qdrant import QdrantContractError, ensure_article_collection
+
+    client = memory_client()
+    client.create_collection(
+        "test-articles",
+        vectors_config=models.VectorParams(size=3, distance=models.Distance.COSINE),
+    )
+    collection_info = client.get_collection("test-articles")
+    collection_info.payload_schema = {
+        "active": models.PayloadIndexInfo(
+            data_type=models.PayloadSchemaType.KEYWORD,
+            points=0,
+        )
+    }
+    with patch.object(client, "get_collection", return_value=collection_info):
+        with pytest.raises(QdrantContractError) as raised:
+            ensure_article_collection(client=client)
+
+    assert raised.value.code == "payload_index_schema_mismatch"
+
+
 @override_settings(
     QDRANT_COLLECTION="test-articles",
     EMBEDDING_DIMENSIONS=3,
