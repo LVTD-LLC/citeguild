@@ -72,6 +72,7 @@ case "$process_type" in
         else
             uv run --no-sync python manage.py migrate --noinput
         fi
+        uv run --no-sync python manage.py ensure_qdrant_collection
         exec uv run --no-sync gunicorn ${PROJECT_NAME}.asgi:application --bind 0.0.0.0:${APP_PORT} --workers 3 --worker-class uvicorn_worker.UvicornWorker
 
         ;;

@@ -116,6 +116,7 @@ def test_configuration_fingerprint_does_not_depend_on_secrets() -> None:
         ),
         ({"REDIS_URL": "redis://redis:6379/0"}, "Redis authentication"),
         ({"QDRANT_API_KEY": ""}, "QDRANT_API_KEY"),
+        ({"QDRANT_API_KEY": "citeguild"}, "development template value"),
     ],
 )
 def test_production_configuration_fails_clearly(overrides: dict[str, str], message: str) -> None:

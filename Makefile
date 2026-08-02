@@ -46,7 +46,7 @@ LOCAL_MINIO_CONSOLE_PORT ?= 9001
 
 DJANGO_RUNSERVER_HOST ?= 0.0.0.0
 DJANGO_RUNSERVER_PORT ?= $(LOCAL_WEB_PORT)
-LOCAL_COMPOSE_SERVICES = db redis mailhog mjml minio
+LOCAL_COMPOSE_SERVICES = db redis qdrant mailhog mjml minio
 DOCKER_COMPOSE = docker compose -f docker-compose-local.yml
 
 .PHONY: \

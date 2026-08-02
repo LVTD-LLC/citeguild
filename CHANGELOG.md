@@ -18,6 +18,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Qdrant now has an idempotent cosine collection contract, authenticated
+  startup and health checks, stable article upsert/deactivation, tenant-scoped
+  bounded search, and a PostgreSQL-authoritative rebuild command. Local Compose
+  persists an API-key-protected Qdrant service.
 - Active extracted articles can now produce one durable, content-addressed
   whole-article embedding with bounded deterministic input, explicit model and
   dimension metadata, safe retry classification, and privacy-safe usage and

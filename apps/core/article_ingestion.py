@@ -334,12 +334,24 @@ class ArticleLifecycleService:
             project=project,
             source_urls__is_active=True,
         ).values("pk")
-        Article.objects.select_for_update().filter(project=project).exclude(
-            pk__in=source_backed
-        ).update(
+        stale_articles = (
+            Article.objects.select_for_update()
+            .filter(project=project)
+            .exclude(pk__in=source_backed)
+        )
+        stale_article_uuids = list(stale_articles.values_list("uuid", flat=True))
+        stale_articles.update(
             state=ArticleStates.INACTIVE,
             is_active=False,
             inactivity_reason="sitemap_removed",
             inactive_at=now,
         )
         _refresh_project_counts(project)
+        if stale_article_uuids:
+            from apps.search.qdrant import queue_article_deactivation
+
+            def queue_stale_article_deactivations():
+                for value in stale_article_uuids:
+                    queue_article_deactivation(value)
+
+            transaction.on_commit(queue_stale_article_deactivations)
