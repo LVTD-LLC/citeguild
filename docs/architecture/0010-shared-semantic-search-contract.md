@@ -6,6 +6,13 @@ ranking, or result shaping. Its internal contract is explicitly versioned as
 `v1` so future adapters can expose a stable shape while the implementation
 evolves.
 
+CG-021 exposes that contract through one authenticated Streamable HTTP MCP tool,
+`search_member_articles`. The MCP adapter injects the profile from validated
+OAuth/API-key request context, applies protocol-level input bounds, and converts
+safe `SearchError` codes into tool errors; it does not accept model-controlled
+account identifiers or duplicate search logic. The tool description presents
+matches as sources to verify, never as endorsements or forced-link obligations.
+
 The service accepts an authenticated profile with an active subscription, a
 non-empty query of at most 8,000 normalized characters, an optional BCP 47-like
 language, up to 20 exact normalized domains to exclude, and a result limit from
