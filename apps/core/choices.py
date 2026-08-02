@@ -26,3 +26,14 @@ class EmailType(models.TextChoices):
 class ProjectStates(models.TextChoices):
     ACTIVE = "active", "Active"
     SUSPENDED = "suspended", "Suspended"
+
+
+class ProjectSyncKinds(models.TextChoices):
+    INITIAL = "initial", "Initial"
+
+
+class ProjectSyncStates(models.TextChoices):
+    QUEUED = "queued", "Queued"
+    RUNNING = "running", "Running"
+    SUCCEEDED = "succeeded", "Succeeded"
+    FAILED = "failed", "Failed"

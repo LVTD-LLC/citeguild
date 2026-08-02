@@ -4,7 +4,13 @@ from django.db import models
 from django_q.tasks import async_task
 
 from apps.core.base_models import BaseModel
-from apps.core.choices import EmailType, ProfileStates, ProjectStates
+from apps.core.choices import (
+    EmailType,
+    ProfileStates,
+    ProjectStates,
+    ProjectSyncKinds,
+    ProjectSyncStates,
+)
 from apps.core.model_utils import (
     generate_api_key,
     get_api_key_prefix,
@@ -161,6 +167,36 @@ class ProjectStateTransition(BaseModel):
     to_state = models.CharField(max_length=20, choices=ProjectStates.choices)
     reason = models.CharField(max_length=255, blank=True, default="")
     metadata = models.JSONField(default=dict, blank=True)
+
+
+class ProjectSyncRequest(BaseModel):
+    """Durable queue boundary consumed by the crawler worker pipeline."""
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="sync_requests")
+    kind = models.CharField(
+        max_length=20,
+        choices=ProjectSyncKinds.choices,
+        default=ProjectSyncKinds.INITIAL,
+    )
+    state = models.CharField(
+        max_length=20,
+        choices=ProjectSyncStates.choices,
+        default=ProjectSyncStates.QUEUED,
+    )
+    sitemap_kind = models.CharField(max_length=20)
+    attempt_count = models.PositiveIntegerField(default=0)
+    error_code = models.CharField(max_length=64, blank=True, default="")
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "kind"],
+                name="core_project_one_sync_kind",
+            ),
+            models.UniqueConstraint(fields=["uuid"], name="core_project_sync_uuid_unique"),
+        ]
+        indexes = [models.Index(fields=["state", "created_at"], name="core_sync_state_created_idx")]
 
 
 class ProfileStateTransition(BaseModel):
