@@ -10,6 +10,7 @@ from django_q.models import Schedule
 from qdrant_client import QdrantClient
 
 from apps.core.article_embeddings import EmbeddingError, EmbeddingResponse
+from apps.core.article_ingestion import ArticleIngestionService
 from apps.core.choices import (
     ExtractionStates,
     PageCrawlStates,
@@ -298,6 +299,147 @@ def test_mixed_terminal_page_outcomes_finalize_partial(sync_request, monkeypatch
     assert sync_request.state == ProjectSyncStates.PARTIAL
     assert sync_request.succeeded_count == 1
     assert sync_request.failed_count == 1
+
+
+@pytest.mark.django_db
+def test_terminal_gone_response_deactivates_but_transient_failure_does_not(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    settings.CRAWL_PER_SITE_CONCURRENCY = 2
+    first = _page_work(sync_request, "gone")
+    PageExtractionService.persist(work=first, extraction=_extraction(first))
+    article = ArticleIngestionService.ingest(work=first, queue_embedding=False)
+    article.state = "active"
+    article.is_active = True
+    article.save(update_fields=["state", "is_active", "updated_at"])
+    sync_request.project.active_article_count = 1
+    sync_request.project.save(update_fields=["active_article_count", "updated_at"])
+    first.state = PageCrawlStates.SUCCEEDED
+    first.save(update_fields=["state", "updated_at"])
+    sync_request.state = ProjectSyncStates.SUCCEEDED
+    sync_request.save(update_fields=["state", "updated_at"])
+
+    transient_sync = ProjectSyncRequest.objects.create(
+        project=sync_request.project,
+        sitemap_kind="urlset",
+        idempotency_key="transient",
+    )
+    transient = _page_work(transient_sync, "gone")
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs._fetch_page",
+        lambda work: (_ for _ in ()).throw(
+            SafeFetchError(SafeFetchErrorCode.TIMEOUT, retryable=True)
+        ),
+    )
+    assert run_page_crawl(str(transient.uuid)) == PageCrawlStates.QUEUED
+    article.refresh_from_db()
+    assert article.is_active is True
+
+    transient.state = PageCrawlStates.CANCELLED
+    transient.save(update_fields=["state", "updated_at"])
+    transient_sync.state = ProjectSyncStates.CANCELLED
+    transient_sync.save(update_fields=["state", "updated_at"])
+    gone_sync = ProjectSyncRequest.objects.create(
+        project=sync_request.project,
+        sitemap_kind="urlset",
+        idempotency_key="gone",
+    )
+    gone = _page_work(gone_sync, "gone")
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs._fetch_page",
+        lambda work: (_ for _ in ()).throw(
+            SafeFetchError(
+                SafeFetchErrorCode.HTTP_ERROR,
+                http_status=410,
+            )
+        ),
+    )
+
+    assert run_page_crawl(str(gone.uuid)) == PageCrawlStates.FAILED
+    article.refresh_from_db()
+    article.project.refresh_from_db()
+    source = article.source_urls.get()
+    attempt = gone.article_attempts.get()
+    assert article.is_active is False
+    assert article.state == "inactive"
+    assert article.inactivity_reason == "http_410"
+    assert article.content == "Useful article text"
+    assert article.project.active_article_count == 0
+    assert source.is_active is False
+    assert attempt.http_status == 410
+
+
+@pytest.mark.django_db
+def test_noindex_removes_qdrant_point_and_keeps_postgres_history(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    from apps.search.qdrant import ensure_article_collection, upsert_article
+
+    settings.CITEGUILD_INDEXING_ENABLED = True
+    settings.CRAWL_PER_SITE_CONCURRENCY = 2
+    settings.EMBEDDING_DIMENSIONS = 3
+    settings.EMBEDDING_MODEL = "test:whole-article"
+    settings.QDRANT_COLLECTION = "test_lifecycle_articles"
+    client = QdrantClient(location=":memory:")
+    monkeypatch.setattr("apps.search.qdrant.get_qdrant_client", lambda: client)
+    ensure_article_collection(client=client)
+    first = _page_work(sync_request, "excluded")
+    PageExtractionService.persist(work=first, extraction=_extraction(first))
+    article = ArticleIngestionService.ingest(work=first, queue_embedding=False)
+    ArticleEmbedding.objects.create(
+        article=article,
+        state="succeeded",
+        vector=[1.0, 0.0, 0.0],
+        content_hash=article.content_hash,
+        model=settings.EMBEDDING_MODEL,
+        dimensions=settings.EMBEDDING_DIMENSIONS,
+    )
+    upsert_article(article=article, client=client)
+    original_content = article.content
+    first.state = PageCrawlStates.SUCCEEDED
+    first.save(update_fields=["state", "updated_at"])
+    sync_request.state = ProjectSyncStates.SUCCEEDED
+    sync_request.save(update_fields=["state", "updated_at"])
+    excluded_sync = ProjectSyncRequest.objects.create(
+        project=sync_request.project,
+        sitemap_kind="urlset",
+        idempotency_key="excluded",
+    )
+    excluded = _page_work(excluded_sync, "excluded")
+    noindex = _extraction(excluded)
+    noindex = HtmlExtraction(
+        state=ExtractionStates.NOINDEX,
+        final_url=noindex.final_url,
+        canonical_url=noindex.canonical_url,
+        http_status=noindex.http_status,
+        title=noindex.title,
+        description=noindex.description,
+        language=noindex.language,
+        text="",
+        noindex=True,
+        source_bytes=noindex.source_bytes,
+        text_chars=0,
+        diagnostics=noindex.diagnostics,
+    )
+    PageExtractionService.persist(work=excluded, extraction=noindex)
+
+    assert run_page_crawl(str(excluded.uuid)) == PageCrawlStates.SUCCEEDED
+    article.refresh_from_db()
+    assert article.state == "inactive"
+    assert article.is_active is False
+    assert article.inactivity_reason == "noindex"
+    assert article.content == original_content
+    assert (
+        client.retrieve(
+            settings.QDRANT_COLLECTION,
+            ids=[str(article.qdrant_point_id)],
+        )
+        == []
+    )
 
 
 @pytest.mark.django_db

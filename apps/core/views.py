@@ -179,7 +179,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         context["profile"] = profile
         context["has_subscription"] = profile.has_active_subscription
-        context["projects"] = ProjectService.for_owner(profile)
+        context["projects"] = ProjectService.dashboard_for_owner(profile)
         context["site_form"] = kwargs.get("site_form") or SiteCreateForm()
         context["agent_setup_prompt"] = build_agent_setup_prompt()
         context["agent_instructions_url"] = build_absolute_public_url("/AGENTS.md")

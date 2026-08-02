@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -20,6 +21,8 @@ from apps.core.models import (
     ProjectSyncRequest,
 )
 from apps.core.projects import normalize_sitemap_url
+
+logger = logging.getLogger(__name__)
 
 
 class ArticlePersistenceError(Exception):
@@ -74,7 +77,13 @@ class CrawlAttemptService:
 
     @classmethod
     @transaction.atomic
-    def record_failure(cls, *, work: PageCrawlWork, error_code: str) -> ArticleCrawlAttempt:
+    def record_failure(
+        cls,
+        *,
+        work: PageCrawlWork,
+        error_code: str,
+        http_status: int | None = None,
+    ) -> ArticleCrawlAttempt:
         work = (
             PageCrawlWork.objects.select_related("sync_request__project", "candidate")
             .select_for_update()
@@ -89,6 +98,7 @@ class CrawlAttemptService:
                 "article": cls._article_for_work(work),
                 "state": CrawlAttemptStates.FAILED,
                 "requested_url": work.candidate.normalized_url,
+                "http_status": http_status,
                 "error_code": str(error_code)[:64],
                 "fetched_at": timezone.now(),
             },
@@ -123,6 +133,7 @@ class ArticleIngestionService:
         if not created:
             source.article = article
             source.is_active = True
+            source.consecutive_missing_syncs = 0
             source.last_seen_at = now
             source.last_seen_sync = work.sync_request
             source.inactive_at = None
@@ -211,11 +222,18 @@ class ArticleIngestionService:
         content_hash = (
             _content_hash(extraction.text) if extraction.state == ExtractionStates.READY else ""
         )
-        article = (
+        canonical_article = (
             Article.objects.select_for_update()
             .filter(project=project, normalized_canonical_url=canonical)
             .first()
         )
+        source_article = (
+            ArticleSourceURL.objects.select_for_update()
+            .select_related("article")
+            .filter(project=project, normalized_url=work.candidate.normalized_url)
+            .first()
+        )
+        article = canonical_article or (source_article.article if source_article else None)
         created = article is None
         was_active = article.is_active if article else False
         if created:
@@ -247,6 +265,7 @@ class ArticleIngestionService:
             changed = ready and content_hash != article.content_hash
             article.final_url = extraction.final_url
             article.canonical_url = extraction.canonical_url
+            article.normalized_canonical_url = canonical
             article.title = extraction.title
             article.description = extraction.description
             article.language = extraction.language
@@ -312,6 +331,29 @@ class ArticleIngestionService:
 
 
 class ArticleLifecycleService:
+    SITEMAP_ABSENCE_THRESHOLD = 2
+    TERMINAL_HTTP_STATUSES = frozenset({404, 410})
+
+    @staticmethod
+    def _queue_deactivations(article_uuids) -> None:
+        if not article_uuids:
+            return
+        from apps.search.qdrant import queue_article_deactivation
+
+        def queue_articles():
+            for value in article_uuids:
+                try:
+                    queue_article_deactivation(value)
+                except Exception:
+                    # PostgreSQL has already made the page unsearchable; the
+                    # collection rebuild is the durable repair path.
+                    logger.exception(
+                        "article.deactivation_enqueue_failed",
+                        extra={"article_uuid": str(value)},
+                    )
+
+        transaction.on_commit(queue_articles)
+
     @classmethod
     @transaction.atomic
     def reconcile_sitemap(cls, *, sync_request: ProjectSyncRequest) -> None:
@@ -324,19 +366,31 @@ class ArticleLifecycleService:
         desired = set(
             sync_request.sitemap_inventory.candidates.values_list("normalized_url", flat=True)
         )
+        terminal_urls = set(
+            sync_request.article_attempts.filter(
+                http_status__in=cls.TERMINAL_HTTP_STATUSES
+            ).values_list("requested_url", flat=True)
+        )
+        present = desired - terminal_urls
         now = timezone.now()
         sources = ArticleSourceURL.objects.select_for_update().filter(project=project)
-        if desired:
-            sources.filter(normalized_url__in=desired).update(
+        if present:
+            sources.filter(normalized_url__in=present, is_active=True).update(
                 is_active=True,
+                consecutive_missing_syncs=0,
                 inactive_at=None,
                 last_seen_at=now,
                 last_seen_sync=sync_request,
             )
             missing = sources.exclude(normalized_url__in=desired)
         else:
-            missing = sources
-        missing.update(is_active=False, inactive_at=now)
+            missing = sources.exclude(normalized_url__in=desired)
+        missing = missing.filter(is_active=True)
+        missing.update(consecutive_missing_syncs=F("consecutive_missing_syncs") + 1)
+        confirmed_missing = missing.filter(
+            consecutive_missing_syncs__gte=cls.SITEMAP_ABSENCE_THRESHOLD
+        )
+        confirmed_missing.update(is_active=False, inactive_at=now)
         source_backed = Article.objects.filter(
             project=project,
             source_urls__is_active=True,
@@ -344,6 +398,7 @@ class ArticleLifecycleService:
         stale_articles = (
             Article.objects.select_for_update()
             .filter(project=project)
+            .exclude(state=ArticleStates.INACTIVE)
             .exclude(pk__in=source_backed)
         )
         stale_article_uuids = list(stale_articles.values_list("uuid", flat=True))
@@ -354,11 +409,62 @@ class ArticleLifecycleService:
             inactive_at=now,
         )
         _refresh_project_counts(project)
-        if stale_article_uuids:
-            from apps.search.qdrant import queue_article_deactivation
+        cls._queue_deactivations(stale_article_uuids)
 
-            def queue_stale_article_deactivations():
-                for value in stale_article_uuids:
-                    queue_article_deactivation(value)
-
-            transaction.on_commit(queue_stale_article_deactivations)
+    @classmethod
+    @transaction.atomic
+    def reconcile_terminal_fetch(
+        cls,
+        *,
+        work: PageCrawlWork,
+        http_status: int | None,
+    ) -> Article | None:
+        if http_status not in cls.TERMINAL_HTTP_STATUSES:
+            return None
+        work = (
+            PageCrawlWork.objects.select_for_update(of=("self",))
+            .select_related("sync_request__project", "candidate")
+            .get(pk=work.pk)
+        )
+        source = (
+            ArticleSourceURL.objects.select_for_update()
+            .select_related("article")
+            .filter(
+                project=work.sync_request.project,
+                normalized_url=work.candidate.normalized_url,
+            )
+            .first()
+        )
+        if source is None:
+            return None
+        now = timezone.now()
+        source.is_active = False
+        source.inactive_at = source.inactive_at or now
+        source.save(update_fields=["is_active", "inactive_at", "updated_at"])
+        article = source.article
+        has_active_source = ArticleSourceURL.objects.filter(
+            article=article,
+            is_active=True,
+        ).exists()
+        if has_active_source:
+            return article
+        was_active = article.is_active
+        article.state = ArticleStates.INACTIVE
+        article.is_active = False
+        article.inactivity_reason = f"http_{http_status}"
+        article.inactive_at = article.inactive_at or now
+        article.save(
+            update_fields=[
+                "state",
+                "is_active",
+                "inactivity_reason",
+                "inactive_at",
+                "updated_at",
+            ]
+        )
+        if was_active:
+            Project.objects.filter(pk=article.project_id).update(
+                active_article_count=F("active_article_count") - 1
+            )
+        cls._queue_deactivations([article.uuid])
+        return article

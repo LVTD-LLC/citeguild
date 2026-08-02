@@ -459,6 +459,57 @@ def test_daily_sync_rechecks_unchanged_candidate_when_article_is_stale(
 
 
 @pytest.mark.django_db
+def test_terminally_gone_page_is_rechecked_only_after_stale_interval(
+    profile, monkeypatch, settings
+):
+    settings.CRAWL_MAX_ATTEMPTS = 3
+    settings.RECONCILE_INTERVAL_HOURS = 24
+    project = create_project(profile)
+    anchor = datetime(2026, 8, 1, tzinfo=UTC)
+    completed_inventory(
+        project,
+        completed_at=anchor,
+        candidates=(("https://example.com/gone", ""),),
+    )
+    article = create_article_source(
+        project,
+        url="https://example.com/gone",
+        fetched_at=anchor,
+    )
+    source = article.source_urls.get()
+    source.is_active = False
+    source.inactive_at = anchor
+    source.save(update_fields=["is_active", "inactive_at", "updated_at"])
+    article.state = "inactive"
+    article.is_active = False
+    article.inactivity_reason = "http_410"
+    article.save(update_fields=["state", "is_active", "inactivity_reason", "updated_at"])
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.SitemapParser.parse",
+        lambda self, url: parse_result(("https://example.com/gone", "")),
+    )
+
+    recent_sync = daily_sync(project)
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.timezone.now",
+        lambda: anchor + timedelta(days=1),
+    )
+    assert run_sitemap_sync(str(recent_sync.uuid)) == ProjectSyncStates.SUCCEEDED
+    source.refresh_from_db()
+    assert source.is_active is False
+    assert not PageCrawlWork.objects.filter(sync_request=recent_sync).exists()
+
+    stale_sync = daily_sync(project, key="daily:stale")
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.timezone.now",
+        lambda: anchor + timedelta(days=8),
+    )
+    monkeypatch.setattr("apps.core.crawl_jobs.dispatch_page_work", lambda sync_uuid: 1)
+    assert run_sitemap_sync(str(stale_sync.uuid)) == ProjectSyncStates.RUNNING
+    assert PageCrawlWork.objects.filter(sync_request=stale_sync).count() == 1
+
+
+@pytest.mark.django_db
 def test_reconciliation_schedule_is_named_and_idempotent(monkeypatch):
     monkeypatch.setattr(
         "apps.core.management.commands.ensure_crawl_schedules.recover_crawl_jobs",

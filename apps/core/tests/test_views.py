@@ -15,6 +15,7 @@ from apps.core.sitemap_submission import (
     SitemapSubmissionErrorCode,
     SitemapValidation,
 )
+from apps.core.tests.test_article_embeddings import create_article
 
 
 def subscribe(profile):
@@ -91,6 +92,18 @@ class TestHomeView:
         assert "Last sync failed: fetch_failed" in content
         assert "Retry sync" in content
         assert reverse("retry_site_sync", args=[project.uuid]) in content
+
+    def test_dashboard_shows_inactive_article_counts_and_reasons(self, auth_client, profile):
+        subscribe(profile)
+        article = create_article(profile)
+        article.state = "inactive"
+        article.inactivity_reason = "http_410"
+        article.save(update_fields=["state", "inactivity_reason", "updated_at"])
+
+        content = auth_client.get(reverse("home")).content.decode()
+
+        assert "1 inactive in history" in content
+        assert "1 unavailable" in content
 
     def test_retry_site_sync_queues_owner_site(self, auth_client, profile):
         subscribe(profile)

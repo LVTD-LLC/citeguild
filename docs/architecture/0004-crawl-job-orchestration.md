@@ -40,3 +40,24 @@ unchanged articles not fetched for seven reconciliation intervals. This keeps an
 unchanged daily sitemap cheap without allowing hint-free content to remain stale
 forever. Terminal sitemap failures set the project's visible error code, and the
 owner-scoped dashboard action creates or republishes one manual retry.
+
+## Article lifecycle truth table
+
+PostgreSQL is authoritative for article lifecycle; Qdrant is a derived search
+index. Lifecycle transitions preserve the article UUID, content, crawl history,
+and link history.
+
+| Observation | Lifecycle action |
+| --- | --- |
+| URL present and page ready | Reset the sitemap-absence counter, preserve the article UUID, refresh content when changed, and publish the current point before marking the article active. |
+| URL absent from one successful sitemap | Increment the source absence counter but keep the source and article active. |
+| URL absent from two consecutive successful sitemaps | Soft-deactivate the source; soft-deactivate the article only when it has no other active source; queue removal of its Qdrant point. |
+| HTTP 404 or 410 | Record the status in crawl history and soft-deactivate the source/article immediately; queue point removal and limit rechecks to once per seven reconciliation intervals. |
+| Timeout, DNS/network error, 408, 425, 429, or 5xx | Retry within the crawl budget and preserve the last healthy article and point. |
+| Same-host redirect to a healthy page | Follow the redirect and preserve the existing article UUID when the canonical target is not already owned by another article. |
+| Empty or noindex page | Preserve last good content and history, mark inactive with the extraction reason, and synchronously remove the point. |
+| Previously inactive URL returns ready | Reset absence state, clear inactivity metadata, refresh/reuse its embedding, and reactivate only after Qdrant publication succeeds. |
+
+Search always rechecks project eligibility, article state, and embedding state in
+PostgreSQL, so a lagging Qdrant point cannot leak an inactive article while an
+asynchronous deletion is pending.

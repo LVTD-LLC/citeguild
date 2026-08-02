@@ -52,7 +52,7 @@ from apps.core.sitemap_parser import (
     SitemapParseError,
     SitemapParser,
 )
-from apps.search.qdrant import QdrantContractError, upsert_article
+from apps.search.qdrant import QdrantContractError, deactivate_article, upsert_article
 
 logger = logging.getLogger(__name__)
 
@@ -468,7 +468,6 @@ def _candidate_ids_for_sync(
     sources = ArticleSourceURL.objects.filter(
         project_id=sync_request.project_id,
         normalized_url__in=unchanged_by_url,
-        is_active=True,
     )
     known_urls = set(sources.values_list("normalized_url", flat=True))
     selected_ids.extend(
@@ -478,9 +477,15 @@ def _candidate_ids_for_sync(
     )
     stale_cutoff = now - timedelta(hours=settings.RECONCILE_INTERVAL_HOURS * 7)
     stale_urls = set(
-        sources.filter(article__last_fetched_at__lte=stale_cutoff).values_list(
-            "normalized_url", flat=True
-        )
+        sources.filter(
+            is_active=True,
+            article__last_fetched_at__lte=stale_cutoff,
+        ).values_list("normalized_url", flat=True)
+    )
+    stale_urls.update(
+        sources.filter(is_active=False)
+        .filter(Q(article__inactivity_reason="sitemap_removed") | Q(inactive_at__lte=stale_cutoff))
+        .values_list("normalized_url", flat=True)
     )
     selected_ids.extend(unchanged_by_url[url] for url in stale_urls)
     return selected_ids
@@ -710,12 +715,22 @@ def _index_ready_article(article: Article) -> None:
             raise ArticleIndexingError("qdrant_unavailable", retryable=True) from error
 
 
+def _deactivate_indexed_article(article: Article) -> None:
+    try:
+        deactivate_article(article=article)
+    except ApiException as error:
+        raise ArticleIndexingError("qdrant_unavailable", retryable=True) from error
+
+
 def _process_page_work(work: PageCrawlWork) -> None:
     if not PageExtractionResult.objects.filter(work=work).exists():
         extraction = _fetch_page(work)
         PageExtractionService.persist(work=work, extraction=extraction)
     article = ArticleIngestionService.ingest(work=work, queue_embedding=False)
-    if work.extraction.state != ExtractionStates.READY or not settings.CITEGUILD_INDEXING_ENABLED:
+    if not settings.CITEGUILD_INDEXING_ENABLED:
+        return
+    if work.extraction.state != ExtractionStates.READY:
+        _deactivate_indexed_article(article)
         return
     if _cancel_if_project_ineligible(work.sync_request.uuid):
         raise ProjectBecameIneligibleError
@@ -747,6 +762,7 @@ def _record_page_outcome(work_uuid, *, error=None) -> str:
             CrawlAttemptService.record_failure(
                 work=work,
                 error_code=str(error.code),
+                http_status=getattr(error, "http_status", None),
             )
             work.error_code = str(error.code)
             if error.retryable and work.attempt_count < work.max_attempts:
@@ -758,6 +774,11 @@ def _record_page_outcome(work_uuid, *, error=None) -> str:
                 work.next_attempt_at = None
                 work.completed_at = now
         work.save()
+        if error is not None and work.state == PageCrawlStates.FAILED:
+            ArticleLifecycleService.reconcile_terminal_fetch(
+                work=work,
+                http_status=getattr(error, "http_status", None),
+            )
         sync_uuid = work.sync_request.uuid
     _refresh_sync_counts(sync_uuid)
     sync_state = _finalize_sync(sync_uuid)

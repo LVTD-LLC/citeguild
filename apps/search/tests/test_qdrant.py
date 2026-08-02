@@ -300,6 +300,30 @@ def test_search_requires_authorized_scope_and_applies_filters(profile):
         == []
     )
 
+    # Lifecycle changes are enforced from PostgreSQL even before an
+    # asynchronous Qdrant deletion has removed the stale active point.
+    article.content_hash = article.embedding.content_hash
+    article.state = ArticleStates.INACTIVE
+    article.is_active = False
+    article.inactivity_reason = "sitemap_removed"
+    article.save(
+        update_fields=[
+            "content_hash",
+            "state",
+            "is_active",
+            "inactivity_reason",
+            "updated_at",
+        ]
+    )
+    assert (
+        semantic_search(
+            [1.0, 0.0, 0.0],
+            authorized_project_uuids={article.project.uuid},
+            client=client,
+        )
+        == []
+    )
+
     profile.stripe_subscription_status = "active"
     profile.save(update_fields=["stripe_subscription_status", "updated_at"])
     article.content_hash = "0" * 64

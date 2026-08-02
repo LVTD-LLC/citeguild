@@ -2,6 +2,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.core.choices import ProjectStates
@@ -50,6 +51,27 @@ class ProjectService:
     @staticmethod
     def for_owner(owner: Profile):
         return Project.objects.filter(owner=owner)
+
+    @classmethod
+    def dashboard_for_owner(cls, owner: Profile):
+        return cls.for_owner(owner).annotate(
+            inactive_article_count=Count(
+                "articles",
+                filter=Q(articles__state="inactive"),
+            ),
+            missing_article_count=Count(
+                "articles",
+                filter=Q(articles__inactivity_reason="sitemap_removed"),
+            ),
+            unavailable_article_count=Count(
+                "articles",
+                filter=Q(articles__inactivity_reason__in=("http_404", "http_410")),
+            ),
+            excluded_article_count=Count(
+                "articles",
+                filter=Q(articles__inactivity_reason__in=("empty", "noindex")),
+            ),
+        )
 
     @classmethod
     def get_for_owner(cls, owner: Profile, project_uuid):

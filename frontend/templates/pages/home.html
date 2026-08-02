@@ -70,6 +70,14 @@
                                             </dd>
                                         </div>
                                     </dl>
+                                    {% if project.inactive_article_count %}
+                                        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                                            {{ project.inactive_article_count }} inactive in history
+                                            {% if project.missing_article_count %}· {{ project.missing_article_count }} missing from sitemap{% endif %}
+                                            {% if project.unavailable_article_count %}· {{ project.unavailable_article_count }} unavailable{% endif %}
+                                            {% if project.excluded_article_count %}· {{ project.excluded_article_count }} excluded by page{% endif %}
+                                        </p>
+                                    {% endif %}
                                     {% if project.state == 'active' and project.last_error_code %}
                                         <form method="post"
                                               action="{% url 'retry_site_sync' project.uuid %}"

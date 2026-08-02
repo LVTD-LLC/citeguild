@@ -59,9 +59,16 @@ _SAFE_ERROR_MESSAGES = {
 class SafeFetchError(Exception):
     """A typed, deliberately sanitized crawler failure."""
 
-    def __init__(self, code: SafeFetchErrorCode, *, retryable: bool = False):
+    def __init__(
+        self,
+        code: SafeFetchErrorCode,
+        *,
+        retryable: bool = False,
+        http_status: int | None = None,
+    ):
         self.code = code
         self.retryable = retryable
+        self.http_status = http_status
         super().__init__(_SAFE_ERROR_MESSAGES[code])
 
 
@@ -425,7 +432,7 @@ def _read_success_response(
     if response.status in {408, 425, 429} or response.status >= 500:
         raise SafeFetchError(SafeFetchErrorCode.TEMPORARY_FAILURE, retryable=True)
     if response.status < 200 or response.status >= 300:
-        raise SafeFetchError(SafeFetchErrorCode.HTTP_ERROR)
+        raise SafeFetchError(SafeFetchErrorCode.HTTP_ERROR, http_status=response.status)
 
     content_type = _header_value(response.headers, "content-type")
     content_type = content_type.split(";", 1)[0].strip().lower()
