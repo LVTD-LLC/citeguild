@@ -1,8 +1,11 @@
 import logging
+from collections.abc import Mapping
 from datetime import UTC, datetime
 
+from django.conf import settings
 from django.db import transaction
 
+from apps.core.billing import MONTHLY_PRICE
 from apps.core.choices import ProfileStates
 from apps.core.funnel_analytics import (
     SUBSCRIPTION_ACTIVATED,
@@ -13,6 +16,48 @@ from apps.core.funnel_analytics import (
 from apps.core.models import Profile, ProfileStateTransition
 
 logger = logging.getLogger(__name__)
+
+
+def _log_ignored_product(event):
+    logger.info(
+        "stripe.webhook.product_ignored",
+        extra={
+            "event.name": "stripe.webhook.product_ignored",
+            "event_id": event.get("id"),
+            "event_type": event.get("type"),
+            "operation.status": "unrelated_product",
+            "outcome": "success",
+        },
+    )
+
+
+def _is_citeguild_subscription(subscription):
+    """Accept only the one configured CiteGuild price from the shared account."""
+    if not settings.STRIPE_PRICE_ID_MONTHLY or not isinstance(subscription, Mapping):
+        return False
+    items = subscription.get("items")
+    if not isinstance(items, Mapping):
+        return False
+    item_data = items.get("data")
+    if not isinstance(item_data, list) or len(item_data) != 1:
+        return False
+    item = item_data[0]
+    if not isinstance(item, Mapping) or item.get("quantity") != 1:
+        return False
+    price = item.get("price")
+    price_id = price.get("id") if isinstance(price, Mapping) else price
+    return price_id == settings.STRIPE_PRICE_ID_MONTHLY
+
+
+def _is_citeguild_checkout(checkout):
+    if not settings.STRIPE_PRICE_ID_MONTHLY or not isinstance(checkout, Mapping):
+        return False
+    metadata = checkout.get("metadata")
+    return (
+        isinstance(metadata, Mapping)
+        and metadata.get("price_id") == settings.STRIPE_PRICE_ID_MONTHLY
+        and metadata.get("plan") == MONTHLY_PRICE.plan
+    )
 
 
 def get_profile_for_customer(customer_id, metadata=None):
@@ -59,6 +104,9 @@ def _record_state(profile, target_state, event):
 @transaction.atomic
 def apply_subscription_event(event, *, deleted=False):
     subscription = event["data"]["object"]
+    if not _is_citeguild_subscription(subscription):
+        _log_ignored_product(event)
+        return
     profile = get_profile_for_customer(subscription.get("customer"), subscription.get("metadata"))
     if not profile:
         logger.warning("stripe.subscription.profile_missing", extra={"event_id": event.get("id")})
@@ -135,7 +183,8 @@ def handle_deleted_subscription(event):
 def handle_checkout_completed(event):
     """Associate Stripe IDs only; subscription webhooks exclusively grant access."""
     checkout = event["data"]["object"]
-    if checkout.get("mode") != "subscription":
+    if checkout.get("mode") != "subscription" or not _is_citeguild_checkout(checkout):
+        _log_ignored_product(event)
         return
     profile = get_profile_for_customer(checkout.get("customer"), checkout.get("metadata"))
     if not profile:

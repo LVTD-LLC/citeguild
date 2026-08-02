@@ -18,6 +18,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Fixed
 
+- Stripe webhooks now ignore unrelated products in the shared LVTD account and
+  mutate CiteGuild billing state only for the configured monthly Price.
 - Stripe Checkout now validates live Stripe SDK Price objects without treating
   them as plain dictionaries, while preserving the fail-closed $10 plan check.
 - Crawl recovery now clears every stale queued broker reservation, including

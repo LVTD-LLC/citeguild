@@ -492,6 +492,7 @@ def create_checkout_session(request):
             "metadata": {
                 "user_id": user.id,
                 "profile_id": profile.id,
+                "price_id": price_id,
                 "plan": MONTHLY_PRICE.plan,
             }
         },
