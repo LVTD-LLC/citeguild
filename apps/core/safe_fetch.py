@@ -411,6 +411,41 @@ def _read_compressed(
     return bytes(body)
 
 
+def _read_success_response(
+    response: TransportResponse,
+    *,
+    max_bytes: int,
+    allowed_content_types: set[str],
+    deadline: float,
+) -> tuple[bytes, str]:
+    if response.status in {408, 425, 429} or response.status >= 500:
+        raise SafeFetchError(SafeFetchErrorCode.TEMPORARY_FAILURE, retryable=True)
+    if response.status < 200 or response.status >= 300:
+        raise SafeFetchError(SafeFetchErrorCode.HTTP_ERROR)
+
+    content_type = _header_value(response.headers, "content-type")
+    content_type = content_type.split(";", 1)[0].strip().lower()
+    if content_type not in allowed_content_types:
+        raise SafeFetchError(SafeFetchErrorCode.UNSUPPORTED_CONTENT_TYPE)
+
+    content_length = _header_value(response.headers, "content-length")
+    if content_length:
+        try:
+            if int(content_length) > max_bytes:
+                _raise_too_large()
+        except ValueError:
+            pass
+
+    encoding = _header_value(response.headers, "content-encoding").lower()
+    if encoding in {"", "identity"}:
+        body = _read_plain(response, max_bytes, deadline)
+    elif encoding in {"gzip", "x-gzip", "deflate"}:
+        body = _read_compressed(response, max_bytes, encoding, deadline)
+    else:
+        raise SafeFetchError(SafeFetchErrorCode.UNSUPPORTED_CONTENT_ENCODING)
+    return body, content_type
+
+
 class SafeFetchClient:
     def __init__(
         self,
@@ -483,35 +518,12 @@ class SafeFetchClient:
                             current_url = urljoin(target.normalized_url, location)
                             continue
 
-                        if response.status in {408, 425, 429} or response.status >= 500:
-                            raise SafeFetchError(
-                                SafeFetchErrorCode.TEMPORARY_FAILURE, retryable=True
-                            )
-                        if response.status < 200 or response.status >= 300:
-                            raise SafeFetchError(SafeFetchErrorCode.HTTP_ERROR)
-
-                        content_type = _header_value(response.headers, "content-type")
-                        content_type = content_type.split(";", 1)[0].strip().lower()
-                        if content_type not in normalized_types:
-                            raise SafeFetchError(SafeFetchErrorCode.UNSUPPORTED_CONTENT_TYPE)
-
-                        content_length = _header_value(response.headers, "content-length")
-                        if content_length:
-                            try:
-                                if int(content_length) > max_bytes:
-                                    _raise_too_large()
-                            except ValueError:
-                                pass
-
-                        encoding = _header_value(response.headers, "content-encoding").lower()
-                        if encoding in {"", "identity"}:
-                            body = _read_plain(response, max_bytes, deadline)
-                        elif encoding in {"gzip", "x-gzip", "deflate"}:
-                            body = _read_compressed(response, max_bytes, encoding, deadline)
-                        else:
-                            raise SafeFetchError(
-                                SafeFetchErrorCode.UNSUPPORTED_CONTENT_ENCODING
-                            )
+                        body, content_type = _read_success_response(
+                            response,
+                            max_bytes=max_bytes,
+                            allowed_content_types=normalized_types,
+                            deadline=deadline,
+                        )
 
                         return SafeFetchResult(
                             body=body,
@@ -524,7 +536,7 @@ class SafeFetchClient:
                         response.close()
             except SafeFetchError:
                 raise
-            except (TimeoutError, socket.timeout) as error:
+            except TimeoutError as error:
                 raise SafeFetchError(SafeFetchErrorCode.TIMEOUT, retryable=True) from error
             except ssl.SSLError as error:
                 raise SafeFetchError(SafeFetchErrorCode.TLS_ERROR) from error

@@ -295,9 +295,7 @@ def test_body_limit_applies_after_gzip_decompression():
 
 
 def test_content_type_and_encoding_are_allowlisted():
-    transport = FakeTransport(
-        [FakeResponse(headers={"Content-Type": "application/octet-stream"})]
-    )
+    transport = FakeTransport([FakeResponse(headers={"Content-Type": "application/octet-stream"})])
     client = SafeFetchClient(
         resolver=resolver_for({"example.com": ("93.184.216.34",)}),
         transport=transport,
@@ -408,7 +406,7 @@ def test_stream_timeout_is_retryable_and_response_is_closed():
     class SlowResponse(FakeResponse):
         def read(self, amount):
             del amount
-            raise socket.timeout("raw upstream details")
+            raise TimeoutError("raw upstream details")
 
     response = SlowResponse(headers={"Content-Type": "text/html"})
     client = SafeFetchClient(
