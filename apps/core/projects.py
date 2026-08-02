@@ -1,4 +1,4 @@
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import unquote_plus, urlsplit, urlunsplit
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
@@ -11,6 +11,29 @@ from apps.core.models import Profile, Project, ProjectStateTransition
 
 class ProjectHostConflict(ValidationError):
     pass
+
+
+OUTBOUND_TRACKING_QUERY_PARAMETERS = frozenset(
+    {
+        "dclid",
+        "fbclid",
+        "gclid",
+        "gbraid",
+        "mc_cid",
+        "mc_eid",
+        "msclkid",
+        "utm_campaign",
+        "utm_content",
+        "utm_creative_format",
+        "utm_id",
+        "utm_marketing_tactic",
+        "utm_medium",
+        "utm_source",
+        "utm_source_platform",
+        "utm_term",
+        "wbraid",
+    }
+)
 
 
 def normalize_sitemap_url(value: str) -> tuple[str, str]:
@@ -38,6 +61,20 @@ def normalize_sitemap_url(value: str) -> tuple[str, str]:
     path = parsed.path or "/"
     normalized = urlunsplit((scheme, netloc, path, parsed.query, ""))
     return normalized, host
+
+
+def normalize_outbound_url(value: str) -> tuple[str, str]:
+    """Normalize one observed link and remove only known tracking keys."""
+    normalized, host = normalize_sitemap_url(value)
+    parsed = urlsplit(normalized)
+    query_parts = []
+    for part in parsed.query.split("&"):
+        raw_key, _separator, _value = part.partition("=")
+        if unquote_plus(raw_key).casefold() in OUTBOUND_TRACKING_QUERY_PARAMETERS:
+            continue
+        query_parts.append(part)
+    query = "&".join(query_parts) if parsed.query else ""
+    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, query, "")), host
 
 
 class ProjectService:

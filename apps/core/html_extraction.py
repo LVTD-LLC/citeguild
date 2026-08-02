@@ -18,7 +18,7 @@ from trafilatura.settings import Extractor, use_config
 
 from apps.core.choices import ExtractionStates
 from apps.core.models import PageCrawlWork, PageExtractionResult
-from apps.core.projects import normalize_sitemap_url
+from apps.core.projects import normalize_outbound_url, normalize_sitemap_url
 from apps.core.safe_fetch import SafeFetchResult
 
 
@@ -160,7 +160,7 @@ def _is_boilerplate_anchor(anchor) -> bool:
 
 def _normalized_link(anchor, final_url: str) -> str:
     try:
-        normalized, _host = normalize_sitemap_url(urljoin(final_url, str(anchor.get("href", ""))))
+        normalized, _host = normalize_outbound_url(urljoin(final_url, str(anchor.get("href", ""))))
     except (ValidationError, ValueError):
         return ""
     return "" if normalized == final_url else normalized
