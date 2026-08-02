@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Production deploys now validate required configuration up front, pin the
+  CapRover action, and gate worker rollout on the public aggregate health
+  contract for PostgreSQL, Redis, and Qdrant.
 - Codified the five-service CapRover topology, private networking, persistent
   volumes, dependency health, immutable image identity, scheduler ownership,
   deployment order, and rollback boundary with tested Compose/workflow parity,

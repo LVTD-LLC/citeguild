@@ -49,8 +49,26 @@ def test_deploy_workflow_publishes_and_deploys_only_the_git_sha_tag():
     steps = workflow["jobs"]["build-and-deploy"]["steps"]
     build = next(step for step in steps if step.get("name") == "Build and push")
     tags = build["with"]["tags"]
-    deployments = [step for step in steps if step.get("uses") == "caprover/deploy-from-github@main"]
+    deployments = [
+        step for step in steps if step.get("uses", "").startswith("caprover/deploy-from-github@")
+    ]
 
     assert tags == "${{ steps.image.outputs.image_name }}:${{ github.sha }}"
     assert deployments
+    assert all(step["uses"] != "caprover/deploy-from-github@main" for step in deployments)
     assert all(step["with"]["image"] == tags for step in deployments)
+
+
+def test_deploy_workflow_gates_workers_on_aggregate_production_health():
+    workflow = _yaml(".github/workflows/deploy.yml")
+    steps = workflow["jobs"]["build-and-deploy"]["steps"]
+    names = [step.get("name") for step in steps]
+    health = next(step for step in steps if step.get("name") == "Verify production health")
+    script = health["run"]
+
+    assert names.index("Deploy server to CapRover") < names.index("Verify production health")
+    assert names.index("Verify production health") < names.index("Deploy workers to CapRover")
+    assert "curl --fail" in script
+    assert 'payload.get("healthy") is not True' in script
+    assert '("database", "redis", "qdrant")' in script
+    assert "sleep 5" in script

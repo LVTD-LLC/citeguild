@@ -7,6 +7,7 @@ on:
 
 env:
   CAPROVER_APP_NAME: citeguild
+  PRODUCTION_HEALTHCHECK_URL: https://citeguild.cap.gregagi.com/api/healthcheck
 
 permissions:
   contents: read
@@ -19,6 +20,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        shell: bash
+        env:
+          CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
+          APP_TOKEN: ${{ secrets.APP_TOKEN }}
+          WORKERS_APP_TOKEN: ${{ secrets.WORKERS_APP_TOKEN }}
+          WORKERS_APP_PROCESS_TYPE: ${{ vars.WORKERS_APP_PROCESS_TYPE }}
+        run: |
+          set -euo pipefail
+          test -n "$CAPROVER_SERVER"
+          test -n "$APP_TOKEN"
+          test -n "$WORKERS_APP_TOKEN"
+          if [ "$WORKERS_APP_PROCESS_TYPE" != "worker" ]; then
+            echo "::error::Set WORKERS_APP_PROCESS_TYPE=worker and APP_PROCESS_TYPE=worker on the workers app."
+            exit 1
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -44,25 +62,41 @@ jobs:
           tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
 
       - name: Deploy server to CapRover
-        uses: caprover/deploy-from-github@main
+        # caprover/deploy-from-github main, pinned for supply-chain stability.
+        uses: caprover/deploy-from-github@cb179160479b998a553b61700fe390980bfe7fe8
         with:
           server: ${{ secrets.CAPROVER_SERVER }}
           app: ${{ env.CAPROVER_APP_NAME }}
           token: ${{ secrets.APP_TOKEN }}
           image: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
 
-      - name: Verify workers process type
+      - name: Verify production health
         shell: bash
-        env:
-          WORKERS_APP_PROCESS_TYPE: ${{ vars.WORKERS_APP_PROCESS_TYPE }}
         run: |
-          if [ "$WORKERS_APP_PROCESS_TYPE" != "worker" ]; then
-            echo "::error::Set the WORKERS_APP_PROCESS_TYPE repository variable to 'worker' after setting APP_PROCESS_TYPE=worker on the $CAPROVER_APP_NAME-workers CapRover app."
-            exit 1
-          fi
+          set -euo pipefail
+          for attempt in {1..24}; do
+            if curl --fail --silent --show-error --max-time 10 \
+              "$PRODUCTION_HEALTHCHECK_URL" | python -c '
+          import json
+          import sys
+
+          payload = json.load(sys.stdin)
+          checks = payload.get("checks", {})
+          expected = ("database", "redis", "qdrant")
+          if payload.get("healthy") is not True or not all(checks.get(name) is True for name in expected):
+              raise SystemExit(1)
+          '; then
+              exit 0
+            fi
+            echo "Production is not ready yet (attempt $attempt/24)."
+            sleep 5
+          done
+          echo "::error::Production health did not become ready within two minutes."
+          exit 1
 
       - name: Deploy workers to CapRover
-        uses: caprover/deploy-from-github@main
+        # caprover/deploy-from-github main, pinned for supply-chain stability.
+        uses: caprover/deploy-from-github@cb179160479b998a553b61700fe390980bfe7fe8
         with:
           server: ${{ secrets.CAPROVER_SERVER }}
           app: ${{ env.CAPROVER_APP_NAME }}-workers
