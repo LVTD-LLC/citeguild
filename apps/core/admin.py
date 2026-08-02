@@ -1,7 +1,11 @@
 from django.contrib import admin
 
 from apps.core.models import (
+    Article,
+    ArticleCrawlAttempt,
+    ArticleSourceURL,
     EmailSent,
+    OutboundLinkObservation,
     PageCrawlWork,
     PageExtractionResult,
     Project,
@@ -19,3 +23,7 @@ admin.site.register(SitemapInventory)
 admin.site.register(SitemapCandidate)
 admin.site.register(PageCrawlWork)
 admin.site.register(PageExtractionResult)
+admin.site.register(Article)
+admin.site.register(ArticleSourceURL)
+admin.site.register(ArticleCrawlAttempt)
+admin.site.register(OutboundLinkObservation)

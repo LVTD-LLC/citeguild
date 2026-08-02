@@ -56,3 +56,14 @@ class ExtractionStates(models.TextChoices):
     READY = "ready", "Ready"
     EMPTY = "empty", "Empty"
     NOINDEX = "noindex", "Noindex"
+
+
+class ArticleStates(models.TextChoices):
+    DISCOVERED = "discovered", "Discovered"
+    ACTIVE = "active", "Active"
+    INACTIVE = "inactive", "Inactive"
+
+
+class CrawlAttemptStates(models.TextChoices):
+    SUCCEEDED = "succeeded", "Succeeded"
+    FAILED = "failed", "Failed"

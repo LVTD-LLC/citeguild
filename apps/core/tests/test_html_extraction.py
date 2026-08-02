@@ -265,6 +265,38 @@ def test_metadata_is_normalized_and_bounded(settings, monkeypatch):
     assert result.language == "en-us"
 
 
+def test_outbound_links_are_content_scoped_normalized_and_bounded(settings):
+    settings.EXTRACTION_MIN_TEXT_CHARS = 1
+    anchors = "".join(f'<a href="/links/{index}">Link {index}</a>' for index in range(1100))
+    document = f"""
+    <html><body>
+      <nav><a href="/account">Account</a></nav>
+      <article>
+        <p>Useful article text for deterministic extraction.</p>
+        <a href="https://MEMBER.example:443/guide#part"> Member guide </a>
+        <a href="https://member.example/guide">Duplicate</a>
+        <a href="mailto:private@example.com">Email</a>
+        {anchors}
+      </article>
+      <footer><a href="/privacy">Privacy</a></footer>
+    </body></html>
+    """
+
+    result = extract_article(response(document), allowed_host="example.com")
+
+    assert len(result.outbound_links) == 1000
+    assert result.outbound_links[0] == {
+        "url": "https://example.com/links/0",
+        "anchor_text": "Link 0",
+    }
+    assert {
+        "url": "https://member.example/guide",
+        "anchor_text": "Member guide",
+    } in result.outbound_links
+    assert all(link["url"] != "https://example.com/account" for link in result.outbound_links)
+    assert all(link["url"] != "https://example.com/privacy" for link in result.outbound_links)
+
+
 @pytest.mark.django_db
 def test_persistence_is_immutable_and_idempotent(profile, settings):
     settings.EXTRACTION_MIN_TEXT_CHARS = 100

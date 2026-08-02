@@ -7,6 +7,8 @@ from django_q.tasks import async_task
 
 from apps.core.base_models import BaseModel
 from apps.core.choices import (
+    ArticleStates,
+    CrawlAttemptStates,
     EmailType,
     ExtractionStates,
     PageCrawlStates,
@@ -281,11 +283,176 @@ class PageExtractionResult(BaseModel):
     noindex = models.BooleanField(default=False)
     source_bytes = models.PositiveIntegerField(default=0)
     text_chars = models.PositiveIntegerField(default=0)
+    outbound_links = models.JSONField(default=list, blank=True)
     diagnostics = models.JSONField(default=dict, blank=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["uuid"], name="core_page_extraction_uuid_unique")
+        ]
+
+
+class Article(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="articles")
+    original_url = models.URLField(max_length=2048)
+    final_url = models.URLField(max_length=2048)
+    canonical_url = models.URLField(max_length=2048)
+    normalized_canonical_url = models.URLField(max_length=2048)
+    title = models.CharField(max_length=300, blank=True, default="")
+    description = models.CharField(max_length=1000, blank=True, default="")
+    language = models.CharField(max_length=35, blank=True, default="")
+    content = models.TextField(blank=True, default="")
+    content_hash = models.CharField(max_length=64, blank=True, default="")
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    extraction_state = models.CharField(max_length=20, choices=ExtractionStates.choices)
+    state = models.CharField(
+        max_length=20,
+        choices=ArticleStates.choices,
+        default=ArticleStates.DISCOVERED,
+    )
+    is_active = models.BooleanField(default=False)
+    inactivity_reason = models.CharField(max_length=64, blank=True, default="")
+    first_seen_at = models.DateTimeField()
+    last_seen_at = models.DateTimeField()
+    last_fetched_at = models.DateTimeField()
+    last_changed_at = models.DateTimeField()
+    inactive_at = models.DateTimeField(null=True, blank=True)
+    qdrant_point_id = models.UUIDField(unique=True, editable=False)
+
+    class Meta:
+        ordering = ["normalized_canonical_url", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_article_uuid_unique"),
+            models.UniqueConstraint(
+                fields=["project", "normalized_canonical_url"],
+                name="core_article_project_canonical_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["project", "state"], name="core_article_project_state_idx"),
+            models.Index(
+                fields=["normalized_canonical_url"],
+                name="core_article_canonical_idx",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.qdrant_point_id is None:
+            self.qdrant_point_id = self.uuid
+        return super().save(*args, **kwargs)
+
+
+class ArticleSourceURL(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="article_sources")
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="source_urls")
+    normalized_url = models.URLField(max_length=2048)
+    is_active = models.BooleanField(default=True)
+    first_seen_at = models.DateTimeField()
+    last_seen_at = models.DateTimeField()
+    inactive_at = models.DateTimeField(null=True, blank=True)
+    last_seen_sync = models.ForeignKey(
+        ProjectSyncRequest,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="seen_article_sources",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_article_source_uuid_unique"),
+            models.UniqueConstraint(
+                fields=["project", "normalized_url"],
+                name="core_article_source_project_url_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["project", "is_active"], name="core_article_source_active_idx")
+        ]
+
+
+class ArticleCrawlAttempt(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="crawl_attempts")
+    sync_request = models.ForeignKey(
+        ProjectSyncRequest,
+        on_delete=models.CASCADE,
+        related_name="article_attempts",
+    )
+    work = models.ForeignKey(
+        PageCrawlWork,
+        on_delete=models.CASCADE,
+        related_name="article_attempts",
+    )
+    article = models.ForeignKey(
+        Article,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="crawl_attempts",
+    )
+    attempt_number = models.PositiveSmallIntegerField()
+    state = models.CharField(max_length=20, choices=CrawlAttemptStates.choices)
+    requested_url = models.URLField(max_length=2048)
+    final_url = models.URLField(max_length=2048, blank=True, default="")
+    canonical_url = models.URLField(max_length=2048, blank=True, default="")
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    extraction_state = models.CharField(max_length=20, blank=True, default="")
+    source_bytes = models.PositiveIntegerField(default=0)
+    content_hash = models.CharField(max_length=64, blank=True, default="")
+    error_code = models.CharField(max_length=64, blank=True, default="")
+    fetched_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_article_attempt_uuid_unique"),
+            models.UniqueConstraint(
+                fields=["work", "attempt_number"],
+                name="core_article_attempt_work_number_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["project", "fetched_at"], name="core_article_attempt_project_idx")
+        ]
+
+
+class OutboundLinkObservation(BaseModel):
+    source_article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name="outbound_links",
+    )
+    target_article = models.ForeignKey(
+        Article,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="inbound_links",
+    )
+    normalized_destination_url = models.URLField(max_length=2048)
+    anchor_text = models.CharField(max_length=300, blank=True, default="")
+    is_active = models.BooleanField(default=True)
+    first_seen_at = models.DateTimeField()
+    last_seen_at = models.DateTimeField()
+    inactive_at = models.DateTimeField(null=True, blank=True)
+    last_seen_sync = models.ForeignKey(
+        ProjectSyncRequest,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="observed_outbound_links",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_outbound_link_uuid_unique"),
+            models.UniqueConstraint(
+                fields=["source_article", "normalized_destination_url"],
+                name="core_outbound_link_source_url_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["target_article", "is_active"], name="core_outbound_target_idx")
         ]
 
 

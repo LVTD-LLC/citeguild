@@ -26,8 +26,8 @@ the metadata remains diagnosable but extracted text is discarded. Content below
 the minimum is stored as `empty`, and unsupported/invalid/oversized inputs end
 with stable non-retryable error codes so they cannot reach embedding.
 
-Extraction persistence precedes the page-work success transition. If a worker
+Extraction and article persistence precede the page-work success transition. If a worker
 dies between those writes, recovery observes the existing immutable result and
-finishes the page without fetching or duplicating it. CG-015 will consume these
-results to maintain canonical Article identities, content hashes, crawl history,
-and outbound-link observations without changing this extraction boundary.
+finishes article ingestion without fetching or duplicating it. CG-015 consumes
+these results to maintain canonical Article identities, content hashes, crawl
+history, and outbound-link observations without changing this extraction boundary.

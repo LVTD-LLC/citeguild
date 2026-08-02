@@ -12,6 +12,12 @@ from django.db.models import Q
 from django.utils import timezone
 from django_q.tasks import async_task
 
+from apps.core.article_ingestion import (
+    ArticleIngestionService,
+    ArticleLifecycleService,
+    ArticlePersistenceError,
+    CrawlAttemptService,
+)
 from apps.core.choices import PageCrawlStates, ProjectSyncStates
 from apps.core.html_extraction import (
     HtmlExtraction,
@@ -364,6 +370,10 @@ def _record_page_outcome(work_uuid, *, error=None) -> str:
             work.completed_at = now
             work.error_code = ""
         else:
+            CrawlAttemptService.record_failure(
+                work=work,
+                error_code=str(error.code),
+            )
             work.error_code = str(error.code)
             if error.retryable and work.attempt_count < work.max_attempts:
                 work.state = PageCrawlStates.QUEUED
@@ -384,14 +394,14 @@ def run_page_crawl(work_uuid: str) -> str:
     work = _claim_page_work(work_uuid)
     if work is None:
         return "noop"
-    if PageExtractionResult.objects.filter(work=work).exists():
-        return _record_page_outcome(work_uuid)
     try:
-        extraction = _fetch_page(work)
-        PageExtractionService.persist(work=work, extraction=extraction)
+        if not PageExtractionResult.objects.filter(work=work).exists():
+            extraction = _fetch_page(work)
+            PageExtractionService.persist(work=work, extraction=extraction)
+        ArticleIngestionService.ingest(work=work)
     except SafeFetchError as error:
         return _record_page_outcome(work_uuid, error=error)
-    except (SafeFetchErrorCodeWrapper, HtmlExtractionError) as error:
+    except (SafeFetchErrorCodeWrapper, HtmlExtractionError, ArticlePersistenceError) as error:
         return _record_page_outcome(work_uuid, error=error)
     return _record_page_outcome(work_uuid)
 
@@ -411,6 +421,8 @@ def _finalize_sync(sync_uuid) -> str:
         sync_request = ProjectSyncRequest.objects.select_for_update().get(uuid=sync_uuid)
         if sync_request.state == ProjectSyncStates.CANCELLED:
             return sync_request.state
+        if not hasattr(sync_request, "sitemap_inventory"):
+            return sync_request.state
         unfinished = sync_request.page_work.exclude(state__in=_PAGE_TERMINAL).exists()
         if unfinished:
             return sync_request.state
@@ -426,6 +438,7 @@ def _finalize_sync(sync_uuid) -> str:
         sync_request.broker_task_id = ""
         sync_request.save(update_fields=["state", "completed_at", "broker_task_id", "updated_at"])
         project = Project.objects.select_for_update().get(pk=sync_request.project_id)
+        ArticleLifecycleService.reconcile_sitemap(sync_request=sync_request)
         project.last_sync_uuid = sync_request.uuid
         project.last_sync_at = sync_request.completed_at
         project.current_sync_uuid = None
@@ -484,6 +497,7 @@ def recover_crawl_jobs() -> dict[str, int]:
     )
     for sync_uuid in running_syncs:
         dispatch_page_work(str(sync_uuid))
+        _finalize_sync(sync_uuid)
     return {
         "stale_syncs": stale_syncs,
         "stale_pages": stale_pages,

@@ -50,6 +50,7 @@ class HtmlExtraction:
     source_bytes: int
     text_chars: int
     diagnostics: dict[str, bool]
+    outbound_links: tuple[dict[str, str], ...] = ()
 
     def persistence_defaults(self) -> dict:
         return asdict(self)
@@ -58,6 +59,8 @@ class HtmlExtraction:
 _SPACE = re.compile(r"[\t\f\v ]+")
 _BLANK_LINES = re.compile(r"\n{3,}")
 _LANGUAGE = re.compile(r"^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$")
+_BOILERPLATE_HINT = re.compile(r"(?:^|[-_ ])(?:cookie|footer|menu|nav|sidebar)(?:$|[-_ ])", re.I)
+_MAX_OUTBOUND_LINKS = 1000
 
 
 def _bounded_text(value: str | None, limit: int) -> str:
@@ -138,6 +141,50 @@ def _validated_final_url(value: str, allowed_host: str) -> str:
     return normalized
 
 
+def _content_containers(root):
+    containers = root.xpath("//article")
+    if not containers:
+        containers = root.xpath("//main | //*[@role='main']")
+    return containers or [root]
+
+
+def _is_boilerplate_anchor(anchor) -> bool:
+    excluded_ancestors = "ancestor::nav | ancestor::header | ancestor::footer | ancestor::aside"
+    if anchor.xpath(excluded_ancestors):
+        return True
+    ancestry_hints = " ".join(
+        str(value) for value in anchor.xpath("ancestor-or-self::*/@class | ancestor-or-self::*/@id")
+    )
+    return bool(_BOILERPLATE_HINT.search(ancestry_hints))
+
+
+def _normalized_link(anchor, final_url: str) -> str:
+    try:
+        normalized, _host = normalize_sitemap_url(urljoin(final_url, str(anchor.get("href", ""))))
+    except (ValidationError, ValueError):
+        return ""
+    return "" if normalized == final_url else normalized
+
+
+def _outbound_links(root, final_url: str) -> tuple[dict[str, str], ...]:
+    links: dict[str, str] = {}
+    for container in _content_containers(root):
+        for anchor in container.xpath(".//a[@href]"):
+            if _is_boilerplate_anchor(anchor):
+                continue
+            normalized = _normalized_link(anchor, final_url)
+            if not normalized:
+                continue
+            anchor_text = _bounded_text(" ".join(anchor.itertext()), 300)
+            if normalized not in links or (not links[normalized] and anchor_text):
+                links[normalized] = anchor_text
+            if len(links) >= _MAX_OUTBOUND_LINKS:
+                break
+        if len(links) >= _MAX_OUTBOUND_LINKS:
+            break
+    return tuple({"url": url, "anchor_text": links[url]} for url in sorted(links))
+
+
 def _extractor() -> Extractor:
     config = use_config()
     config["DEFAULT"]["MAX_TREE_SIZE"] = str(settings.EXTRACTION_MAX_TREE_SIZE)
@@ -178,6 +225,7 @@ def extract_article(response: SafeFetchResult, *, allowed_host: str) -> HtmlExtr
             source_bytes=len(response.body),
             text_chars=0,
             diagnostics={"canonical_rejected": False},
+            outbound_links=(),
         )
     root = _parse_dom(document)
     noindex = _robots_noindex(root, response.headers)
@@ -213,6 +261,7 @@ def extract_article(response: SafeFetchResult, *, allowed_host: str) -> HtmlExtr
         response.headers.get("content-language", ""),
     )
     text = _normalize_article_text(getattr(extracted, "text", None) if extracted else "")
+    outbound_links = _outbound_links(root, final_url)
     if len(text) > settings.EXTRACTION_MAX_TEXT_CHARS:
         raise HtmlExtractionError(HtmlExtractionErrorCode.TEXT_TOO_LARGE)
     if noindex:
@@ -237,6 +286,7 @@ def extract_article(response: SafeFetchResult, *, allowed_host: str) -> HtmlExtr
         source_bytes=len(response.body),
         text_chars=len(text),
         diagnostics={"canonical_rejected": canonical_rejected},
+        outbound_links=outbound_links,
     )
 
 
