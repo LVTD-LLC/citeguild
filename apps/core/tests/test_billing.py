@@ -40,6 +40,17 @@ def test_monthly_price_contract_accepts_stripe_sdk_price():
     validate_monthly_price(price)
 
 
+@override_settings(STRIPE_PRICE_ID_MONTHLY="price_monthly")
+def test_monthly_price_contract_rejects_unexpanded_product():
+    price = stripe.Price.construct_from(
+        _price(product="prod_monthly"),
+        "sk_test_value",
+    )
+
+    with pytest.raises(ImproperlyConfigured, match="response is invalid"):
+        validate_monthly_price(price)
+
+
 def test_monthly_price_contract_rejects_unsupported_response():
     with pytest.raises(ImproperlyConfigured, match="response is invalid"):
         validate_monthly_price(SimpleNamespace())
@@ -104,6 +115,11 @@ def test_checkout_is_fixed_post_only_contract(
     response = auth_client.post(url)
 
     assert response.status_code == 303
+    retrieve.assert_called_once_with(
+        "price_monthly",
+        expand=["product"],
+        stripe_context="acct_lvtd",
+    )
     params = create_session.call_args.kwargs
     assert params["mode"] == "subscription"
     assert params["line_items"] == [{"price": "price_monthly", "quantity": 1}]

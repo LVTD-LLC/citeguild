@@ -15,6 +15,7 @@ class MonthlyPriceContract:
 
 
 MONTHLY_PRICE = MonthlyPriceContract()
+INVALID_PRICE_RESPONSE = "Stripe monthly Price response is invalid."
 
 
 def validate_monthly_price(price) -> None:
@@ -22,19 +23,19 @@ def validate_monthly_price(price) -> None:
     if not isinstance(price, Mapping):
         to_dict = getattr(price, "to_dict", None)
         if not callable(to_dict):
-            raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
+            raise ImproperlyConfigured(INVALID_PRICE_RESPONSE)
         price = to_dict()
     if not isinstance(price, Mapping):
-        raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
+        raise ImproperlyConfigured(INVALID_PRICE_RESPONSE)
 
     recurring = price.get("recurring") or {}
     metadata = price.get("metadata") or {}
     product = price.get("product") or {}
     if not all(isinstance(value, Mapping) for value in (recurring, metadata, product)):
-        raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
+        raise ImproperlyConfigured(INVALID_PRICE_RESPONSE)
     product_metadata = product.get("metadata") or {}
     if not isinstance(product_metadata, Mapping):
-        raise ImproperlyConfigured("Stripe monthly Price response is invalid.")
+        raise ImproperlyConfigured(INVALID_PRICE_RESPONSE)
     valid = (
         price.get("id") == settings.STRIPE_PRICE_ID_MONTHLY
         and price.get("active") is True
