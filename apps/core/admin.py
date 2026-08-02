@@ -3,6 +3,7 @@ from django.contrib import admin
 from apps.core.models import (
     Article,
     ArticleCrawlAttempt,
+    ArticleEmbedding,
     ArticleSourceURL,
     EmailSent,
     OutboundLinkObservation,
@@ -26,4 +27,5 @@ admin.site.register(PageExtractionResult)
 admin.site.register(Article)
 admin.site.register(ArticleSourceURL)
 admin.site.register(ArticleCrawlAttempt)
+admin.site.register(ArticleEmbedding)
 admin.site.register(OutboundLinkObservation)

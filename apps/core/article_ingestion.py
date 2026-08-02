@@ -299,6 +299,10 @@ class ArticleIngestionService:
             article_delta=int(created),
             active_delta=int(article.is_active) - int(was_active),
         )
+        if extraction.state == ExtractionStates.READY:
+            from apps.core.article_embeddings import queue_article_embedding
+
+            transaction.on_commit(lambda: queue_article_embedding(article.uuid))
         return article
 
 

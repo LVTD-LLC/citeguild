@@ -43,6 +43,8 @@ def test_local_configuration_uses_safe_bounded_defaults() -> None:
     assert config.process_type == "server"
     assert config.qdrant_collection == "citeguild-articles"
     assert config.embedding_dimensions == 1536
+    assert config.embedding_model == "openrouter:openai/text-embedding-3-small"
+    assert config.embedding_max_input_chars == 24_000
     assert config.crawl_max_sitemap_entries == 50_000
     assert config.crawl_max_sitemap_depth == 3
     assert config.crawl_max_sitemap_files == 100
@@ -124,6 +126,19 @@ def test_production_configuration_fails_clearly(overrides: dict[str, str], messa
 def test_enabled_billing_requires_complete_stripe_contract() -> None:
     with pytest.raises(ImproperlyConfigured, match="STRIPE_SECRET_KEY"):
         RuntimeConfig.from_mapping(_production_environment(CITEGUILD_BILLING_ENABLED="true"))
+
+
+def test_enabled_indexing_requires_selected_provider_key() -> None:
+    with pytest.raises(ImproperlyConfigured, match="OPENROUTER_API_KEY"):
+        RuntimeConfig.from_mapping(_production_environment(CITEGUILD_INDEXING_ENABLED="true"))
+
+    config = RuntimeConfig.from_mapping(
+        _production_environment(
+            CITEGUILD_INDEXING_ENABLED="true",
+            OPENROUTER_API_KEY="openrouter-secret",
+        )
+    )
+    assert config.indexing_enabled is True
 
 
 def test_invalid_numeric_value_names_the_setting() -> None:

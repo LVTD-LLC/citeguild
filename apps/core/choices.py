@@ -67,3 +67,8 @@ class ArticleStates(models.TextChoices):
 class CrawlAttemptStates(models.TextChoices):
     SUCCEEDED = "succeeded", "Succeeded"
     FAILED = "failed", "Failed"
+
+
+class ArticleEmbeddingStates(models.TextChoices):
+    SUCCEEDED = "succeeded", "Succeeded"
+    FAILED = "failed", "Failed"

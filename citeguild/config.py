@@ -61,6 +61,7 @@ class RuntimeConfig:
     qdrant_timeout_seconds: float
     embedding_model: str
     embedding_dimensions: int
+    embedding_max_input_chars: int
     crawl_request_timeout_seconds: float
     crawl_max_redirects: int
     crawl_max_sitemap_bytes: int
@@ -102,9 +103,15 @@ class RuntimeConfig:
             embedding_model=_text(
                 values,
                 "CITEGUILD_EMBEDDING_MODEL",
-                "openai/text-embedding-3-small",
+                "openrouter:openai/text-embedding-3-small",
             ),
             embedding_dimensions=_integer(values, "CITEGUILD_EMBEDDING_DIMENSIONS", 1536),
+            embedding_max_input_chars=_integer(
+                values,
+                "CITEGUILD_EMBEDDING_MAX_INPUT_CHARS",
+                24_000,
+                minimum=1_000,
+            ),
             crawl_request_timeout_seconds=_number(
                 values, "CITEGUILD_CRAWL_REQUEST_TIMEOUT_SECONDS", 20.0, minimum=0.1
             ),
@@ -196,8 +203,20 @@ class RuntimeConfig:
         if not self.qdrant_api_key:
             raise ImproperlyConfigured("QDRANT_API_KEY is required in production.")
 
+        self._validate_indexing(values)
+
         if self.billing_enabled:
             self._validate_billing()
+
+    def _validate_indexing(self, values: Mapping[str, str]) -> None:
+        if not self.indexing_enabled:
+            return
+        if not self.embedding_model.startswith("openrouter:"):
+            raise ImproperlyConfigured(
+                "CITEGUILD_EMBEDDING_MODEL must use the openrouter provider."
+            )
+        if not _text(values, "OPENROUTER_API_KEY"):
+            raise ImproperlyConfigured("OPENROUTER_API_KEY is required when indexing is enabled.")
 
     def _validate_billing(self) -> None:
         for name, value in (
@@ -232,6 +251,7 @@ class RuntimeConfig:
             "crawl_max_sitemap_files": self.crawl_max_sitemap_files,
             "crawl_request_timeout_seconds": self.crawl_request_timeout_seconds,
             "embedding_dimensions": self.embedding_dimensions,
+            "embedding_max_input_chars": self.embedding_max_input_chars,
             "embedding_model": self.embedding_model,
             "environment": self.environment,
             "indexing_enabled": self.indexing_enabled,

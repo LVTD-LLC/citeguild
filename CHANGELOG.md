@@ -18,6 +18,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Active extracted articles can now produce one durable, content-addressed
+  whole-article embedding with bounded deterministic input, explicit model and
+  dimension metadata, safe retry classification, and privacy-safe usage and
+  latency metrics.
 - PostgreSQL now retains tenant-owned article identities, normalized content
   hashes, source URL aliases, append-only crawl attempts, lifecycle timestamps,
   and reconciled outbound-link observations without storing raw HTML.
