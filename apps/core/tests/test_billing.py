@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import pytest
+import stripe
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.test import override_settings
@@ -10,6 +11,7 @@ from django.urls import reverse
 from apps.core.access import subscription_required
 from apps.core.billing import validate_monthly_price
 from apps.core.models import StripeWebhookEvent
+from apps.core.views import construct_stripe_event
 
 
 def _price(**overrides):
@@ -29,6 +31,23 @@ def _price(**overrides):
 @override_settings(STRIPE_PRICE_ID_MONTHLY="price_monthly")
 def test_monthly_price_contract_accepts_exact_ten_dollar_price():
     validate_monthly_price(_price())
+
+
+@override_settings(STRIPE_WEBHOOK_SECRET="whsec_test")
+@patch("apps.core.views.stripe.Webhook.construct_event")
+def test_construct_stripe_event_normalizes_sdk_object(construct_event, rf):
+    construct_event.return_value = stripe.Event.construct_from(
+        {"id": "evt_sdk", "type": "test.event", "created": 123, "data": {"object": {}}},
+        "sk_test_value",
+    )
+    request = rf.post("/stripe-webhook/", data=b"{}", content_type="application/json")
+    request.META["HTTP_STRIPE_SIGNATURE"] = "t=123,v1=test"
+
+    event, error = construct_stripe_event(request)
+
+    assert error is None
+    assert event["id"] == "evt_sdk"
+    assert isinstance(event, dict)
 
 
 @override_settings(STRIPE_PRICE_ID_MONTHLY="price_monthly")
