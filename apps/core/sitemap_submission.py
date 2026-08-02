@@ -11,6 +11,7 @@ from django.db import transaction
 
 from apps.core.choices import ProjectSyncKinds
 from apps.core.crawl_jobs import enqueue_sitemap_sync_safely
+from apps.core.funnel_analytics import SITE_SUBMITTED, track_funnel_event
 from apps.core.models import Profile, Project, ProjectSyncRequest
 from apps.core.projects import ProjectService, normalize_sitemap_url
 from apps.core.safe_fetch import SafeFetchClient, SafeFetchError, SafeFetchErrorCode
@@ -214,5 +215,15 @@ class SitemapSubmissionService:
             )
             transaction.on_commit(
                 lambda sync_uuid=sync_request.uuid: enqueue_sitemap_sync_safely(sync_uuid)
+            )
+            track_funnel_event(
+                owner,
+                SITE_SUBMITTED,
+                {
+                    "site_id": str(project.uuid),
+                    "sitemap_kind": validation.kind.value,
+                },
+                idempotency_key=f"project:{project.uuid}",
+                source_function="SitemapSubmissionService.submit",
             )
         return SitemapSubmission(project, sync_request, validation.kind)

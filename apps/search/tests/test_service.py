@@ -73,6 +73,41 @@ def search_client(settings):
 
 
 @pytest.mark.django_db
+def test_search_tracks_safe_cost_and_result_properties(profile, monkeypatch):
+    from apps.search.service import SearchService
+
+    profile.stripe_subscription_status = "active"
+    profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    tracked = []
+    monkeypatch.setattr(
+        "apps.search.service.track_funnel_event",
+        lambda *args, **kwargs: tracked.append((args, kwargs)),
+    )
+
+    response = SearchService().search(
+        profile=profile,
+        query="private draft passage",
+        limit=7,
+        transport="api",
+    )
+
+    assert response.results == ()
+    properties = tracked[0][0][2]
+    assert properties == {
+        "transport": "api",
+        "status": "succeeded",
+        "query_chars": 21,
+        "result_count": 0,
+        "limit": 7,
+        "language_filter": False,
+        "excluded_domain_count": 0,
+        "duration_ms": properties["duration_ms"],
+        "input_tokens": 0,
+    }
+    assert "private draft passage" not in repr(tracked)
+
+
+@pytest.mark.django_db
 def test_golden_corpus_ranks_relevant_above_unrelated_and_normalizes_contract(
     profile,
     search_client,

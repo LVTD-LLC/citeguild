@@ -427,6 +427,7 @@ def search_v1(request: HttpRequest, payload: SearchRequest):
             limit=payload.limit,
             language=payload.language,
             excluded_domains=payload.excluded_domains,
+            transport="api",
         )
     except SearchError as error:
         if error.code == "subscription_required":

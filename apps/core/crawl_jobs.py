@@ -29,6 +29,11 @@ from apps.core.choices import (
     ProjectSyncKinds,
     ProjectSyncStates,
 )
+from apps.core.funnel_analytics import (
+    INITIAL_INDEX_COMPLETED,
+    INITIAL_INDEX_FAILED,
+    track_funnel_event,
+)
 from apps.core.html_extraction import (
     HtmlExtraction,
     HtmlExtractionError,
@@ -77,6 +82,45 @@ _PAGE_TERMINAL = {
 
 def _task_id(value) -> str:
     return str(value or "")
+
+
+def _track_initial_sync(
+    sync_request: ProjectSyncRequest,
+    project: Project,
+    *,
+    error_code: str = "",
+    retryable: bool = False,
+) -> None:
+    if sync_request.kind != ProjectSyncKinds.INITIAL:
+        return
+    completed_at = sync_request.completed_at or timezone.now()
+    started_at = sync_request.started_at or sync_request.created_at
+    duration_ms = max(0, round((completed_at - started_at).total_seconds() * 1_000))
+    succeeded = sync_request.state == ProjectSyncStates.SUCCEEDED
+    properties = {
+        "site_id": str(project.uuid),
+        "status": str(sync_request.state),
+        "total_pages": sync_request.total_count,
+        "succeeded_pages": sync_request.succeeded_count,
+        "failed_pages": sync_request.failed_count,
+        "active_articles": project.active_article_count,
+        "duration_ms": duration_ms,
+    }
+    event_name = INITIAL_INDEX_COMPLETED if succeeded else INITIAL_INDEX_FAILED
+    if not succeeded:
+        properties.update(
+            {
+                "error_code": error_code or sync_request.error_code or "page_failures",
+                "retryable": retryable,
+            }
+        )
+    track_funnel_event(
+        Profile.objects.get(pk=project.owner_id),
+        event_name,
+        properties,
+        idempotency_key=f"sync:{sync_request.uuid}:{sync_request.state}",
+        source_function="crawl_jobs._track_initial_sync",
+    )
 
 
 def enqueue_sitemap_sync(sync_uuid) -> str:
@@ -426,6 +470,13 @@ def _record_sync_failure(sync_uuid, error: SitemapParseError) -> str:
             project.current_sync_uuid = None
             project.current_sync_started_at = None
         project.save()
+        if sync_request.state == ProjectSyncStates.FAILED:
+            _track_initial_sync(
+                sync_request,
+                project,
+                error_code=error.code.value,
+                retryable=error.retryable,
+            )
         return sync_request.state
 
 
@@ -871,6 +922,11 @@ def _finalize_sync(sync_uuid) -> str:
             "" if sync_request.state == ProjectSyncStates.SUCCEEDED else "page_failures"
         )
         project.save()
+        _track_initial_sync(
+            sync_request,
+            project,
+            error_code="page_failures" if sync_request.failed_count else "",
+        )
         return sync_request.state
 
 

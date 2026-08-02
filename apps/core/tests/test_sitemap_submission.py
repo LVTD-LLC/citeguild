@@ -162,9 +162,14 @@ def test_submission_enqueues_only_after_commit(
     profile.stripe_subscription_status = "active"
     profile.save(update_fields=["stripe_subscription_status", "updated_at"])
     enqueued = []
+    tracked = []
     monkeypatch.setattr(
         "apps.core.sitemap_submission.enqueue_sitemap_sync_safely",
         lambda sync_uuid: enqueued.append(sync_uuid),
+    )
+    monkeypatch.setattr(
+        "apps.core.sitemap_submission.track_funnel_event",
+        lambda *args, **kwargs: tracked.append((args, kwargs)),
     )
 
     with django_capture_on_commit_callbacks(execute=True):
@@ -177,6 +182,11 @@ def test_submission_enqueues_only_after_commit(
         assert enqueued == []
 
     assert enqueued == [submission.sync_request.uuid]
+    assert tracked[0][0][1] == "citeguild_site_submitted"
+    assert tracked[0][0][2] == {
+        "site_id": str(submission.project.uuid),
+        "sitemap_kind": "urlset",
+    }
 
 
 @pytest.mark.django_db

@@ -30,6 +30,33 @@ def test_active_subscription_grants_access_synchronously(profile):
 
 
 @pytest.mark.django_db
+def test_subscription_conversion_is_server_side_and_duplicate_safe(profile, monkeypatch):
+    tracked = []
+    monkeypatch.setattr(
+        "apps.core.stripe_webhooks.track_funnel_event",
+        lambda *args, **kwargs: tracked.append((args, kwargs)),
+    )
+    event = build_subscription_event(
+        status="active",
+        metadata={"profile_id": profile.id},
+        created=200,
+    )
+
+    handle_created_subscription(event)
+    handle_created_subscription(event)
+
+    assert len(tracked) == 1
+    args, kwargs = tracked[0]
+    assert args[1] == "citeguild_subscription_activated"
+    assert args[2] == {
+        "subscription_status": "active",
+        "previous_status": "",
+        "cancel_at_period_end": False,
+    }
+    assert kwargs["idempotency_key"] == "stripe:evt_test"
+
+
+@pytest.mark.django_db
 def test_trial_does_not_grant_access(profile):
     event = build_subscription_event(
         status="trialing", metadata={"profile_id": profile.id}, created=200

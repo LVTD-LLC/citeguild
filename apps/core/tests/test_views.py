@@ -251,7 +251,8 @@ class TestHomeView:
         assert Project.objects.count() == 1
 
     def test_rotate_api_key_stores_hash_and_shows_key_once(self, auth_client, profile):
-        response = auth_client.post(reverse("rotate_api_key"), follow=True)
+        with patch("apps.core.views.track_funnel_event") as track:
+            response = auth_client.post(reverse("rotate_api_key"), follow=True)
         content = response.content.decode()
         profile.refresh_from_db()
 
@@ -261,6 +262,8 @@ class TestHomeView:
         assert profile.api_key_hash not in content
         assert "Copy this key now" in content
         assert profile.api_key_prefix in content
+        assert track.call_args.args[1] == "citeguild_agent_credential_created"
+        assert track.call_args.args[2] == {"credential_kind": "api_key", "rotation": False}
 
         response = auth_client.get(reverse("settings"))
         content = response.content.decode()

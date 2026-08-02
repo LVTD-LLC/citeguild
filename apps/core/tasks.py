@@ -4,10 +4,13 @@ import posthog
 from django.conf import settings
 
 from apps.core.analytics import ACCOUNT_DELETED, CHECKOUT_STARTED, SIGNUP_COMPLETED
+from apps.core.funnel_analytics import DURABLE_FUNNEL_EVENTS
 
 logger = logging.getLogger(__name__)
 
-POSTHOG_DURABLE_EVENTS = frozenset({ACCOUNT_DELETED, CHECKOUT_STARTED, SIGNUP_COMPLETED})
+POSTHOG_DURABLE_EVENTS = frozenset(
+    {ACCOUNT_DELETED, CHECKOUT_STARTED, SIGNUP_COMPLETED, *DURABLE_FUNNEL_EVENTS}
+)
 
 
 def track_event(
@@ -15,6 +18,7 @@ def track_event(
     event_name: str,
     current_state: str,
     properties: dict | None = None,
+    insert_id: str = None,
     source_function: str = None,
 ) -> str:
     if not settings.POSTHOG_API_KEY:
@@ -28,16 +32,20 @@ def track_event(
         "source_function": source_function,
     }
 
+    event_properties = {
+        **(properties or {}),
+        "event_version": 1,
+        "environment": settings.ENVIRONMENT,
+        "profile_id": profile_id,
+        "current_state": current_state,
+    }
+    if insert_id:
+        event_properties["$insert_id"] = insert_id
+
     posthog.capture(
         event_name,
         distinct_id=str(profile_id),
-        properties={
-            **(properties or {}),
-            "event_version": 1,
-            "environment": settings.ENVIRONMENT,
-            "profile_id": profile_id,
-            "current_state": current_state,
-        },
+        properties=event_properties,
     )
     if event_name in POSTHOG_DURABLE_EVENTS:
         posthog.flush(timeout_seconds=5)

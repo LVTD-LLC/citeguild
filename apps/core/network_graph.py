@@ -8,6 +8,11 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.core.choices import ProjectStates
+from apps.core.funnel_analytics import (
+    CITATION_DETECTED,
+    CITATION_REMOVED,
+    track_funnel_event,
+)
 from apps.core.models import (
     Article,
     ArticleSourceURL,
@@ -20,6 +25,31 @@ from apps.core.projects import normalize_sitemap_url
 
 
 class DetectedNetworkLinkService:
+    @staticmethod
+    def _track_transition(edge: DetectedNetworkLink, event_name: str, *, occurred_at) -> None:
+        source_project = Project.objects.only("uuid", "owner_id").get(
+            pk=edge.source_article.project_id
+        )
+        target_project = Project.objects.only("uuid", "owner_id").get(pk=edge.target_project_id)
+        for owner_id, site_id, direction in (
+            (source_project.owner_id, source_project.uuid, "given"),
+            (target_project.owner_id, target_project.uuid, "received"),
+        ):
+            track_funnel_event(
+                Profile.objects.get(pk=owner_id),
+                event_name,
+                {
+                    "direction": direction,
+                    "site_id": str(site_id),
+                    "matched_page": edge.target_article_id is not None,
+                    "active": edge.is_active,
+                },
+                idempotency_key=(
+                    f"citation:{edge.uuid}:{event_name}:{direction}:{occurred_at.isoformat()}"
+                ),
+                source_function="DetectedNetworkLinkService.reconcile_observation",
+            )
+
     @staticmethod
     def resolve_destination(url: str) -> tuple[Project, Article | None] | None:
         """Resolve a member host and, when unambiguous, its exact article."""
@@ -79,6 +109,7 @@ class DetectedNetworkLinkService:
         )
         if resolved is None:
             if existing is not None:
+                was_active = existing.is_active
                 existing.target_article = None
                 existing.is_active = False
                 existing.inactive_at = existing.inactive_at or now
@@ -90,6 +121,8 @@ class DetectedNetworkLinkService:
                         "updated_at",
                     ]
                 )
+                if was_active:
+                    cls._track_transition(existing, CITATION_REMOVED, occurred_at=now)
             return existing
 
         target_project, target_article = resolved
@@ -97,6 +130,7 @@ class DetectedNetworkLinkService:
         if target_article is not None:
             target_article = Article.objects.get(pk=target_article.pk)
         active = cls._is_active(observation, target_project, target_article)
+        was_active = existing.is_active if existing is not None else False
         edge, created = DetectedNetworkLink.objects.get_or_create(
             observation=observation,
             defaults={
@@ -121,6 +155,10 @@ class DetectedNetworkLinkService:
             edge.is_active = active
             edge.inactive_at = None if active else (edge.inactive_at or now)
             edge.save()
+        if created or active and not was_active:
+            cls._track_transition(edge, CITATION_DETECTED, occurred_at=now)
+        elif was_active and not active:
+            cls._track_transition(edge, CITATION_REMOVED, occurred_at=now)
         return edge
 
     @classmethod

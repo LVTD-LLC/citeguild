@@ -379,6 +379,9 @@ Every Django request emits one `http.request.completed` event with a bounded
 workers emit `background_job.completed` without task arguments or results.
 These fields stay queryable in JSON logs and Sentry. PostHog receives an asynchronous clone restricted to an explicit field allowlist; unknown fields and the original formatted message are dropped, and `posthogDistinctId` is derived inside the exporter from `profile_id`.
 
+The server-truth product event catalog, deduplication rules, privacy boundary,
+and MVP metric recipes live in [the paid-to-citation analytics contract](docs/analytics/funnel-events.md).
+
 ### Application Boundaries
 
 | Area | Responsibility |

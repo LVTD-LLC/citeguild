@@ -454,6 +454,11 @@ def test_initial_sync_becomes_searchable_and_rerun_is_idempotent(
     settings.EMBEDDING_DIMENSIONS = 3
     settings.EMBEDDING_MODEL = "test:whole-article"
     settings.QDRANT_COLLECTION = "test_initial_sync_articles"
+    tracked = []
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.track_funnel_event",
+        lambda *args, **kwargs: tracked.append((args, kwargs)),
+    )
     client = QdrantClient(location=":memory:")
     monkeypatch.setattr("apps.search.qdrant.get_qdrant_client", lambda: client)
     monkeypatch.setattr(
@@ -477,6 +482,8 @@ def test_initial_sync_becomes_searchable_and_rerun_is_idempotent(
     assert sync_request.state == ProjectSyncStates.SUCCEEDED
     assert (sync_request.total_count, sync_request.succeeded_count) == (1, 1)
     assert article.is_active is True
+    assert tracked[0][0][1] == "citeguild_initial_index_completed"
+    assert tracked[0][0][2]["active_articles"] == 1
     assert (
         semantic_search(
             [1.0, 0.0, 0.0],

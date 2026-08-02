@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from django.conf import settings
@@ -5,6 +6,8 @@ from django.db import transaction
 from django_q.tasks import async_task
 
 from apps.core.models import Profile
+
+logger = logging.getLogger(__name__)
 
 ANALYTICS_CONSENT_COOKIE = "analytics_consent"
 EVENT_PREFIX = "citeguild"
@@ -25,6 +28,7 @@ def track_event(
     properties: dict[str, Any] | None = None,
     *,
     current_state: str | None = None,
+    insert_id: str | None = None,
     source_function: str | None = None,
 ) -> str:
     """Queue a privacy-safe profile event after the surrounding transaction commits."""
@@ -36,15 +40,28 @@ def track_event(
     event_properties = properties or {}
 
     def enqueue_event() -> None:
-        async_task(
-            "apps.core.tasks.track_event",
-            profile_id=profile_id,
-            event_name=event_name,
-            current_state=state_snapshot,
-            properties=event_properties,
-            source_function=source_function,
-            group="Track PostHog Event",
-        )
+        try:
+            async_task(
+                "apps.core.tasks.track_event",
+                profile_id=profile_id,
+                event_name=event_name,
+                current_state=state_snapshot,
+                properties=event_properties,
+                insert_id=insert_id,
+                source_function=source_function,
+                group="Track PostHog Event",
+            )
+        except Exception as error:
+            logger.warning(
+                "posthog.event.enqueue_failed",
+                extra={
+                    "event.name": "posthog.event.enqueue_failed",
+                    "profile_id": profile_id,
+                    "analytics_event_name": event_name,
+                    "error.type": type(error).__name__,
+                    "outcome": "failure",
+                },
+            )
 
     connection = transaction.get_connection()
     if connection.in_atomic_block:

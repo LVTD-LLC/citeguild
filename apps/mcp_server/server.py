@@ -129,6 +129,7 @@ def search_member_articles(
             limit=limit,
             language=language,
             excluded_domains=excluded_domains or (),
+            transport="mcp",
         )
         return _search_payload(response)
     except SearchError as error:

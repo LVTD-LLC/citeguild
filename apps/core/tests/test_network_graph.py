@@ -36,7 +36,12 @@ def create_other_profile(name):
 
 
 @pytest.mark.django_db
-def test_resolver_builds_known_cross_site_edges_and_ignores_external_links(profile):
+def test_resolver_builds_known_cross_site_edges_and_ignores_external_links(profile, monkeypatch):
+    tracked = []
+    monkeypatch.setattr(
+        "apps.core.network_graph.track_funnel_event",
+        lambda *args, **kwargs: tracked.append((args, kwargs)),
+    )
     target = create_article(profile, "target.example", "guide")
     other_profile = create_other_profile("network-source")
     source = create_article(
@@ -61,6 +66,10 @@ def test_resolver_builds_known_cross_site_edges_and_ignores_external_links(profi
     assert not DetectedNetworkLink.objects.filter(
         normalized_destination_url="https://external.example/reference"
     ).exists()
+    directions = [call[0][2]["direction"] for call in tracked]
+    assert directions.count("given") == directions.count("received") == 2
+    assert all(call[0][1] == "citeguild_citation_detected" for call in tracked)
+    assert "source.example" not in repr(tracked)
 
 
 @pytest.mark.django_db
