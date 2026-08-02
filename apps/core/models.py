@@ -7,6 +7,7 @@ from django_q.tasks import async_task
 
 from apps.core.base_models import BaseModel
 from apps.core.choices import (
+    ArticleEmbeddingStates,
     ArticleStates,
     CrawlAttemptStates,
     EmailType,
@@ -368,6 +369,29 @@ class ArticleSourceURL(BaseModel):
         ]
         indexes = [
             models.Index(fields=["project", "is_active"], name="core_article_source_active_idx")
+        ]
+
+
+class ArticleEmbedding(BaseModel):
+    article = models.OneToOneField(
+        Article,
+        on_delete=models.CASCADE,
+        related_name="embedding",
+    )
+    state = models.CharField(max_length=20, choices=ArticleEmbeddingStates.choices)
+    vector = models.JSONField(default=list, blank=True)
+    content_hash = models.CharField(max_length=64)
+    model = models.CharField(max_length=255)
+    dimensions = models.PositiveIntegerField()
+    input_chars = models.PositiveIntegerField(default=0)
+    input_tokens = models.PositiveIntegerField(default=0)
+    latency_ms = models.PositiveIntegerField(default=0)
+    error_code = models.CharField(max_length=64, blank=True, default="")
+    embedded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_article_embedding_uuid_unique"),
         ]
 
 

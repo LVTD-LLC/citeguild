@@ -22,7 +22,8 @@ Successful sitemap finalization marks absent source aliases inactive. An article
 becomes inactive only when it has no active source alias, and its text, hash,
 attempts, links, UUID, and first-seen history remain available. A later successful
 fetch reactivates the same UUID through `discovered`. The active/searchable flag
-remains false until CG-016 records a matching ready whole-article embedding.
+remains false until a later Qdrant indexing step records the matching vector in
+the search collection.
 
 Outbound observations are derived only from bounded content-area anchors, never
 navigation, footer, cookie, mailto, or executable content. Each source article
