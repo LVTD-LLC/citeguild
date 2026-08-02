@@ -11,21 +11,29 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from django_q.tasks import async_task
+from qdrant_client.http.exceptions import ApiException
 
+from apps.core.article_embeddings import EmbeddingError, EmbeddingService
 from apps.core.article_ingestion import (
     ArticleIngestionService,
     ArticleLifecycleService,
     ArticlePersistenceError,
     CrawlAttemptService,
 )
-from apps.core.choices import PageCrawlStates, ProjectSyncStates
+from apps.core.choices import ExtractionStates, PageCrawlStates, ProjectSyncStates
 from apps.core.html_extraction import (
     HtmlExtraction,
     HtmlExtractionError,
     PageExtractionService,
     extract_article,
 )
-from apps.core.models import PageCrawlWork, PageExtractionResult, Project, ProjectSyncRequest
+from apps.core.models import (
+    Article,
+    PageCrawlWork,
+    PageExtractionResult,
+    Project,
+    ProjectSyncRequest,
+)
 from apps.core.projects import normalize_sitemap_url
 from apps.core.safe_fetch import SafeFetchClient, SafeFetchError
 from apps.core.sitemap_parser import (
@@ -33,6 +41,7 @@ from apps.core.sitemap_parser import (
     SitemapParseError,
     SitemapParser,
 )
+from apps.search.qdrant import QdrantContractError, upsert_article
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +130,17 @@ def _cancel_sync(sync_request: ProjectSyncRequest) -> str:
         completed_at=now,
         broker_task_id="",
         error_code="project_ineligible",
+    )
+    logger.info(
+        "crawl.sync.cancelled",
+        extra={
+            "event.name": "crawl.sync.cancelled",
+            "sync_uuid": str(sync_request.uuid),
+            "project_uuid": str(sync_request.project.uuid),
+            "error.type": "project_ineligible",
+            "operation.status": "cancelled",
+            "outcome": "failure",
+        },
     )
     return sync_request.state
 
@@ -348,6 +368,57 @@ class SafeFetchErrorCodeWrapper(Exception):
         super().__init__(code)
 
 
+class ArticleIndexingError(Exception):
+    def __init__(self, code: str, *, retryable: bool = False):
+        self.code = code
+        self.retryable = retryable
+        super().__init__(code)
+
+
+class ProjectBecameIneligibleError(Exception):
+    pass
+
+
+def _cancel_if_project_ineligible(sync_uuid) -> bool:
+    with transaction.atomic():
+        sync_request = (
+            ProjectSyncRequest.objects.select_for_update()
+            .select_related("project__owner__user")
+            .get(uuid=sync_uuid)
+        )
+        if sync_request.state == ProjectSyncStates.CANCELLED:
+            return True
+        if sync_request.project.is_sync_eligible:
+            return False
+        _cancel_sync(sync_request)
+        return True
+
+
+def _index_ready_article(article: Article) -> None:
+    """Complete embedding and durable vector upsert inside one observable page job."""
+    EmbeddingService().embed_article(article_uuid=article.uuid)
+    project = Project.objects.select_related("owner__user").get(pk=article.project_id)
+    if not project.is_sync_eligible:
+        raise ProjectBecameIneligibleError
+
+    try:
+        upsert_article(article=article)
+    except ApiException as error:
+        raise ArticleIndexingError("qdrant_unavailable", retryable=True) from error
+
+
+def _process_page_work(work: PageCrawlWork) -> None:
+    if not PageExtractionResult.objects.filter(work=work).exists():
+        extraction = _fetch_page(work)
+        PageExtractionService.persist(work=work, extraction=extraction)
+    article = ArticleIngestionService.ingest(work=work, queue_embedding=False)
+    if work.extraction.state != ExtractionStates.READY or not settings.CITEGUILD_INDEXING_ENABLED:
+        return
+    if _cancel_if_project_ineligible(work.sync_request.uuid):
+        raise ProjectBecameIneligibleError
+    _index_ready_article(article)
+
+
 def _record_page_outcome(work_uuid, *, error=None) -> str:
     with transaction.atomic():
         work = (
@@ -386,7 +457,23 @@ def _record_page_outcome(work_uuid, *, error=None) -> str:
         work.save()
         sync_uuid = work.sync_request.uuid
     _refresh_sync_counts(sync_uuid)
-    _finalize_sync(sync_uuid)
+    sync_state = _finalize_sync(sync_uuid)
+    log = logger.warning if error is not None else logger.info
+    log(
+        "crawl.page.completed",
+        extra={
+            "event.name": "crawl.page.completed",
+            "sync_uuid": str(sync_uuid),
+            "work_uuid": str(work.uuid),
+            "page_state": work.state,
+            "sync_state": sync_state,
+            "attempt_count": work.attempt_count,
+            "error.type": work.error_code,
+            "operation.status": work.state,
+            "outcome": "success" if error is None else "failure",
+            "retryable": bool(error and error.retryable),
+        },
+    )
     return work.state
 
 
@@ -395,14 +482,27 @@ def run_page_crawl(work_uuid: str) -> str:
     if work is None:
         return "noop"
     try:
-        if not PageExtractionResult.objects.filter(work=work).exists():
-            extraction = _fetch_page(work)
-            PageExtractionService.persist(work=work, extraction=extraction)
-        ArticleIngestionService.ingest(work=work)
+        _process_page_work(work)
     except SafeFetchError as error:
         return _record_page_outcome(work_uuid, error=error)
     except (SafeFetchErrorCodeWrapper, HtmlExtractionError, ArticlePersistenceError) as error:
         return _record_page_outcome(work_uuid, error=error)
+    except EmbeddingError as error:
+        return _record_page_outcome(work_uuid, error=error)
+    except ArticleIndexingError as error:
+        return _record_page_outcome(work_uuid, error=error)
+    except ProjectBecameIneligibleError:
+        if _cancel_if_project_ineligible(work.sync_request.uuid):
+            return PageCrawlStates.CANCELLED
+        return _record_page_outcome(
+            work_uuid,
+            error=ArticleIndexingError("project_eligibility_changed", retryable=True),
+        )
+    except QdrantContractError as error:
+        return _record_page_outcome(
+            work_uuid,
+            error=ArticleIndexingError(error.code),
+        )
     return _record_page_outcome(work_uuid)
 
 

@@ -185,7 +185,12 @@ class ArticleIngestionService:
 
     @classmethod
     @transaction.atomic
-    def ingest(cls, *, work: PageCrawlWork) -> Article:
+    def ingest(
+        cls,
+        *,
+        work: PageCrawlWork,
+        queue_embedding: bool = True,
+    ) -> Article:
         project = Project.objects.select_for_update().get(pk=work.sync_request.project_id)
         work = (
             PageCrawlWork.objects.select_for_update(of=("self",))
@@ -299,7 +304,7 @@ class ArticleIngestionService:
             article_delta=int(created),
             active_delta=int(article.is_active) - int(was_active),
         )
-        if extraction.state == ExtractionStates.READY:
+        if queue_embedding and extraction.state == ExtractionStates.READY:
             from apps.core.article_embeddings import queue_article_embedding
 
             transaction.on_commit(lambda: queue_article_embedding(article.uuid))

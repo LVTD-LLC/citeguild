@@ -5,7 +5,9 @@ from django.core.management import call_command
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django_q.models import Schedule
+from qdrant_client import QdrantClient
 
+from apps.core.article_embeddings import EmbeddingError, EmbeddingResponse
 from apps.core.choices import (
     ExtractionStates,
     PageCrawlStates,
@@ -21,7 +23,7 @@ from apps.core.crawl_jobs import (
     run_sitemap_sync,
 )
 from apps.core.html_extraction import HtmlExtraction, PageExtractionService
-from apps.core.models import PageCrawlWork, ProjectSyncRequest
+from apps.core.models import Article, ArticleEmbedding, PageCrawlWork, ProjectSyncRequest
 from apps.core.projects import ProjectService
 from apps.core.safe_fetch import SafeFetchError, SafeFetchErrorCode
 from apps.core.sitemap_parser import (
@@ -293,6 +295,179 @@ def test_mixed_terminal_page_outcomes_finalize_partial(sync_request, monkeypatch
     assert sync_request.state == ProjectSyncStates.PARTIAL
     assert sync_request.succeeded_count == 1
     assert sync_request.failed_count == 1
+
+
+@pytest.mark.django_db
+def test_initial_sync_becomes_searchable_and_rerun_is_idempotent(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    from apps.search.qdrant import ensure_article_collection, semantic_search
+
+    settings.CITEGUILD_INDEXING_ENABLED = True
+    settings.EMBEDDING_DIMENSIONS = 3
+    settings.EMBEDDING_MODEL = "test:whole-article"
+    settings.QDRANT_COLLECTION = "test_initial_sync_articles"
+    client = QdrantClient(location=":memory:")
+    monkeypatch.setattr("apps.search.qdrant.get_qdrant_client", lambda: client)
+    monkeypatch.setattr(
+        "apps.core.article_embeddings.PydanticEmbeddingClient.embed",
+        lambda self, text, *, dimensions: EmbeddingResponse([1.0, 0.0, 0.0], 7),
+    )
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.SitemapParser.parse",
+        lambda self, url: parse_result("article"),
+    )
+    monkeypatch.setattr("apps.core.crawl_jobs.dispatch_page_work", lambda sync_uuid: 1)
+    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", _extraction)
+    ensure_article_collection(client=client)
+
+    assert run_sitemap_sync(str(sync_request.uuid)) == ProjectSyncStates.RUNNING
+    work = sync_request.page_work.get()
+    assert run_page_crawl(str(work.uuid)) == PageCrawlStates.SUCCEEDED
+
+    sync_request.refresh_from_db()
+    article = Article.objects.select_related("embedding").get()
+    assert sync_request.state == ProjectSyncStates.SUCCEEDED
+    assert (sync_request.total_count, sync_request.succeeded_count) == (1, 1)
+    assert article.is_active is True
+    assert (
+        semantic_search(
+            [1.0, 0.0, 0.0],
+            authorized_project_uuids={sync_request.project.uuid},
+        )[0].article_uuid
+        == article.uuid
+    )
+
+    rerun = ProjectSyncRequest.objects.create(
+        project=sync_request.project,
+        sitemap_kind="urlset",
+        idempotency_key=f"rerun:{sync_request.project.uuid}",
+    )
+    assert run_sitemap_sync(str(rerun.uuid)) == ProjectSyncStates.RUNNING
+    assert run_page_crawl(str(rerun.page_work.get().uuid)) == PageCrawlStates.SUCCEEDED
+
+    records, _offset = client.scroll(
+        settings.QDRANT_COLLECTION,
+        limit=10,
+        with_payload=False,
+        with_vectors=False,
+    )
+    assert Article.objects.count() == 1
+    assert ArticleEmbedding.objects.count() == 1
+    assert len(records) == 1
+
+
+@pytest.mark.django_db
+def test_retryable_indexing_failure_is_visible_and_resumable(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    settings.CITEGUILD_INDEXING_ENABLED = True
+    settings.CRAWL_PER_SITE_CONCURRENCY = 2
+    work = _page_work(sync_request)
+    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", _extraction)
+    attempts = []
+
+    def flaky_index(article):
+        attempts.append(article.uuid)
+        if len(attempts) == 1:
+            raise EmbeddingError("provider_unavailable", retryable=True)
+
+    monkeypatch.setattr("apps.core.crawl_jobs._index_ready_article", flaky_index)
+
+    assert run_page_crawl(str(work.uuid)) == PageCrawlStates.QUEUED
+    work.refresh_from_db()
+    sync_request.refresh_from_db()
+    assert work.error_code == "provider_unavailable"
+    assert work.next_attempt_at is not None
+    assert sync_request.state == ProjectSyncStates.RUNNING
+    assert (sync_request.total_count, sync_request.queued_count) == (1, 1)
+
+    work.next_attempt_at = None
+    work.save(update_fields=["next_attempt_at", "updated_at"])
+    assert run_page_crawl(str(work.uuid)) == PageCrawlStates.SUCCEEDED
+    sync_request.refresh_from_db()
+    assert sync_request.state == ProjectSyncStates.SUCCEEDED
+    assert sync_request.succeeded_count == 1
+    assert Article.objects.count() == 1
+    assert work.extraction.text == "Useful article text"
+    assert attempts[0] == attempts[1]
+
+
+@pytest.mark.django_db
+def test_nonretryable_indexing_failure_contributes_to_partial_progress(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    from apps.search.qdrant import QdrantContractError
+
+    settings.CITEGUILD_INDEXING_ENABLED = True
+    settings.CRAWL_PER_SITE_CONCURRENCY = 2
+    first = _page_work(sync_request, "first")
+    second_candidate = sync_request.sitemap_inventory.candidates.create(
+        url="https://example.com/second",
+        normalized_url="https://example.com/second",
+    )
+    second = PageCrawlWork.objects.create(
+        sync_request=sync_request,
+        candidate=second_candidate,
+    )
+    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", _extraction)
+
+    def index_or_reject(article):
+        if article.original_url.endswith("/second"):
+            raise QdrantContractError("collection_dimension_mismatch")
+
+    monkeypatch.setattr("apps.core.crawl_jobs._index_ready_article", index_or_reject)
+
+    assert run_page_crawl(str(first.uuid)) == PageCrawlStates.SUCCEEDED
+    assert run_page_crawl(str(second.uuid)) == PageCrawlStates.FAILED
+    sync_request.refresh_from_db()
+    second.refresh_from_db()
+    assert sync_request.state == ProjectSyncStates.PARTIAL
+    assert (sync_request.succeeded_count, sync_request.failed_count) == (1, 1)
+    assert second.error_code == "collection_dimension_mismatch"
+
+
+@pytest.mark.django_db
+def test_project_suspension_after_ingestion_cancels_before_indexing(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    from apps.core.article_ingestion import ArticleIngestionService
+
+    settings.CITEGUILD_INDEXING_ENABLED = True
+    settings.CRAWL_PER_SITE_CONCURRENCY = 2
+    work = _page_work(sync_request)
+    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", _extraction)
+    original_ingest = ArticleIngestionService.ingest
+
+    def ingest_then_suspend(*, work, queue_embedding=True):
+        article = original_ingest(work=work, queue_embedding=queue_embedding)
+        project = work.sync_request.project
+        project.state = ProjectStates.SUSPENDED
+        project.save(update_fields=["state", "updated_at"])
+        return article
+
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.ArticleIngestionService.ingest",
+        ingest_then_suspend,
+    )
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs._index_ready_article",
+        lambda article: pytest.fail("a suspended project must not be indexed"),
+    )
+
+    assert run_page_crawl(str(work.uuid)) == PageCrawlStates.CANCELLED
+    sync_request.refresh_from_db()
+    work.refresh_from_db()
+    assert sync_request.state == ProjectSyncStates.CANCELLED
+    assert work.state == PageCrawlStates.CANCELLED
 
 
 @pytest.mark.django_db
