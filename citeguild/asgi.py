@@ -23,7 +23,9 @@ django_application = get_asgi_application()
 from apps.mcp_server.auth import McpAuthMiddleware  # noqa: E402
 from apps.mcp_server.server import mcp, mcp_analytics  # noqa: E402
 
-raw_mcp_application = mcp.http_app(path="/")
+# Gunicorn runs multiple ASGI workers in production. Keep HTTP requests
+# independent so an MCP client is not pinned to one worker's in-memory session.
+raw_mcp_application = mcp.http_app(path="/", stateless_http=True)
 mcp_application = McpAuthMiddleware(raw_mcp_application)
 
 
