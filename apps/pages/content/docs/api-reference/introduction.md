@@ -28,7 +28,9 @@ Example request:
 curl -H "Authorization: Bearer ${{ api_key_env_var }}" "{{ api_base_url }}/v1/account"
 ```
 
-API keys are shown only once when generated or rotated. Treat them like passwords: do not put them in URLs, frontend code, public repos, shared screenshots, or logs.
+API keys are shown only once when generated or rotated. Rotating a key immediately
+revokes its previous value. Treat keys like passwords: do not put them in prompts,
+URLs, frontend code, public repos, shared screenshots, or logs.
 
 ## Interactive API docs
 
@@ -49,8 +51,9 @@ Use those generated docs when you want request/response schemas or to inspect lo
 Search accepts a query of at most 8,000 characters, a result limit from 1 to 50,
 an optional language, and at most 20 exact domains to exclude. Responses include
 the contract version and public article metadata, excerpt, relevance, language,
-and last-seen timestamp. Similarity is a candidate-ranking signal, not an
-endorsement or factual guarantee.
+and last-seen timestamp. The `relevance` value ranges from 0 to 1 and is a
+candidate-ranking signal, not an endorsement, factual guarantee, or requirement
+to cite a result.
 
 Versioned endpoints return an `X-Request-ID` response header. Error bodies use
 stable `code`, `message`, `retryable`, and `request_id` fields without provider

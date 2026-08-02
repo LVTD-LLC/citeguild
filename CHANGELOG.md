@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- The dashboard now reveals a credential-safe Copy Prompt after the first site
+  submission, with provider-neutral MCP/API onboarding, current public URLs,
+  explicit source-evaluation guardrails, and linked key rotation guidance.
 - Added the authenticated `search_member_articles` Streamable HTTP MCP tool on
   the shared v1 semantic-search contract, with bounded inputs, safe errors,
   bearer/OAuth integration coverage, and Codex/Claude Code setup guidance.
