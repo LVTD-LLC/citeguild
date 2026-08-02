@@ -53,6 +53,7 @@ def get_profile_for_api_key(key: str) -> Profile | None:
     bind_log_context(
         **{
             "profile_id": profile.id,
+            "api_key_id": api_key_prefix,
             "auth.method": "api_key",
         }
     )

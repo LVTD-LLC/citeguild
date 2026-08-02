@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Authenticated `/api/v1` endpoints now expose shared semantic search, account
+  state, bounded owner-scoped project listing/detail/creation, stable errors and
+  request IDs, and atomic per-key rate limits through generated OpenAPI docs.
 - A versioned shared semantic-search service now embeds bounded queries, searches
   the active paid-member corpus, applies language and exact-domain exclusions,
   reauthorizes every Qdrant hit through PostgreSQL, and returns deterministic
