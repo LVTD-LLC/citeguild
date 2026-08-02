@@ -410,6 +410,11 @@ class ArticleCrawlAttempt(BaseModel):
                 fields=["work", "attempt_number"],
                 name="core_article_attempt_work_number_unique",
             ),
+            models.UniqueConstraint(
+                fields=["work"],
+                condition=models.Q(state=CrawlAttemptStates.SUCCEEDED),
+                name="core_article_attempt_one_success",
+            ),
         ]
         indexes = [
             models.Index(fields=["project", "fetched_at"], name="core_article_attempt_project_idx")

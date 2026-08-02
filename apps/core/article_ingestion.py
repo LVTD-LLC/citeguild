@@ -192,13 +192,19 @@ class ArticleIngestionService:
             .select_related("sync_request", "candidate", "extraction")
             .get(pk=work.pk)
         )
+        existing_attempt = (
+            ArticleCrawlAttempt.objects.select_for_update()
+            .select_related("article")
+            .filter(work=work, state=CrawlAttemptStates.SUCCEEDED)
+            .first()
+        )
+        if existing_attempt and existing_attempt.article:
+            return existing_attempt.article
         extraction = work.extraction
         canonical = cls._validate_canonical(project, extraction.canonical_url)
         now = timezone.now()
         content_hash = (
-            _content_hash(extraction.text)
-            if extraction.state == ExtractionStates.READY
-            else ""
+            _content_hash(extraction.text) if extraction.state == ExtractionStates.READY else ""
         )
         article = (
             Article.objects.select_for_update()

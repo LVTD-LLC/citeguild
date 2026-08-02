@@ -92,9 +92,7 @@ def test_ready_extraction_persists_article_source_attempt_and_links(profile):
     sync, [work] = create_sync(project, "first", "https://example.com/post")
     extraction_for(
         work,
-        links=(
-            {"url": "https://member.example/guide", "anchor_text": "Member guide"},
-        ),
+        links=({"url": "https://member.example/guide", "anchor_text": "Member guide"},),
     )
 
     article = ArticleIngestionService.ingest(work=work)
@@ -139,6 +137,23 @@ def test_unchanged_content_does_not_move_last_changed(profile):
     assert refreshed.pk == article.pk
     assert refreshed.last_changed_at == first_changed
     assert refreshed.last_fetched_at >= first_changed
+
+
+@pytest.mark.django_db
+def test_replaying_one_work_does_not_duplicate_history_or_move_timestamps(profile):
+    project = create_project(profile)
+    _sync, [work] = create_sync(project, "first", "https://example.com/post")
+    extraction_for(work)
+    article = ArticleIngestionService.ingest(work=work)
+    first_fetched = article.last_fetched_at
+    work.attempt_count = 2
+    work.save(update_fields=["attempt_count", "updated_at"])
+
+    replayed = ArticleIngestionService.ingest(work=work)
+
+    assert replayed.pk == article.pk
+    assert replayed.last_fetched_at == first_fetched
+    assert ArticleCrawlAttempt.objects.filter(work=work).count() == 1
 
 
 @pytest.mark.django_db
