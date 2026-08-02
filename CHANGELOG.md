@@ -24,8 +24,17 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 - Hosted MCP now uses stateless Streamable HTTP so authenticated multi-call
   clients remain reliable across the three production Gunicorn workers.
 
+### Changed
+
+- Replaced generic policy copy with CiteGuild-specific crawler, semantic search,
+  public indexing, data processing, billing, abuse, and no-guaranteed-backlink
+  terms that match the deployed MVP.
+
 ### Added
 
+- Added the evidence-linked launch checklist, named operator ownership,
+  component and abuse incident paths, metric cadence, production failure
+  exercise, and explicit launch/no-launch risks.
 - Added private encrypted daily PostgreSQL backups with bucket-scoped storage,
   daily/weekly/monthly retention, integrity checks, failure alerts, and an
   isolated PostgreSQL restore plus Qdrant rebuild recovery runbook.

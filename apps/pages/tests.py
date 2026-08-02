@@ -45,6 +45,25 @@ def test_signup_page_shows_passkey_signup_option(client):
     assert reverse("account_signup_by_passkey") in content
 
 
+def test_public_policies_match_citeguild_indexing_and_editorial_behavior(client):
+    terms = client.get(reverse("terms_of_service"))
+    privacy = client.get(reverse("privacy_policy"))
+
+    assert terms.status_code == 200
+    assert privacy.status_code == 200
+    terms_content = " ".join(terms.content.decode().split())
+    privacy_content = " ".join(privacy.content.decode().split())
+    assert "$10 USD per month" in terms_content
+    assert "does not guarantee a backlink" in terms_content
+    assert "Membership never requires one member to link to another" in terms_content
+    assert "Submit a site without authority" in terms_content
+    assert "Public page text" in privacy_content
+    assert "search results containing public titles, URLs, excerpts" in privacy_content
+    assert "OpenRouter Privacy Policy" in privacy_content
+    assert "[link]" not in privacy_content
+    assert "[Any other" not in privacy_content
+
+
 def test_passkey_signup_page_uses_app_styling(client):
     response = client.get(reverse("account_signup_by_passkey"))
     assert response.status_code == 200
