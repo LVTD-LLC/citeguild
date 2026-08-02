@@ -139,13 +139,8 @@ class EmbeddingService:
             current = Article.objects.select_for_update().get(  # ty: ignore[unresolved-attribute]
                 pk=article.pk
             )
-            existing = (
-                ArticleEmbedding.objects.select_for_update()
-                .filter(  # ty: ignore[unresolved-attribute]
-                    article=current
-                )
-                .first()
-            )
+            embedding_manager = ArticleEmbedding.objects  # ty: ignore[unresolved-attribute]
+            existing = embedding_manager.select_for_update().filter(article=current).first()
             failure_is_stale = current.content_hash != article.content_hash
             matching_success_exists = (
                 existing
