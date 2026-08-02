@@ -8,6 +8,7 @@ PYTEST_RUN ?= uv run pytest
 MUTMUT_RUN ?= uv run mutmut
 PYSCN_VERSION ?= 1.24.0
 TYPE_CHECK_PATHS = \
+	apps/api/rate_limits.py \
 	apps/api/schemas.py \
 	apps/core/agents/base.py \
 	apps/core/ai_observability.py \
