@@ -2,7 +2,8 @@
 
 CiteGuild's PostgreSQL database is the durable source of truth. Production runs
 one private `citeguild-backups` process that creates a custom-format `pg_dump`,
-streams it into an encrypted restic repository in the private
+stages it only on the backup container's ephemeral filesystem, then stores it in
+an encrypted restic repository in the private
 `citeguild-backups` MinIO bucket, applies retention, and runs `restic check`.
 Qdrant is a rebuildable projection and is not part of the database backup.
 
@@ -27,8 +28,10 @@ the approved secret store and CapRover environment only.
 
 1. Send a start ping and remove stale restic locks left by interrupted jobs.
 2. Initialize the encrypted repository only when it does not exist.
-3. Stream `pg_dump --format=custom` into a restic snapshot named
-   `citeguild.dump`; no plaintext dump is written to a persistent filesystem.
+3. Write `pg_dump --format=custom` to an ephemeral file, require a successful
+   dump and a non-zero size, store it in a restic snapshot as `citeguild.dump`,
+   then immediately delete the ephemeral file. No plaintext dump is written to
+   a persistent filesystem, and a failed/empty dump cannot become a snapshot.
 4. Retain 7 daily, 4 weekly, and 6 monthly snapshots and prune unreferenced data.
 5. Run `restic check`, then send success. Any failed step sends `/fail` and
    retries after 15 minutes.

@@ -25,6 +25,7 @@ BACKUP_RETRY_SECONDS="${BACKUP_RETRY_SECONDS:-900}"
 RESTIC_KEEP_DAILY="${RESTIC_KEEP_DAILY:-7}"
 RESTIC_KEEP_WEEKLY="${RESTIC_KEEP_WEEKLY:-4}"
 RESTIC_KEEP_MONTHLY="${RESTIC_KEEP_MONTHLY:-6}"
+BACKUP_RUN_ONCE="${BACKUP_RUN_ONCE:-0}"
 
 for value in \
   "$BACKUP_INTERVAL_SECONDS" \
@@ -37,6 +38,10 @@ for value in \
     exit 1
   fi
 done
+if [[ "$BACKUP_RUN_ONCE" != "0" && "$BACKUP_RUN_ONCE" != "1" ]]; then
+  echo "BACKUP_RUN_ONCE must be 0 or 1." >&2
+  exit 1
+fi
 
 ping_healthchecks() {
   local suffix="${1:-}"
@@ -52,16 +57,33 @@ ensure_repository() {
 }
 
 run_backup() {
+  local dump_dir dump_file
+
   ping_healthchecks "/start"
   restic unlock >/dev/null 2>&1 || true
   ensure_repository || return
 
-  pg_dump --format=custom --no-owner --no-privileges | \
-    restic backup \
+  dump_dir="$(mktemp -d)" || return
+  dump_file="$dump_dir/citeguild.dump"
+  if ! pg_dump --format=custom --no-owner --no-privileges --file="$dump_file"; then
+    rm -rf "$dump_dir"
+    return 1
+  fi
+  if [ ! -s "$dump_file" ]; then
+    echo "PostgreSQL dump was empty; refusing to create a snapshot." >&2
+    rm -rf "$dump_dir"
+    return 1
+  fi
+  if ! (
+    cd "$dump_dir" && restic backup \
       --host citeguild-production \
-      --stdin \
-      --stdin-filename citeguild.dump \
-      --tag citeguild-postgres || return
+      --tag citeguild-postgres \
+      citeguild.dump
+  ); then
+    rm -rf "$dump_dir"
+    return 1
+  fi
+  rm -rf "$dump_dir"
 
   restic forget \
     --tag citeguild-postgres \
@@ -76,10 +98,17 @@ run_backup() {
 while true; do
   if run_backup; then
     echo "Encrypted PostgreSQL backup completed and verified."
+    if [ "$BACKUP_RUN_ONCE" = "1" ]; then
+      exit 0
+    fi
     sleep "$BACKUP_INTERVAL_SECONDS"
   else
+    status=$?
     echo "PostgreSQL backup failed; retrying after the configured delay." >&2
     ping_healthchecks "/fail"
+    if [ "$BACKUP_RUN_ONCE" = "1" ]; then
+      exit "$status"
+    fi
     sleep "$BACKUP_RETRY_SECONDS"
   fi
 done
