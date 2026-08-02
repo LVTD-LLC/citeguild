@@ -1063,6 +1063,9 @@ On push to `main`, `.github/workflows/deploy.yml` builds one GHCR image and
 deploys its git-SHA tag to both CapRover apps. The complete topology, release,
 health, persistence, and rollback contract is in
 `docs/operations/caprover-topology.md`.
+The evidence-linked launch checklist, named ownership, incident paths, metrics
+cadence, and current launch risks are in
+`docs/operations/launch-readiness.md`.
 
 ### Render
 
