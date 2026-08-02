@@ -417,7 +417,7 @@ class ArticleCrawlAttempt(BaseModel):
             ),
         ]
         indexes = [
-            models.Index(fields=["project", "fetched_at"], name="core_article_attempt_project_idx")
+            models.Index(fields=["project", "fetched_at"], name="core_art_attempt_project_idx")
         ]
 
 

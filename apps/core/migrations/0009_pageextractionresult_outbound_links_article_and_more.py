@@ -130,7 +130,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='articlecrawlattempt',
-            index=models.Index(fields=['project', 'fetched_at'], name='core_article_attempt_project_idx'),
+            index=models.Index(fields=['project', 'fetched_at'], name='core_art_attempt_project_idx'),
         ),
         migrations.AddConstraint(
             model_name='articlecrawlattempt',
