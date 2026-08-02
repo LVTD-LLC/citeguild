@@ -196,14 +196,16 @@ subscription IDs are identifiers, not credentials.
 
 ## URL identity and crawl policy
 
-One canonicalization function serves sitemap parsing, article upserts, search
-exclusions, and detected-link matching:
+One base canonicalization contract serves sitemap parsing, article upserts,
+search exclusions, and detected-link matching. Outbound observations add only
+the explicit tracking cleanup described below:
 
 1. Accept only HTTP(S) without embedded credentials.
 2. Lowercase and IDNA-normalize the host, remove default ports/fragments, and
    normalize an empty path to `/`.
-3. Preserve path case and query semantics. Remove only an explicit allowlist of
-   tracking parameters.
+3. Preserve path case and query semantics. Sitemap/article identities preserve
+   the query exactly; outbound observations remove only the documented explicit
+   allowlist of tracking parameters while preserving every other query segment.
 4. Resolve relative links against the final fetched URL.
 5. Accept a canonical hint only if it passes the same network and project-host
    policy; otherwise use the final URL.

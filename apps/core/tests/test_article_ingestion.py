@@ -242,7 +242,7 @@ def test_successful_refresh_reconciles_outbound_link_history(profile):
     article = ArticleIngestionService.ingest(work=first_work)
     first_sync.state = ProjectSyncStates.SUCCEEDED
     first_sync.save(update_fields=["state", "updated_at"])
-    _second_sync, [second_work] = create_sync(
+    second_sync, [second_work] = create_sync(
         project,
         "second",
         "https://example.com/post",
@@ -266,6 +266,73 @@ def test_successful_refresh_reconciles_outbound_link_history(profile):
     assert first_link.inactive_at is not None
     assert second_link.is_active is True
     assert second_link.anchor_text == "Updated B"
+
+    second_sync.state = ProjectSyncStates.SUCCEEDED
+    second_sync.save(update_fields=["state", "updated_at"])
+    _third_sync, [third_work] = create_sync(
+        project,
+        "third",
+        "https://example.com/post",
+    )
+    extraction_for(
+        third_work,
+        links=({"url": "https://member.example/a", "anchor_text": "A returns"},),
+    )
+    first_seen_at = first_link.first_seen_at
+
+    ArticleIngestionService.ingest(work=third_work)
+
+    first_link.refresh_from_db()
+    second_link.refresh_from_db()
+    assert first_link.is_active is True
+    assert first_link.inactive_at is None
+    assert first_link.first_seen_at == first_seen_at
+    assert first_link.anchor_text == "A returns"
+    assert second_link.is_active is False
+
+
+@pytest.mark.django_db
+def test_outbound_observation_replacement_rolls_back_atomically(profile, monkeypatch):
+    project = create_project(profile)
+    first_sync, [first_work] = create_sync(project, "first", "https://example.com/post")
+    extraction_for(
+        first_work,
+        links=({"url": "https://member.example/original", "anchor_text": "Original"},),
+    )
+    article = ArticleIngestionService.ingest(work=first_work)
+    original_hash = article.content_hash
+    first_sync.state = ProjectSyncStates.SUCCEEDED
+    first_sync.save(update_fields=["state", "updated_at"])
+    _second_sync, [second_work] = create_sync(
+        project,
+        "second",
+        "https://example.com/post",
+    )
+    extraction_for(
+        second_work,
+        text="Changed article text.",
+        links=({"url": "https://member.example/replacement", "anchor_text": "New"},),
+    )
+    original_reconcile = ArticleIngestionService._reconcile_links
+
+    def reconcile_then_fail(**kwargs):
+        original_reconcile(**kwargs)
+        raise RuntimeError("simulate transaction failure")
+
+    monkeypatch.setattr(ArticleIngestionService, "_reconcile_links", reconcile_then_fail)
+
+    with pytest.raises(RuntimeError, match="transaction failure"):
+        ArticleIngestionService.ingest(work=second_work)
+
+    article.refresh_from_db()
+    original = article.outbound_links.get()
+    assert article.content_hash == original_hash
+    assert original.normalized_destination_url == "https://member.example/original"
+    assert original.is_active is True
+    assert not article.outbound_links.filter(
+        normalized_destination_url="https://member.example/replacement"
+    ).exists()
+    assert not ArticleCrawlAttempt.objects.filter(work=second_work).exists()
 
 
 @pytest.mark.django_db

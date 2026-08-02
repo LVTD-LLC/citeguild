@@ -26,6 +26,14 @@ the metadata remains diagnosable but extracted text is discarded. Content below
 the minimum is stored as `empty`, and unsupported/invalid/oversized inputs end
 with stable non-retryable error codes so they cannot reach embedding.
 
+Outbound links use the same HTTP(S), credential, host, port, path, and fragment
+normalization after resolving relative hrefs against the final fetched URL. An
+explicit case-insensitive allowlist removes only common campaign identifiers
+(`utm_*` standard keys, click IDs, and Mailchimp IDs); every other query segment
+is preserved byte-for-byte and in order. Fragment-only self-links, malformed or
+unsafe schemes, navigation/footer/sidebar/cookie links, and duplicate normalized
+destinations are discarded. Counts and anchor text remain bounded.
+
 Extraction and article persistence precede the page-work success transition. If a worker
 dies between those writes, recovery observes the existing immutable result and
 finishes article ingestion without fetching or duplicating it. CG-015 consumes

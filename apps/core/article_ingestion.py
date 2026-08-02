@@ -20,7 +20,7 @@ from apps.core.models import (
     Project,
     ProjectSyncRequest,
 )
-from apps.core.projects import normalize_sitemap_url
+from apps.core.projects import normalize_outbound_url, normalize_sitemap_url
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +162,7 @@ class ArticleIngestionService:
             if not isinstance(item, dict):
                 continue
             try:
-                url, _host = normalize_sitemap_url(str(item.get("url", "")))
+                url, _host = normalize_outbound_url(str(item.get("url", "")))
             except (ValidationError, ValueError):
                 continue
             observed.add(url)

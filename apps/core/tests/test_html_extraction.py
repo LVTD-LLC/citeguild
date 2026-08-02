@@ -297,6 +297,32 @@ def test_outbound_links_are_content_scoped_normalized_and_bounded(settings):
     assert all(link["url"] != "https://example.com/privacy" for link in result.outbound_links)
 
 
+def test_outbound_links_reject_unsafe_values_and_strip_only_known_tracking(settings):
+    settings.EXTRACTION_MIN_TEXT_CHARS = 1
+    document = """
+    <html><body><article>
+      <p>Useful article text for deterministic extraction.</p>
+      <a href="../guide?%75tm_source=newsletter&amp;chapter=1&amp;UTM_MEDIUM=email#part"></a>
+      <a href="https://example.com/guide?chapter=1&amp;fbclid=secret">Canonical guide</a>
+      <a href="https://member.example/post?ref=keep&amp;gclid=secret">Member post</a>
+      <a href="#section">Same-page fragment</a>
+      <a href="mailto:private@example.com">Email</a>
+      <a href="javascript:alert(1)">Script</a>
+      <a href="http://[">Malformed</a>
+    </article></body></html>
+    """
+
+    result = extract_article(
+        response(document, final_url="https://example.com/posts/source"),
+        allowed_host="example.com",
+    )
+
+    assert result.outbound_links == (
+        {"url": "https://example.com/guide?chapter=1", "anchor_text": "Canonical guide"},
+        {"url": "https://member.example/post?ref=keep", "anchor_text": "Member post"},
+    )
+
+
 @pytest.mark.django_db
 def test_persistence_is_immutable_and_idempotent(profile, settings):
     settings.EXTRACTION_MIN_TEXT_CHARS = 100
