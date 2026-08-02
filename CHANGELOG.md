@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Added the authenticated `search_member_articles` Streamable HTTP MCP tool on
+  the shared v1 semantic-search contract, with bounded inputs, safe errors,
+  bearer/OAuth integration coverage, and Codex/Claude Code setup guidance.
 - Authenticated `/api/v1` endpoints now expose shared semantic search, account
   state, bounded owner-scoped project listing/detail/creation, stable errors and
   request IDs, and atomic per-key rate limits through generated OpenAPI docs.

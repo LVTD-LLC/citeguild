@@ -606,8 +606,13 @@ discovery endpoints, Dynamic Client Registration, browser authorization, token
 refresh/revocation, and ready-to-copy runtime agent instructions at
 `/AGENTS.md`.
 
-The first tool is `get_user_info`, backed by the same serializer as
-`GET /api/user`.
+The server intentionally exposes only two tools:
+
+- `get_user_info`, backed by the same serializer as `GET /api/user`.
+- `search_member_articles`, backed by the shared versioned `SearchService` used
+  by `POST /api/v1/search`. It accepts a query or draft passage, a 1–50 result
+  limit, an optional language, and up to 20 exact excluded domains. Results are
+  candidate sources, not endorsements or forced-link instructions.
 
 MCP URLs:
 
@@ -639,6 +644,20 @@ Authorization: Bearer <api_key>
 ```
 
 API keys are intentionally not accepted in query strings.
+
+For environment-backed bearer authentication in Codex, export
+`CITEGUILD_API_KEY` and configure `~/.codex/config.toml` without placing the raw
+key in the file:
+
+```toml
+[mcp_servers.citeguild]
+url = "<production-url>/mcp/"
+bearer_token_env_var = "CITEGUILD_API_KEY"
+```
+
+For Claude Code, use its OAuth flow or an HTTP MCP entry whose Authorization
+header is `Bearer ${CITEGUILD_API_KEY}`. Project `.mcp.json` supports environment
+variable expansion; never commit an expanded credential.
 
 Give an agent this starter prompt:
 
