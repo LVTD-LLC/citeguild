@@ -17,6 +17,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Changed
 
+- Billing now offers one fixed $10 USD monthly subscription with Stripe-hosted
+  Checkout and portal management, synchronous server-side access truth,
+  durable webhook receipts, stale-event protection, and a reusable paywall.
 - Replaced generic generated agent context with aligned CiteGuild product,
   architecture, structure, design, and analytics contracts covering the
   $10/month sitemap-to-search MVP, explicit non-goals, hostile-content and

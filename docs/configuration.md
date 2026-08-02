@@ -21,7 +21,7 @@ precedence over `.env`, matching the scaffold's established behavior.
 | Embeddings | `CITEGUILD_EMBEDDING_MODEL`, `CITEGUILD_EMBEDDING_DIMENSIONS`, `CITEGUILD_INDEXING_ENABLED` | Model and positive dimensions are typed. Keep indexing disabled until the provider and indexing pipeline are deployed. |
 | Crawling | `CITEGUILD_CRAWL_REQUEST_TIMEOUT_SECONDS`, `CITEGUILD_CRAWL_MAX_REDIRECTS`, `CITEGUILD_CRAWL_MAX_SITEMAP_BYTES`, `CITEGUILD_CRAWL_MAX_SITEMAP_ENTRIES`, `CITEGUILD_CRAWL_MAX_PAGE_BYTES`, `CITEGUILD_CRAWL_CONCURRENCY` | Positive bounded defaults are explicit; the SSRF/fetch implementation may tighten them but must use this shared contract. |
 | Scheduler | `CITEGUILD_RECONCILE_INTERVAL_HOURS` | Positive integer; defaults to daily reconciliation. |
-| Stripe | `CITEGUILD_BILLING_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_MONTHLY` | When billing is enabled, all three private/public identifiers are required. No yearly CiteGuild price is part of the MVP. |
+| Stripe | `CITEGUILD_BILLING_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_CONTEXT`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_MONTHLY` | When billing is enabled, the key, explicit LVTD LLC account context, webhook secret, and fixed monthly Price are required. No yearly CiteGuild price is part of the MVP. |
 | Observability | `SERVICE_NAME`, `SERVICE_VERSION`, `SENTRY_*`, `POSTHOG_*`, `DJANGO_LOG_*` | Optional integrations retain their existing typed settings. Do not include credentials or user content in logs or fingerprints. |
 
 ## Fingerprint Boundary

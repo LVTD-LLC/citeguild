@@ -1,4 +1,5 @@
 import logging
+import uuid
 from urllib.parse import urlencode, urlsplit, urlunsplit
 
 import stripe
@@ -13,7 +14,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
@@ -28,8 +29,9 @@ from apps.core.analytics import (
     track_account_deleted_event,
     track_event,
 )
+from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
 from apps.core.forms import ProfileUpdateForm
-from apps.core.models import Profile
+from apps.core.models import Profile, StripeWebhookEvent
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -319,16 +321,15 @@ def delete_account(request):
 
 @login_required
 @require_POST
-def create_checkout_session(request, pk, plan):
+def create_checkout_session(request):
     user = request.user
     profile = user.profile
-    price_id = get_price_id_for_plan(plan)
+    price_id = settings.STRIPE_PRICE_ID_MONTHLY
     if not price_id:
         logger.warning(
             "stripe.checkout.create.completed",
             extra={
                 "event.name": "stripe.checkout.create.completed",
-                "plan": plan,
                 "user_id": user.id,
                 "profile_id": profile.id,
                 "operation.status": "price_not_configured",
@@ -338,9 +339,16 @@ def create_checkout_session(request, pk, plan):
         messages.error(request, "Unable to find pricing for the selected plan.")
         return redirect("pricing")
 
+    if profile.has_active_subscription:
+        return redirect("home")
+
     try:
+        price = stripe.Price.retrieve(
+            price_id, expand=["product"], stripe_context=settings.STRIPE_CONTEXT or None
+        )
+        validate_monthly_price(price)
         customer = get_or_create_stripe_customer(profile, user)
-    except stripe.error.StripeError as exc:
+    except (stripe.error.StripeError, ImproperlyConfigured) as exc:
         logger.error(
             "stripe.customer.ensure.completed",
             extra={
@@ -366,7 +374,6 @@ def create_checkout_session(request, pk, plan):
     session_params = {
         "customer": customer.id,
         "payment_method_types": ["card"],
-        "allow_promotion_codes": True,
         "automatic_tax": {"enabled": True},
         "line_items": [
             {
@@ -383,22 +390,35 @@ def create_checkout_session(request, pk, plan):
         "client_reference_id": str(user.id),
         "metadata": {
             "user_id": user.id,
-            "pk": pk,
+            "profile_id": profile.id,
             "price_id": price_id,
-            "plan": plan,
+            "plan": MONTHLY_PRICE.plan,
         },
-        "subscription_data": {"metadata": {"user_id": user.id, "plan": plan}},
+        "subscription_data": {
+            "metadata": {
+                "user_id": user.id,
+                "profile_id": profile.id,
+                "plan": MONTHLY_PRICE.plan,
+            }
+        },
     }
 
     try:
-        checkout_session = stripe.checkout.Session.create(**session_params)
+        idempotency_key = request.session.setdefault(
+            "stripe_checkout_idempotency_key", uuid.uuid4().hex
+        )
+        checkout_session = stripe.checkout.Session.create(
+            **session_params,
+            idempotency_key=f"citeguild-checkout-{profile.id}-{idempotency_key}",
+            stripe_context=settings.STRIPE_CONTEXT or None,
+        )
     except stripe.error.StripeError as exc:
         logger.error(
             "stripe.checkout.create.completed",
             extra={
                 "event.name": "stripe.checkout.create.completed",
                 "profile_id": profile.id,
-                "plan": plan,
+                "plan": MONTHLY_PRICE.plan,
                 "outcome": "failure",
                 "error.type": exc.__class__.__name__,
             },
@@ -411,13 +431,14 @@ def create_checkout_session(request, pk, plan):
         track_event(
             profile,
             CHECKOUT_STARTED,
-            {"plan": plan, "checkout_mode": "subscription"},
+            {"plan": MONTHLY_PRICE.plan, "checkout_mode": "subscription"},
             source_function="create_checkout_session",
         )
-    return redirect(checkout_session.url, code=303)
+    return HttpResponse(status=303, headers={"Location": checkout_session.url})
 
 
 @login_required
+@require_POST
 def create_customer_portal_session(request):
     user = request.user
     profile = user.profile
@@ -429,6 +450,7 @@ def create_customer_portal_session(request):
         session = stripe.billing_portal.Session.create(
             customer=profile.stripe_customer_id,
             return_url=request.build_absolute_uri(reverse("home")),
+            stripe_context=settings.STRIPE_CONTEXT or None,
         )
     except stripe.error.StripeError as exc:
         logger.error(
@@ -445,7 +467,7 @@ def create_customer_portal_session(request):
         messages.error(request, "Unable to open the billing portal. Please try again.")
         return redirect("pricing")
 
-    return redirect(session.url, code=303)
+    return HttpResponse(status=303, headers={"Location": session.url})
 
 
 class AdminPanelView(UserPassesTestMixin, TemplateView):
@@ -508,16 +530,12 @@ class AdminPanelView(UserPassesTestMixin, TemplateView):
         return context
 
 
-def get_price_id_for_plan(plan):
-    plan_key = (plan or "").lower()
-    price_id = settings.STRIPE_PRICE_IDS.get(plan_key) or None
-    return price_id
-
-
 def get_or_create_stripe_customer(profile, user):
     if profile.stripe_customer_id:
         try:
-            return stripe.Customer.retrieve(profile.stripe_customer_id)
+            return stripe.Customer.retrieve(
+                profile.stripe_customer_id, stripe_context=settings.STRIPE_CONTEXT or None
+            )
         except stripe.error.InvalidRequestError as exc:
             logger.warning(
                 "stripe.customer.lookup.completed",
@@ -534,6 +552,8 @@ def get_or_create_stripe_customer(profile, user):
         email=user.email,
         name=user.get_full_name() or user.username,
         metadata={"user_id": user.id},
+        idempotency_key=f"citeguild-customer-{profile.id}",
+        stripe_context=settings.STRIPE_CONTEXT or None,
     )
     profile.stripe_customer_id = customer.id
     profile.save(update_fields=["stripe_customer_id"])
@@ -607,38 +627,34 @@ def stripe_webhook(request):
         return error_response
 
     event_id = event.get("id")
-    if event_id:
-        cache_key = f"stripe_event:{event_id}"
-        if cache.get(cache_key):
+    if not event_id:
+        return HttpResponseBadRequest("Missing event id")
+
+    with transaction.atomic():
+        _, created = StripeWebhookEvent.objects.get_or_create(
+            event_id=event_id,
+            defaults={
+                "event_type": event.get("type") or "",
+                "event_created": int(event.get("created") or 0),
+            },
+        )
+        if not created:
+            return HttpResponse(status=200)
+
+        handler = EVENT_HANDLERS.get(event.get("type"))
+        if handler:
+            handler(event)
+        else:
             logger.info(
                 "stripe.webhook.process.completed",
                 extra={
                     "event.name": "stripe.webhook.process.completed",
                     "event_type": event.get("type"),
                     "event_id": event_id,
-                    "operation.status": "duplicate",
+                    "operation.status": "unhandled",
                     "outcome": "success",
                 },
             )
-            return HttpResponse(status=200)
-
-    handler = EVENT_HANDLERS.get(event.get("type"))
-    if handler:
-        handler(event)
-    else:
-        logger.info(
-            "stripe.webhook.process.completed",
-            extra={
-                "event.name": "stripe.webhook.process.completed",
-                "event_type": event.get("type"),
-                "event_id": event.get("id"),
-                "operation.status": "unhandled",
-                "outcome": "success",
-            },
-        )
-
-    if event_id:
-        cache.set(cache_key, True, timeout=60 * 60 * 24)
 
     if handler:
         logger.info(

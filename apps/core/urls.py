@@ -15,7 +15,7 @@ urlpatterns = [
     # Payments
     path("stripe-webhook/", views.stripe_webhook, name="stripe_webhook"),
     path(
-        "create-checkout-session/<int:pk>/<str:plan>/",
+        "create-checkout-session/",
         views.create_checkout_session,
         name="user_upgrade_checkout_session",
     ),

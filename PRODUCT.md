@@ -33,6 +33,10 @@ useful sources; it does not buy, require, or guarantee a link.
 - Each subscribed account can add unlimited projects/sites. Operational
   anti-abuse, crawl-rate, storage, and security controls are allowed, but must
   not silently become paid tiers.
+- Customers cancel in Stripe's hosted billing portal. A cancellation scheduled
+  for period end keeps access through that paid period. Access ends when Stripe
+  reports the subscription canceled, unpaid, or expired; `past_due` receives
+  Stripe's normal retry grace period.
 
 ## Core Loop
 
