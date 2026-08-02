@@ -51,8 +51,8 @@ def test_public_policies_match_citeguild_indexing_and_editorial_behavior(client)
 
     assert terms.status_code == 200
     assert privacy.status_code == 200
-    terms_content = terms.content.decode()
-    privacy_content = privacy.content.decode()
+    terms_content = " ".join(terms.content.decode().split())
+    privacy_content = " ".join(privacy.content.decode().split())
     assert "$10 USD per month" in terms_content
     assert "does not guarantee a backlink" in terms_content
     assert "Membership never requires one member to link to another" in terms_content
