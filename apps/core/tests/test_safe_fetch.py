@@ -405,6 +405,9 @@ def test_http_errors_are_safely_categorized(status, expected_code, retryable):
 
     assert error.value.code == expected_code
     assert error.value.retryable is retryable
+    assert error.value.http_status == (
+        status if expected_code == SafeFetchErrorCode.HTTP_ERROR else None
+    )
     assert "secret" not in str(error.value)
 
 

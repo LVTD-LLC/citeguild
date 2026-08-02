@@ -282,11 +282,21 @@ def test_missing_article_is_retained_and_reactivated_with_stable_identity(profil
     ArticleLifecycleService.reconcile_sitemap(sync_request=missing_sync)
 
     article.refresh_from_db()
+    source = ArticleSourceURL.objects.get(article=article)
+    assert article.state == ArticleStates.DISCOVERED
+    assert source.is_active is True
+    assert source.consecutive_missing_syncs == 1
+    missing_sync.state = ProjectSyncStates.SUCCEEDED
+    missing_sync.save(update_fields=["state", "updated_at"])
+    confirmed_missing_sync, _works = create_sync(project, "confirmed-missing")
+    ArticleLifecycleService.reconcile_sitemap(sync_request=confirmed_missing_sync)
+
+    article.refresh_from_db()
     assert article.state == ArticleStates.INACTIVE
     assert article.inactive_at is not None
     assert article.content == "Stable useful article text."
-    missing_sync.state = ProjectSyncStates.SUCCEEDED
-    missing_sync.save(update_fields=["state", "updated_at"])
+    confirmed_missing_sync.state = ProjectSyncStates.SUCCEEDED
+    confirmed_missing_sync.save(update_fields=["state", "updated_at"])
     _return_sync, [return_work] = create_sync(
         project,
         "return",
@@ -300,6 +310,35 @@ def test_missing_article_is_retained_and_reactivated_with_stable_identity(profil
     assert reactivated.state == ArticleStates.DISCOVERED
     assert reactivated.inactive_at is None
     assert reactivated.inactivity_reason == ""
+    assert reactivated.source_urls.get().consecutive_missing_syncs == 0
+
+
+@pytest.mark.django_db
+def test_same_host_redirect_preserves_article_identity(profile):
+    project = create_project(profile)
+    first_sync, [first_work] = create_sync(project, "first", "https://example.com/old")
+    extraction_for(first_work)
+    article = ArticleIngestionService.ingest(work=first_work)
+    first_sync.state = ProjectSyncStates.SUCCEEDED
+    first_sync.save(update_fields=["state", "updated_at"])
+    _redirect_sync, [redirect_work] = create_sync(
+        project,
+        "redirect",
+        "https://example.com/old",
+    )
+    extraction = extraction_for(
+        redirect_work,
+        canonical_url="https://example.com/new",
+    )
+    extraction.final_url = "https://example.com/new"
+    extraction.save(update_fields=["final_url", "updated_at"])
+
+    redirected = ArticleIngestionService.ingest(work=redirect_work)
+
+    assert redirected.uuid == article.uuid
+    assert redirected.final_url == "https://example.com/new"
+    assert redirected.normalized_canonical_url == "https://example.com/new"
+    assert Article.objects.count() == 1
 
 
 @pytest.mark.django_db

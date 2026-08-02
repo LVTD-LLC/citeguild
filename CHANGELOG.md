@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Confirmed article lifecycle reconciliation now handles repeated sitemap
+  omissions, terminal 404/410 responses, redirects, reappearance, and Qdrant
+  deactivation while preserving article and crawl history.
 - Active paid sites now receive jittered daily sitemap reconciliation through a
   named, idempotent Django Q2 schedule with PostgreSQL claims, selective
   new/changed/stale page work, visible failures, and an owner-scoped manual retry.

@@ -350,6 +350,7 @@ class ArticleSourceURL(BaseModel):
     is_active = models.BooleanField(default=True)
     first_seen_at = models.DateTimeField()
     last_seen_at = models.DateTimeField()
+    consecutive_missing_syncs = models.PositiveSmallIntegerField(default=0)
     inactive_at = models.DateTimeField(null=True, blank=True)
     last_seen_sync = models.ForeignKey(
         ProjectSyncRequest,
