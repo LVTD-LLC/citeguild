@@ -142,18 +142,9 @@ class ArticleIngestionService:
 
     @staticmethod
     def _resolve_target(url: str) -> Article | None:
-        try:
-            _normalized, host = normalize_sitemap_url(url)
-        except (ValidationError, ValueError):
-            return None
-        return (
-            Article.objects.filter(
-                project__normalized_host=host,
-                normalized_canonical_url=url,
-            )
-            .order_by("id")
-            .first()
-        )
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        return DetectedNetworkLinkService.target_for_url(url)
 
     @classmethod
     def _reconcile_links(cls, *, article: Article, extraction, sync_request, now) -> None:
@@ -318,6 +309,9 @@ class ArticleIngestionService:
                 sync_request=work.sync_request,
                 now=now,
             )
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        DetectedNetworkLinkService.reconcile_article(article, now=now)
         _update_project_counts(
             project,
             article_delta=int(created),
@@ -408,6 +402,10 @@ class ArticleLifecycleService:
             inactivity_reason="sitemap_removed",
             inactive_at=now,
         )
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        for stale_article in Article.objects.filter(uuid__in=stale_article_uuids):
+            DetectedNetworkLinkService.reconcile_article(stale_article, now=now)
         _refresh_project_counts(project)
         cls._queue_deactivations(stale_article_uuids)
 
@@ -466,5 +464,8 @@ class ArticleLifecycleService:
             Project.objects.filter(pk=article.project_id).update(
                 active_article_count=F("active_article_count") - 1
             )
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        DetectedNetworkLinkService.reconcile_article(article, now=now)
         cls._queue_deactivations([article.uuid])
         return article

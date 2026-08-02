@@ -125,7 +125,7 @@ class ProjectService:
             raise ValidationError("Site name must be 120 characters or fewer.")
         normalized_url, host = normalize_sitemap_url(sitemap_url)
         try:
-            return Project.objects.create(
+            project = Project.objects.create(
                 owner=owner,
                 name=name,
                 sitemap_url=sitemap_url.strip(),
@@ -137,6 +137,10 @@ class ProjectService:
                 "This site host already belongs to a CiteGuild project; "
                 "operator resolution is required."
             ) from error
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        DetectedNetworkLinkService.reconcile_project(project)
+        return project
 
     @classmethod
     @transaction.atomic
@@ -160,6 +164,9 @@ class ProjectService:
                 "This site host already belongs to a CiteGuild project; "
                 "operator resolution is required."
             ) from error
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        DetectedNetworkLinkService.reconcile_project(project)
         return project
 
     @classmethod
@@ -199,4 +206,7 @@ class ProjectService:
             to_state=to_state,
             reason=reason,
         )
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        DetectedNetworkLinkService.reconcile_project(project)
         return project

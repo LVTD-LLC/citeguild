@@ -241,6 +241,9 @@ def _mark_active(article: Article) -> None:
                 "updated_at",
             ]
         )
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        DetectedNetworkLinkService.reconcile_article(current)
 
 
 def upsert_article(*, article: Article, client: QdrantClient | None = None) -> None:
@@ -284,6 +287,9 @@ def deactivate_article(*, article: Article, client: QdrantClient | None = None) 
                 "updated_at",
             ]
         )
+        from apps.core.network_graph import DetectedNetworkLinkService
+
+        DetectedNetworkLinkService.reconcile_article(current)
 
 
 def _authorized_search_hits(
