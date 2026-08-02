@@ -281,6 +281,9 @@ def embed_article(article_uuid: str) -> str:
         if error.retryable:
             raise
         return f"failed:{error.code}"
+    from apps.search.qdrant import queue_article_index
+
+    queue_article_index(article_uuid)
     return str(embedding.uuid)
 
 

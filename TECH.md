@@ -123,9 +123,10 @@ The current `.github/workflows/deploy.yml` builds one image and deploys app and
 workers. Production Qdrant is provisioned as the private
 `citeguild-qdrant` CapRover service on port 6333, pinned to Qdrant 1.18.3 with
 the persistent `citeguild-qdrant-data` volume and API-key authentication.
-Later deployment tasks must still validate the complete feature path, health
-contracts, backups, and recovery. Do not document a component as deployed
-merely because its client code exists.
+Server startup and `/api/healthcheck` validate the authenticated article
+collection contract. `rebuild_qdrant_articles` reconstructs active points from
+PostgreSQL and removes stale points; infrastructure backup and restore policy
+remains a separate deployment concern.
 
 The typed environment matrix, fail-fast production rules, and secret-safe
 web/worker fingerprint contract live in

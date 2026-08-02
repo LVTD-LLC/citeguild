@@ -30,7 +30,7 @@ def healthcheck(request: HttpRequest):
     """
     Comprehensive healthcheck endpoint for monitoring and load balancers.
 
-    Checks database and Redis connectivity.
+    Checks database, Redis, and the Qdrant article collection.
 
     Returns:
     - 200 OK if all services are healthy
@@ -44,6 +44,8 @@ def healthcheck(request: HttpRequest):
         "database": False,
         "redis": False,
     }
+    if settings.QDRANT_URL:
+        checks["qdrant"] = False
 
     # Check database connectivity
     try:
@@ -92,6 +94,21 @@ def healthcheck(request: HttpRequest):
                 "error.type": error.__class__.__name__,
             },
             exc_info=True,
+        )
+
+    from apps.search.qdrant import article_collection_healthy
+
+    if settings.QDRANT_URL:
+        checks["qdrant"] = article_collection_healthy()
+    if settings.QDRANT_URL and not checks["qdrant"]:
+        logger.error(
+            "healthcheck.dependency.completed",
+            extra={
+                "event.name": "healthcheck.dependency.completed",
+                "dependency": "qdrant",
+                "outcome": "failure",
+                "error.type": "QdrantCollectionUnavailable",
+            },
         )
 
     healthy = all(checks.values())

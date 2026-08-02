@@ -483,13 +483,18 @@ Database and Redis:
 | `CACHE_KEY_PREFIX` | Django cache key prefix. |
 | `Q_CLUSTER_NAME` | Django Q2 cluster name. |
 
-Qdrant connection (optional until indexing and retrieval are implemented):
+Qdrant collection and connection:
 
 | Variable | Description |
 | --- | --- |
 | `QDRANT_URL` | Qdrant HTTP API URL. Production uses the private CapRover service address. |
 | `QDRANT_API_KEY` | Qdrant admin API key. Keep it in the deployment environment only. |
 | `QDRANT_TIMEOUT_SECONDS` | Client request timeout in seconds. Defaults to `5`. |
+| `CITEGUILD_QDRANT_COLLECTION` | Stable article collection name. Defaults to `citeguild-articles`. |
+| `CITEGUILD_EMBEDDING_DIMENSIONS` | Must exactly match the collection vector size. Defaults to `1536`. |
+
+The server startup validates or creates the cosine article collection. Use
+`python manage.py rebuild_qdrant_articles` to reconstruct it from PostgreSQL.
 
 Production security variables:
 

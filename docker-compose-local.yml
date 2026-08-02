@@ -25,6 +25,21 @@ services:
     environment:
       - REDIS_PASSWORD=citeguild
 
+  qdrant:
+    image: qdrant/qdrant:v1.18.3
+    ports:
+      - "${LOCAL_QDRANT_PORT:-6333}:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__API_KEY: citeguild
+      QDRANT__TELEMETRY_DISABLED: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/6333'"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: .
@@ -40,6 +55,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      qdrant:
+        condition: service_healthy
       frontend:
         condition: service_healthy
     env_file:
@@ -58,6 +75,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      qdrant:
+        condition: service_healthy
     env_file:
       - .env
 
@@ -140,4 +159,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  qdrant_data:
   minio_data:

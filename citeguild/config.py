@@ -202,6 +202,10 @@ class RuntimeConfig:
             raise ImproperlyConfigured("QDRANT_URL is required in production.")
         if not self.qdrant_api_key:
             raise ImproperlyConfigured("QDRANT_API_KEY is required in production.")
+        if self.qdrant_api_key == "citeguild":
+            raise ImproperlyConfigured(
+                "QDRANT_API_KEY must not use the development template value in production."
+            )
 
         self._validate_indexing(values)
 
