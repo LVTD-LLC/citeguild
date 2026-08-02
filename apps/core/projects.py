@@ -71,7 +71,8 @@ class ProjectService:
             )
         except IntegrityError as error:
             raise ProjectHostConflict(
-                "This site host already belongs to a CiteGuild project; operator resolution is required."
+                "This site host already belongs to a CiteGuild project; "
+                "operator resolution is required."
             ) from error
 
     @classmethod
@@ -91,7 +92,8 @@ class ProjectService:
             project.save()
         except IntegrityError as error:
             raise ProjectHostConflict(
-                "This site host already belongs to a CiteGuild project; operator resolution is required."
+                "This site host already belongs to a CiteGuild project; "
+                "operator resolution is required."
             ) from error
         return project
 

@@ -142,7 +142,10 @@ class Project(BaseModel):
 
     @property
     def is_sync_eligible(self):
-        return self.state == ProjectStates.ACTIVE and self.owner.has_active_subscription
+        if self.state != ProjectStates.ACTIVE:
+            return False
+        owner = Profile.objects.select_related("user").get(pk=self.owner_id)
+        return owner.has_active_subscription
 
 
 class ProjectStateTransition(BaseModel):
