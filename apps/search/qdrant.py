@@ -98,6 +98,33 @@ def validate_article_collection(*, client: QdrantClient | None = None):
     return collection_info
 
 
+def _ensure_payload_indexes(*, client: QdrantClient, collection_info) -> None:
+    missing_indexes = []
+    for field_name, field_schema in PAYLOAD_INDEXES.items():
+        existing = collection_info.payload_schema.get(field_name)
+        if existing is None:
+            missing_indexes.append((field_name, field_schema))
+        elif existing.data_type != field_schema:
+            raise QdrantContractError("payload_index_schema_mismatch")
+
+    for field_name, field_schema in missing_indexes:
+        try:
+            client.create_payload_index(
+                collection_name=settings.QDRANT_COLLECTION,
+                field_name=field_name,
+                field_schema=field_schema,
+                wait=True,
+            )
+        except Exception as error:
+            # A concurrent bootstrapper may have created the index first.
+            concurrent = client.get_collection(settings.QDRANT_COLLECTION).payload_schema.get(
+                field_name
+            )
+            if concurrent and concurrent.data_type == field_schema:
+                continue
+            raise QdrantContractError("payload_index_create_failed") from error
+
+
 def ensure_article_collection(*, client: QdrantClient | None = None) -> bool:
     """Create the collection once and reject incompatible existing collections."""
     client = client or get_qdrant_client()
@@ -120,25 +147,7 @@ def ensure_article_collection(*, client: QdrantClient | None = None) -> bool:
 
     collection_info = validate_article_collection(client=client)
 
-    for field_name, field_schema in PAYLOAD_INDEXES.items():
-        existing = collection_info.payload_schema.get(field_name)
-        if existing:
-            if existing.data_type != field_schema:
-                raise QdrantContractError("payload_index_schema_mismatch")
-            continue
-        try:
-            client.create_payload_index(
-                collection_name=collection,
-                field_name=field_name,
-                field_schema=field_schema,
-                wait=True,
-            )
-        except Exception as error:
-            # A concurrent bootstrapper may have created the index first.
-            concurrent = client.get_collection(collection).payload_schema.get(field_name)
-            if concurrent and concurrent.data_type == field_schema:
-                continue
-            raise QdrantContractError("payload_index_create_failed") from error
+    _ensure_payload_indexes(client=client, collection_info=collection_info)
     return created
 
 
