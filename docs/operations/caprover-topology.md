@@ -66,6 +66,20 @@ workers to compensate for a failing dependency or an unbounded queue.
    running Q2 cluster, named schedules, and one controlled job boundary.
 6. Record deployed versions, image SHA, health output, and migration state.
 
+The GitHub deployment validates all required CapRover secrets before building,
+deploys web first, and waits up to two minutes for the public aggregate health
+contract before updating workers. A failed web health gate leaves workers on
+the previous image, which is the intentional safe stopping point. The CapRover
+deployment action is pinned to a reviewed commit rather than a floating branch.
+`PRODUCTION_HEALTHCHECK_URL` is a repository variable so domain changes do not
+require a workflow edit.
+
+App-scoped deploy tokens must remain enabled for both web and workers. Rotate a
+token in CapRover and update its matching GitHub Actions secret as one operation;
+never put the token in logs or repository files. On CapRover versions whose app
+definition update causes a service refresh, wait for aggregate health to recover
+before rotating the second token or starting a release.
+
 Schema changes must be expand/contract compatible with the previous image.
 Destructive or long-running migrations require a separate reviewed maintenance
 plan; do not hide them inside normal startup.
