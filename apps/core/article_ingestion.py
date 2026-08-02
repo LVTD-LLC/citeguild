@@ -188,7 +188,7 @@ class ArticleIngestionService:
     def ingest(cls, *, work: PageCrawlWork) -> Article:
         project = Project.objects.select_for_update().get(pk=work.sync_request.project_id)
         work = (
-            PageCrawlWork.objects.select_for_update()
+            PageCrawlWork.objects.select_for_update(of=("self",))
             .select_related("sync_request", "candidate", "extraction")
             .get(pk=work.pk)
         )
@@ -308,7 +308,7 @@ class ArticleLifecycleService:
     def reconcile_sitemap(cls, *, sync_request: ProjectSyncRequest) -> None:
         sync_request = (
             ProjectSyncRequest.objects.select_related("project", "sitemap_inventory")
-            .select_for_update()
+            .select_for_update(of=("self",))
             .get(pk=sync_request.pk)
         )
         project = Project.objects.select_for_update().get(pk=sync_request.project_id)
