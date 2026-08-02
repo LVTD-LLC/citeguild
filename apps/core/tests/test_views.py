@@ -76,6 +76,38 @@ class TestHomeView:
         assert "Copy/paste prompt" not in content
         assert "data-copy-button" not in content
 
+    def test_failed_site_shows_owner_scoped_manual_retry(self, auth_client, profile):
+        subscribe(profile)
+        project = ProjectService.create(
+            owner=profile,
+            name="Needs retry",
+            sitemap_url="https://retry.example/sitemap.xml",
+        )
+        project.last_error_code = "fetch_failed"
+        project.save(update_fields=["last_error_code", "updated_at"])
+
+        content = auth_client.get(reverse("home")).content.decode()
+
+        assert "Last sync failed: fetch_failed" in content
+        assert "Retry sync" in content
+        assert reverse("retry_site_sync", args=[project.uuid]) in content
+
+    def test_retry_site_sync_queues_owner_site(self, auth_client, profile):
+        subscribe(profile)
+        project = ProjectService.create(
+            owner=profile,
+            name="Retry",
+            sitemap_url="https://retry.example/sitemap.xml",
+        )
+
+        with patch("apps.core.views.retry_project_sync") as retry:
+            retry.return_value.uuid = project.uuid
+            response = auth_client.post(reverse("retry_site_sync", args=[project.uuid]))
+
+        assert response.status_code == 302
+        assert response.url == reverse("home")
+        retry.assert_called_once_with(owner=profile, project_uuid=project.uuid)
+
     def test_unsubscribed_user_sees_checkout_not_add_site_form(self, auth_client):
         response = auth_client.get(reverse("home"))
         content = response.content.decode()

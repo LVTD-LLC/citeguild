@@ -109,7 +109,8 @@ bounded result counts/failure code, timestamps, and state: `queued`, `running`,
 
 - `idempotency_key` is unique.
 - Only one sync may be queued/running per project.
-- Daily key: `sync:{project_uuid}:{UTC_date}`.
+- Daily key: `daily:{project_uuid}:{due_timestamp}`; the due time includes
+  deterministic per-project jitter.
 - Retry the same failed run; an operator may create a new explicit repair run.
 
 ### Article

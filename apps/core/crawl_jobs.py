@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
+from uuid import UUID
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.db.models import Q
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import IntegrityError, connection, transaction
+from django.db.models import DateTimeField, F, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce, Greatest
 from django.utils import timezone
 from django_q.tasks import async_task
 from qdrant_client.http.exceptions import ApiException
@@ -24,6 +26,7 @@ from apps.core.choices import (
     ExtractionStates,
     PageCrawlStates,
     ProjectStates,
+    ProjectSyncKinds,
     ProjectSyncStates,
 )
 from apps.core.html_extraction import (
@@ -34,11 +37,13 @@ from apps.core.html_extraction import (
 )
 from apps.core.models import (
     Article,
+    ArticleSourceURL,
     PageCrawlWork,
     PageExtractionResult,
     Profile,
     Project,
     ProjectSyncRequest,
+    SitemapCandidate,
 )
 from apps.core.projects import normalize_sitemap_url
 from apps.core.safe_fetch import SafeFetchClient, SafeFetchError
@@ -55,6 +60,7 @@ RUN_SYNC_TASK = "apps.core.crawl_jobs.run_sitemap_sync"
 RUN_PAGE_TASK = "apps.core.crawl_jobs.run_page_crawl"
 DISPATCH_TASK = "apps.core.crawl_jobs.dispatch_page_work"
 RECOVERY_TASK = "apps.core.crawl_jobs.recover_crawl_jobs"
+RECONCILIATION_TASK = "apps.core.crawl_jobs.schedule_due_sitemap_reconciliations"
 
 _SYNC_TERMINAL = {
     ProjectSyncStates.SUCCEEDED,
@@ -137,6 +143,14 @@ def _cancel_sync(sync_request: ProjectSyncRequest) -> str:
         broker_task_id="",
         error_code="project_ineligible",
     )
+    Project.objects.filter(
+        pk=sync_request.project_id,
+        current_sync_uuid=sync_request.uuid,
+    ).update(
+        current_sync_uuid=None,
+        current_sync_started_at=None,
+        last_error_code="project_ineligible",
+    )
     logger.info(
         "crawl.sync.cancelled",
         extra={
@@ -179,6 +193,11 @@ def _claim_sync(sync_uuid) -> ProjectSyncRequest | None:
         sync_request.error_code = ""
         sync_request.broker_task_id = ""
         sync_request.save()
+        Project.objects.filter(pk=sync_request.project_id).update(
+            current_sync_uuid=sync_request.uuid,
+            current_sync_started_at=now,
+            last_error_code="",
+        )
         return sync_request
 
 
@@ -188,9 +207,206 @@ def _retry_delay(identifier, attempt_count: int) -> timedelta:
     return timedelta(seconds=base_seconds + jitter_seconds)
 
 
+def reconciliation_due_at(project_uuid, anchor: datetime) -> datetime:
+    """Return a stable per-site due time after the configured interval."""
+    interval = timedelta(hours=settings.RECONCILE_INTERVAL_HOURS)
+    jitter_window_seconds = max(min(int(interval.total_seconds() // 24), 3600), 1)
+    jitter_seconds = project_uuid.int % jitter_window_seconds
+    return anchor + interval + timedelta(seconds=jitter_seconds)
+
+
+def _reconciliation_anchor(project: Project):
+    latest_daily_created_at = (
+        ProjectSyncRequest.objects.filter(
+            project=project,
+            kind=ProjectSyncKinds.DAILY,
+        )
+        .order_by("-created_at")
+        .values_list("created_at", flat=True)
+        .first()
+    )
+    if latest_daily_created_at and latest_daily_created_at > project.last_sync_at:
+        return latest_daily_created_at
+    return project.last_sync_at
+
+
+def _claim_due_reconciliation(project_id: int, *, now: datetime) -> tuple[bool, UUID | None]:
+    try:
+        with transaction.atomic():
+            project = (
+                Project.objects.select_for_update(
+                    skip_locked=connection.features.has_select_for_update_skip_locked
+                )
+                .select_related(
+                    "owner__user",
+                    "active_sitemap_inventory__sync_request",
+                )
+                .filter(pk=project_id)
+                .first()
+            )
+            if project is None or (
+                project.state != ProjectStates.ACTIVE or not project.owner.has_active_subscription
+            ):
+                return False, None
+            due_at = reconciliation_due_at(project.uuid, _reconciliation_anchor(project))
+            if due_at > now:
+                return False, None
+            if ProjectSyncRequest.objects.filter(
+                project=project,
+                state__in=(ProjectSyncStates.QUEUED, ProjectSyncStates.RUNNING),
+            ).exists():
+                return True, None
+            sync_request, created = ProjectSyncRequest.objects.get_or_create(
+                idempotency_key=f"daily:{project.uuid}:{int(due_at.timestamp())}",
+                defaults={
+                    "project": project,
+                    "kind": ProjectSyncKinds.DAILY,
+                    "sitemap_kind": project.active_sitemap_inventory.sync_request.sitemap_kind,
+                },
+            )
+            if not created:
+                return True, None
+            project.current_sync_uuid = sync_request.uuid
+            project.current_sync_started_at = None
+            project.last_error_code = ""
+            project.save(
+                update_fields=[
+                    "current_sync_uuid",
+                    "current_sync_started_at",
+                    "last_error_code",
+                    "updated_at",
+                ]
+            )
+            return True, sync_request.uuid
+    except IntegrityError:
+        # Database constraints are the final guard when scheduler claims race.
+        return False, None
+
+
+def schedule_due_sitemap_reconciliations(*, now=None, limit: int = 100) -> dict[str, int]:
+    """Claim and enqueue a bounded batch of due paid, active sites."""
+    now = now or timezone.now()
+    limit = max(1, min(int(limit), 100))
+    interval = timedelta(hours=settings.RECONCILE_INTERVAL_HOURS)
+    eligible_owner = Q(owner__stripe_subscription_status__in=("active", "past_due"))
+    if settings.ENVIRONMENT == "prod":
+        eligible_owner |= Q(owner__user__is_superuser=True)
+    latest_daily_created_at = Subquery(
+        ProjectSyncRequest.objects.filter(
+            project_id=OuterRef("pk"),
+            kind=ProjectSyncKinds.DAILY,
+        )
+        .order_by("-created_at")
+        .values("created_at")[:1],
+        output_field=DateTimeField(),
+    )
+    candidate_ids = list(
+        Project.objects.annotate(
+            latest_daily_created_at=latest_daily_created_at,
+            reconciliation_anchor=Greatest(
+                F("last_sync_at"),
+                Coalesce(latest_daily_created_at, F("last_sync_at")),
+            ),
+        )
+        .filter(
+            eligible_owner,
+            state=ProjectStates.ACTIVE,
+            last_sync_at__isnull=False,
+            reconciliation_anchor__lte=now - interval,
+            active_sitemap_inventory__isnull=False,
+        )
+        .order_by("reconciliation_anchor", "id")
+        .values_list("id", flat=True)[: limit * 5]
+    )
+    due_projects = 0
+    created_syncs = 0
+    enqueued_syncs = 0
+
+    for project_id in candidate_ids:
+        if created_syncs >= limit:
+            break
+        is_due, sync_uuid = _claim_due_reconciliation(project_id, now=now)
+        due_projects += int(is_due)
+        if sync_uuid is None:
+            continue
+        created_syncs += 1
+        if enqueue_sitemap_sync_safely(sync_uuid):
+            enqueued_syncs += 1
+
+    logger.info(
+        "crawl.reconciliation.scheduled",
+        extra={
+            "event.name": "crawl.reconciliation.scheduled",
+            "due_projects": due_projects,
+            "created_syncs": created_syncs,
+            "enqueued_syncs": enqueued_syncs,
+            "operation.status": "completed",
+            "outcome": "success",
+        },
+    )
+    return {
+        "due_projects": due_projects,
+        "created_syncs": created_syncs,
+        "enqueued_syncs": enqueued_syncs,
+    }
+
+
+def retry_project_sync(*, owner: Profile, project_uuid) -> ProjectSyncRequest:
+    """Create or republish one owner-scoped manual sync request."""
+    with transaction.atomic():
+        project = (
+            Project.objects.select_for_update()
+            .select_related("owner__user", "active_sitemap_inventory__sync_request")
+            .get(owner=owner, uuid=project_uuid)
+        )
+        if project.state != ProjectStates.ACTIVE or not project.owner.has_active_subscription:
+            raise PermissionDenied("This site is not eligible for synchronization.")
+        sync_request = (
+            ProjectSyncRequest.objects.filter(
+                project=project,
+                state__in=(ProjectSyncStates.QUEUED, ProjectSyncStates.RUNNING),
+            )
+            .order_by("created_at")
+            .first()
+        )
+        if sync_request is None:
+            latest = project.sync_requests.order_by("-created_at").first()
+            sitemap_kind = (
+                project.active_sitemap_inventory.sync_request.sitemap_kind
+                if project.active_sitemap_inventory_id
+                else latest.sitemap_kind
+                if latest
+                else ""
+            )
+            if not sitemap_kind:
+                raise ValidationError("This site has no sitemap sync history to retry.")
+            now = timezone.now()
+            sync_request = ProjectSyncRequest.objects.create(
+                project=project,
+                kind=ProjectSyncKinds.MANUAL,
+                sitemap_kind=sitemap_kind,
+                idempotency_key=f"manual:{project.uuid}:{now.isoformat()}",
+            )
+            project.current_sync_uuid = sync_request.uuid
+            project.current_sync_started_at = None
+            project.last_error_code = ""
+            project.save(
+                update_fields=[
+                    "current_sync_uuid",
+                    "current_sync_started_at",
+                    "last_error_code",
+                    "updated_at",
+                ]
+            )
+        sync_uuid = sync_request.uuid
+    enqueue_sitemap_sync_safely(sync_uuid)
+    return sync_request
+
+
 def _record_sync_failure(sync_uuid, error: SitemapParseError) -> str:
     with transaction.atomic():
         sync_request = ProjectSyncRequest.objects.select_for_update().get(uuid=sync_uuid)
+        project = Project.objects.select_for_update().get(pk=sync_request.project_id)
         sync_request.error_code = error.code.value
         sync_request.broker_task_id = ""
         if error.retryable and sync_request.attempt_count < sync_request.max_attempts:
@@ -204,13 +420,76 @@ def _record_sync_failure(sync_uuid, error: SitemapParseError) -> str:
             sync_request.next_attempt_at = None
             sync_request.completed_at = timezone.now()
         sync_request.save()
+        project.last_error_code = error.code.value
+        if sync_request.state == ProjectSyncStates.FAILED:
+            project.current_sync_uuid = None
+            project.current_sync_started_at = None
+        project.save()
         return sync_request.state
+
+
+def _candidate_ids_for_sync(
+    *,
+    sync_request: ProjectSyncRequest,
+    previous_inventory_id: int | None,
+    now: datetime,
+) -> list[int]:
+    candidates = list(
+        sync_request.sitemap_inventory.candidates.values(
+            "id",
+            "normalized_url",
+            "lastmod_hint",
+        )
+    )
+    if sync_request.kind != ProjectSyncKinds.DAILY or previous_inventory_id is None:
+        return [candidate["id"] for candidate in candidates]
+
+    previous_by_url = dict(
+        SitemapCandidate.objects.filter(inventory_id=previous_inventory_id).values_list(
+            "normalized_url",
+            "lastmod_hint",
+        )
+    )
+    selected_ids = []
+    unchanged_by_url = {}
+    for candidate in candidates:
+        normalized_url = candidate["normalized_url"]
+        previous_lastmod = previous_by_url.get(normalized_url)
+        current_lastmod = candidate["lastmod_hint"]
+        if previous_lastmod is None or (current_lastmod and current_lastmod != previous_lastmod):
+            selected_ids.append(candidate["id"])
+        else:
+            unchanged_by_url[normalized_url] = candidate["id"]
+
+    if not unchanged_by_url:
+        return selected_ids
+
+    sources = ArticleSourceURL.objects.filter(
+        project_id=sync_request.project_id,
+        normalized_url__in=unchanged_by_url,
+        is_active=True,
+    )
+    known_urls = set(sources.values_list("normalized_url", flat=True))
+    selected_ids.extend(
+        candidate_id
+        for normalized_url, candidate_id in unchanged_by_url.items()
+        if normalized_url not in known_urls
+    )
+    stale_cutoff = now - timedelta(hours=settings.RECONCILE_INTERVAL_HOURS * 7)
+    stale_urls = set(
+        sources.filter(article__last_fetched_at__lte=stale_cutoff).values_list(
+            "normalized_url", flat=True
+        )
+    )
+    selected_ids.extend(unchanged_by_url[url] for url in stale_urls)
+    return selected_ids
 
 
 def run_sitemap_sync(sync_uuid: str) -> str:
     sync_request = _claim_sync(sync_uuid)
     if sync_request is None:
         return "noop"
+    previous_inventory_id = sync_request.project.active_sitemap_inventory_id
     try:
         result = SitemapParser(allowed_host=sync_request.project.normalized_host).parse(
             sync_request.project.normalized_sitemap_url
@@ -233,7 +512,12 @@ def run_sitemap_sync(sync_uuid: str) -> str:
         )
         return state
 
-    candidates = list(inventory.candidates.only("id"))
+    candidate_ids = _candidate_ids_for_sync(
+        sync_request=sync_request,
+        previous_inventory_id=previous_inventory_id,
+        now=timezone.now(),
+    )
+    candidates = list(inventory.candidates.filter(id__in=candidate_ids).only("id"))
     PageCrawlWork.objects.bulk_create(
         [
             PageCrawlWork(

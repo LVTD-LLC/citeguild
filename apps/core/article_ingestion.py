@@ -330,6 +330,8 @@ class ArticleLifecycleService:
             sources.filter(normalized_url__in=desired).update(
                 is_active=True,
                 inactive_at=None,
+                last_seen_at=now,
+                last_seen_sync=sync_request,
             )
             missing = sources.exclude(normalized_url__in=desired)
         else:
