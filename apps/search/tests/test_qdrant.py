@@ -287,6 +287,32 @@ def test_search_requires_authorized_scope_and_applies_filters(profile):
         == []
     )
 
+    # Qdrant's point may lag behind billing and article changes. PostgreSQL is
+    # authoritative even when the caller's project scope is stale.
+    profile.stripe_subscription_status = "canceled"
+    profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    assert (
+        semantic_search(
+            [1.0, 0.0, 0.0],
+            authorized_project_uuids={article.project.uuid},
+            client=client,
+        )
+        == []
+    )
+
+    profile.stripe_subscription_status = "active"
+    profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    article.content_hash = "0" * 64
+    article.save(update_fields=["content_hash", "updated_at"])
+    assert (
+        semantic_search(
+            [1.0, 0.0, 0.0],
+            authorized_project_uuids={article.project.uuid},
+            client=client,
+        )
+        == []
+    )
+
 
 @pytest.mark.django_db
 @override_settings(
