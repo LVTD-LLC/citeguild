@@ -88,6 +88,7 @@ class TransportResponse(Protocol):
 
 
 Transport = Callable[[PinnedTarget, Mapping[str, str], float], TransportResponse]
+# Resolver implementations are injectable, so their output is always untrusted.
 Resolver = Callable[[str, int], tuple[str, ...]]
 
 
@@ -222,6 +223,8 @@ def _build_target(url: str, resolver: Resolver) -> PinnedTarget:
         addresses = resolver(hostname, port)
     else:
         addresses = (_validate_address(str(literal_address)),)
+    # Keep validation at this socket-boundary even when the default resolver also
+    # validates. Alternate resolvers must never be able to bypass SSRF controls.
     validated_addresses = tuple(_validate_address(address) for address in addresses)
     if not validated_addresses:
         raise SafeFetchError(SafeFetchErrorCode.DNS_FAILURE, retryable=True)

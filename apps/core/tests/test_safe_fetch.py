@@ -177,6 +177,24 @@ def test_fetch_blocks_metadata_hostname_even_if_dns_claims_it_is_public():
     assert not transport.targets
 
 
+def test_fetch_revalidates_every_injected_resolver_address_before_transport():
+    transport = FakeTransport([])
+    client = SafeFetchClient(
+        resolver=resolver_for({"attacker.example": ("127.0.0.1",)}),
+        transport=transport,
+    )
+
+    with pytest.raises(SafeFetchError) as error:
+        client.fetch(
+            "https://attacker.example/",
+            max_bytes=100,
+            allowed_content_types={"text/html"},
+        )
+
+    assert error.value.code == SafeFetchErrorCode.BLOCKED_ADDRESS
+    assert not transport.targets
+
+
 def test_every_redirect_is_resolved_validated_and_pinned_again():
     first = FakeResponse(status=302, headers={"Location": "https://second.example/map.xml"})
     second = FakeResponse(headers={"Content-Type": "application/xml"}, chunks=[b"ok"])
