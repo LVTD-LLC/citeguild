@@ -644,6 +644,17 @@ def stripe_webhook(request):
         handler = EVENT_HANDLERS.get(event.get("type"))
         if handler:
             handler(event)
+        else:
+            logger.info(
+                "stripe.webhook.process.completed",
+                extra={
+                    "event.name": "stripe.webhook.process.completed",
+                    "event_type": event.get("type"),
+                    "event_id": event_id,
+                    "operation.status": "unhandled",
+                    "outcome": "success",
+                },
+            )
 
     if handler:
         logger.info(
