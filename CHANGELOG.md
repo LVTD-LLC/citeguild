@@ -20,7 +20,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 - Codified the five-service CapRover topology, private networking, persistent
   volumes, dependency health, immutable image identity, scheduler ownership,
-  deployment order, and rollback boundary with tested Compose/workflow parity.
+  deployment order, and rollback boundary with tested Compose/workflow parity,
+  including portable Qdrant readiness and explicit HTTP 200 web health probes.
 - Added a dedicated real-service MVP acceptance lane covering paid site
   submission, article indexing, semantic search, detected links, Redis, pinned
   dependency audits, documented risk coverage, and explicit smoke budgets.
