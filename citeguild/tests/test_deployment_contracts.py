@@ -35,8 +35,7 @@ def test_production_roles_share_one_required_immutable_image():
     assert services["workers"]["environment"]["APP_PROCESS_TYPE"] == "worker"
     for role in ("backend", "workers"):
         assert services[role]["depends_on"] == {
-            dependency: {"condition": "service_healthy"}
-            for dependency in ("db", "redis", "qdrant")
+            dependency: {"condition": "service_healthy"} for dependency in ("db", "redis", "qdrant")
         }
 
 
