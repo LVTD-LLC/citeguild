@@ -70,6 +70,15 @@
                                             </dd>
                                         </div>
                                     </dl>
+                                    {% if project.state == 'active' and project.last_error_code %}
+                                        <form method="post"
+                                              action="{% url 'retry_site_sync' project.uuid %}"
+                                              class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-800">
+                                            {% csrf_token %}
+                                            <p class="mb-3 text-sm text-red-700 dark:text-red-300">Last sync failed: {{ project.last_error_code }}</p>
+                                            <button type="submit" class="app-button-secondary">Retry sync</button>
+                                        </form>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>

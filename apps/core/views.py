@@ -16,7 +16,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
@@ -30,8 +30,9 @@ from apps.core.analytics import (
     track_event,
 )
 from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
+from apps.core.crawl_jobs import retry_project_sync
 from apps.core.forms import ProfileUpdateForm, SiteCreateForm
-from apps.core.models import Profile, StripeWebhookEvent
+from apps.core.models import Profile, Project, StripeWebhookEvent
 from apps.core.projects import ProjectHostConflict, ProjectService
 from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
 from apps.core.stripe_webhooks import EVENT_HANDLERS
@@ -274,6 +275,21 @@ def rotate_api_key(request):
     request.session[NEW_API_KEY_SESSION_KEY] = api_key
     messages.success(request, "New API key generated. Copy it now; it will only be shown once.")
     return redirect("settings")
+
+
+@login_required
+@require_POST
+def retry_site_sync(request, project_uuid):
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    try:
+        sync_request = retry_project_sync(owner=profile, project_uuid=project_uuid)
+    except Project.DoesNotExist as error:
+        raise Http404 from error
+    except (PermissionDenied, ValidationError) as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, f"Site sync queued ({str(sync_request.uuid)[:8]}).")
+    return redirect("home")
 
 
 @login_required

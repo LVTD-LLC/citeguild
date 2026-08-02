@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Active paid sites now receive jittered daily sitemap reconciliation through a
+  named, idempotent Django Q2 schedule with PostgreSQL claims, selective
+  new/changed/stale page work, visible failures, and an owner-scoped manual retry.
 - The dashboard now reveals a credential-safe Copy Prompt after the first site
   submission, with provider-neutral MCP/API onboarding, current public URLs,
   explicit source-evaluation guardrails, and linked key rotation guidance.
