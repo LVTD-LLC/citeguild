@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 SearchQuery = Annotated[
     str,
-    Field(min_length=1, max_length=MAX_QUERY_CHARS, pattern=r"\S"),
+    Field(min_length=1, max_length=MAX_QUERY_CHARS, pattern=r"\S+"),
 ]
 SearchLimit = Annotated[int, Field(ge=1, le=MAX_SEARCH_LIMIT, strict=True)]
 SearchLanguage = Annotated[
