@@ -14,6 +14,15 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-08-02
+
+### Added
+
+- Page workers now deterministically extract bounded article text and canonical
+  metadata with Trafilatura, persist immutable extraction results, honor
+  noindex directives, and reject unsupported, empty, oversized, or off-host
+  content without retaining raw HTML.
+
 ## 2026-08-01
 
 ### Changed

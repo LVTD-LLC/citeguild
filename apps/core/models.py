@@ -8,6 +8,7 @@ from django_q.tasks import async_task
 from apps.core.base_models import BaseModel
 from apps.core.choices import (
     EmailType,
+    ExtractionStates,
     PageCrawlStates,
     ProfileStates,
     ProjectStates,
@@ -260,6 +261,31 @@ class PageCrawlWork(BaseModel):
         indexes = [
             models.Index(fields=["state", "next_attempt_at"], name="core_page_work_retry_idx"),
             models.Index(fields=["sync_request", "state"], name="core_page_work_sync_state_idx"),
+        ]
+
+
+class PageExtractionResult(BaseModel):
+    work = models.OneToOneField(
+        PageCrawlWork,
+        on_delete=models.CASCADE,
+        related_name="extraction",
+    )
+    state = models.CharField(max_length=20, choices=ExtractionStates.choices)
+    final_url = models.URLField(max_length=2048)
+    canonical_url = models.URLField(max_length=2048)
+    http_status = models.PositiveSmallIntegerField()
+    title = models.CharField(max_length=300, blank=True, default="")
+    description = models.CharField(max_length=1000, blank=True, default="")
+    language = models.CharField(max_length=35, blank=True, default="")
+    text = models.TextField(blank=True, default="")
+    noindex = models.BooleanField(default=False)
+    source_bytes = models.PositiveIntegerField(default=0)
+    text_chars = models.PositiveIntegerField(default=0)
+    diagnostics = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_page_extraction_uuid_unique")
         ]
 
 

@@ -50,3 +50,9 @@ class PageCrawlStates(models.TextChoices):
     SUCCEEDED = "succeeded", "Succeeded"
     FAILED = "failed", "Failed"
     CANCELLED = "cancelled", "Cancelled"
+
+
+class ExtractionStates(models.TextChoices):
+    READY = "ready", "Ready"
+    EMPTY = "empty", "Empty"
+    NOINDEX = "noindex", "Noindex"

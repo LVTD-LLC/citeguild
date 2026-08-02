@@ -13,7 +13,13 @@ from django.utils import timezone
 from django_q.tasks import async_task
 
 from apps.core.choices import PageCrawlStates, ProjectSyncStates
-from apps.core.models import PageCrawlWork, Project, ProjectSyncRequest
+from apps.core.html_extraction import (
+    HtmlExtraction,
+    HtmlExtractionError,
+    PageExtractionService,
+    extract_article,
+)
+from apps.core.models import PageCrawlWork, PageExtractionResult, Project, ProjectSyncRequest
 from apps.core.projects import normalize_sitemap_url
 from apps.core.safe_fetch import SafeFetchClient, SafeFetchError
 from apps.core.sitemap_parser import (
@@ -311,7 +317,7 @@ def _claim_page_work(work_uuid) -> PageCrawlWork | None:
         return work
 
 
-def _fetch_page(work: PageCrawlWork) -> None:
+def _fetch_page(work: PageCrawlWork) -> HtmlExtraction:
     result = SafeFetchClient.from_django_settings().fetch(
         work.candidate.normalized_url,
         max_bytes=settings.CRAWL_MAX_PAGE_BYTES,
@@ -323,6 +329,10 @@ def _fetch_page(work: PageCrawlWork) -> None:
         raise SafeFetchErrorCodeWrapper("invalid_final_url") from error
     if host != work.sync_request.project.normalized_host:
         raise SafeFetchErrorCodeWrapper("redirected_off_host")
+    return extract_article(
+        result,
+        allowed_host=work.sync_request.project.normalized_host,
+    )
 
 
 class SafeFetchErrorCodeWrapper(Exception):
@@ -374,11 +384,14 @@ def run_page_crawl(work_uuid: str) -> str:
     work = _claim_page_work(work_uuid)
     if work is None:
         return "noop"
+    if PageExtractionResult.objects.filter(work=work).exists():
+        return _record_page_outcome(work_uuid)
     try:
-        _fetch_page(work)
+        extraction = _fetch_page(work)
+        PageExtractionService.persist(work=work, extraction=extraction)
     except SafeFetchError as error:
         return _record_page_outcome(work_uuid, error=error)
-    except SafeFetchErrorCodeWrapper as error:
+    except (SafeFetchErrorCodeWrapper, HtmlExtractionError) as error:
         return _record_page_outcome(work_uuid, error=error)
     return _record_page_outcome(work_uuid)
 
