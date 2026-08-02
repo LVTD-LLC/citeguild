@@ -149,6 +149,7 @@ def test_mcp_protocol_discovers_and_calls_search_tool_with_shared_contract(monke
                 "limit": 7,
                 "language": "en",
                 "excluded_domains": ["requester.example"],
+                "transport": "mcp",
             }
         ]
 

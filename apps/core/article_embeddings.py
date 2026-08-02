@@ -18,7 +18,8 @@ from pydantic_ai import Embedder
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 
 from apps.core.choices import ArticleEmbeddingStates, ArticleStates, ExtractionStates
-from apps.core.models import Article, ArticleEmbedding
+from apps.core.funnel_analytics import EMBEDDING_COMPLETED, track_funnel_event
+from apps.core.models import Article, ArticleEmbedding, Profile, Project
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +186,44 @@ class EmbeddingService:
                 "retryable": error.retryable,
             },
         )
+        self._track_cost(
+            article=article,
+            status="failed",
+            input_chars=input_chars,
+            input_tokens=0,
+            latency_ms=latency_ms,
+            error_code=error.code,
+            retryable=error.retryable,
+        )
+
+    def _track_cost(
+        self,
+        *,
+        article: Article,
+        status: str,
+        input_chars: int,
+        input_tokens: int,
+        latency_ms: int,
+        error_code: str = "",
+        retryable: bool = False,
+    ) -> None:
+        project = Project.objects.only("uuid", "owner_id").get(pk=article.project_id)
+        properties = {
+            "site_id": str(project.uuid),
+            "status": status,
+            "input_chars": input_chars,
+            "input_tokens": input_tokens,
+            "duration_ms": latency_ms,
+            "model": self.model,
+        }
+        if error_code:
+            properties.update({"error_code": error_code, "retryable": retryable})
+        track_funnel_event(
+            Profile.objects.get(pk=project.owner_id),
+            EMBEDDING_COMPLETED,
+            properties,
+            source_function="EmbeddingService.embed_article",
+        )
 
     def embed_article(self, *, article_uuid) -> ArticleEmbedding:
         article = Article.objects.get(uuid=article_uuid)  # ty: ignore[unresolved-attribute]
@@ -270,6 +309,13 @@ class EmbeddingService:
                 "operation.status": "succeeded",
                 "outcome": "success",
             },
+        )
+        self._track_cost(
+            article=article,
+            status="succeeded",
+            input_chars=len(prepared),
+            input_tokens=response.input_tokens,
+            latency_ms=latency_ms,
         )
         return embedding
 

@@ -26,6 +26,7 @@ from apps.core.article_embeddings import (
     PydanticEmbeddingClient,
 )
 from apps.core.choices import ProjectStates
+from apps.core.funnel_analytics import SEARCH_COMPLETED, track_funnel_event
 from apps.core.models import Profile, Project
 from apps.search.qdrant import QdrantContractError, semantic_search
 
@@ -186,7 +187,8 @@ class SearchService:
         result_count: int = 0,
         error_code: str = "",
         retryable: bool = False,
-    ) -> None:
+    ) -> int:
+        duration_ms = max(0, round((time.perf_counter() - started_at) * 1_000))
         SEARCH_METRICS[status] += 1
         log = logger.info if status == "succeeded" else logger.warning
         log(
@@ -195,12 +197,49 @@ class SearchService:
                 "event.name": "search.completed",
                 "search.contract_version": SEARCH_CONTRACT_VERSION,
                 "search.result_count": result_count,
-                "duration_ms": max(0, round((time.perf_counter() - started_at) * 1_000)),
+                "duration_ms": duration_ms,
                 "operation.status": status,
                 "outcome": "success" if status == "succeeded" else "failure",
                 "error.type": error_code,
                 "retryable": retryable,
             },
+        )
+        return duration_ms
+
+    @staticmethod
+    def _track(
+        *,
+        profile: Profile,
+        transport: str,
+        status: str,
+        query_chars: int,
+        result_count: int,
+        limit: int,
+        language_filter: bool,
+        excluded_domain_count: int,
+        duration_ms: int,
+        input_tokens: int,
+        error_code: str = "",
+        retryable: bool = False,
+    ) -> None:
+        properties = {
+            "transport": transport,
+            "status": status,
+            "query_chars": query_chars,
+            "result_count": result_count,
+            "limit": limit,
+            "language_filter": language_filter,
+            "excluded_domain_count": excluded_domain_count,
+            "duration_ms": duration_ms,
+            "input_tokens": input_tokens,
+        }
+        if error_code:
+            properties.update({"error_code": error_code, "retryable": retryable})
+        track_funnel_event(
+            profile,
+            SEARCH_COMPLETED,
+            properties,
+            source_function="SearchService.search",
         )
 
     def search(
@@ -211,8 +250,13 @@ class SearchService:
         limit: int = 10,
         language: str | None = None,
         excluded_domains: Iterable[str] = (),
+        transport: str = "internal",
     ) -> SearchResponse:
         started_at = time.perf_counter()
+        query_chars = min(len(query), MAX_QUERY_CHARS + 1) if isinstance(query, str) else 0
+        normalized_language = None
+        normalized_exclusions: set[str] = set()
+        input_tokens = 0
         try:
             normalized_query = _normalize_query(query)
             if (
@@ -229,7 +273,19 @@ class SearchService:
             project_uuids = _eligible_project_uuids()
             if not project_uuids:
                 response = SearchResponse(SEARCH_CONTRACT_VERSION, ())
-                self._record(started_at=started_at, status="succeeded")
+                duration_ms = self._record(started_at=started_at, status="succeeded")
+                self._track(
+                    profile=profile,
+                    transport=transport,
+                    status="succeeded",
+                    query_chars=query_chars,
+                    result_count=0,
+                    limit=limit,
+                    language_filter=bool(normalized_language),
+                    excluded_domain_count=len(normalized_exclusions),
+                    duration_ms=duration_ms,
+                    input_tokens=0,
+                )
                 return response
 
             try:
@@ -237,6 +293,7 @@ class SearchService:
                     normalized_query,
                     dimensions=settings.EMBEDDING_DIMENSIONS,
                 )
+                input_tokens = embedding.input_tokens
             except EmbeddingError as error:
                 raise SearchError(
                     "query_embedding_unavailable",
@@ -279,16 +336,42 @@ class SearchService:
                 for hit in hits
             )
             response = SearchResponse(SEARCH_CONTRACT_VERSION, results)
-            self._record(
+            duration_ms = self._record(
                 started_at=started_at,
                 status="succeeded",
                 result_count=len(results),
             )
+            self._track(
+                profile=profile,
+                transport=transport,
+                status="succeeded",
+                query_chars=query_chars,
+                result_count=len(results),
+                limit=limit,
+                language_filter=bool(normalized_language),
+                excluded_domain_count=len(normalized_exclusions),
+                duration_ms=duration_ms,
+                input_tokens=input_tokens,
+            )
             return response
         except SearchError as error:
-            self._record(
+            duration_ms = self._record(
                 started_at=started_at,
                 status="failed",
+                error_code=error.code,
+                retryable=error.retryable,
+            )
+            self._track(
+                profile=profile,
+                transport=transport,
+                status="failed",
+                query_chars=query_chars,
+                result_count=0,
+                limit=limit if isinstance(limit, int) and not isinstance(limit, bool) else 0,
+                language_filter=bool(normalized_language),
+                excluded_domain_count=len(normalized_exclusions),
+                duration_ms=duration_ms,
+                input_tokens=input_tokens,
                 error_code=error.code,
                 retryable=error.retryable,
             )

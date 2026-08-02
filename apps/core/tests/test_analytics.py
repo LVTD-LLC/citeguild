@@ -95,3 +95,33 @@ def test_track_event_uses_profile_identity_without_email(profile, settings, monk
         "feature": "example",
     }
     assert profile.user.email not in repr(captures)
+
+
+@pytest.mark.django_db
+def test_track_event_is_fail_open_when_queue_is_unavailable(
+    profile,
+    settings,
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    settings.POSTHOG_API_KEY = "phc_test"
+    records = []
+    monkeypatch.setattr(
+        "apps.core.analytics.async_task",
+        lambda *args, **kwargs: (_ for _ in ()).throw(ConnectionError("broker unavailable")),
+    )
+    monkeypatch.setattr(
+        "apps.core.analytics.logger.warning",
+        lambda *args, **kwargs: records.append((args, kwargs)),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        result = track_event(
+            profile,
+            f"{EVENT_PREFIX}_feature_completed",
+            {"feature": "example"},
+        )
+
+    assert result == f"Queued event {EVENT_PREFIX}_feature_completed for profile {profile.id}"
+    assert records[0][0] == ("posthog.event.enqueue_failed",)
+    assert "broker unavailable" not in repr(records)

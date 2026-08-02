@@ -4,6 +4,12 @@ from datetime import UTC, datetime
 from django.db import transaction
 
 from apps.core.choices import ProfileStates
+from apps.core.funnel_analytics import (
+    SUBSCRIPTION_ACTIVATED,
+    SUBSCRIPTION_ENDED,
+    SUBSCRIPTION_RETAINED,
+    track_funnel_event,
+)
 from apps.core.models import Profile, ProfileStateTransition
 
 logger = logging.getLogger(__name__)
@@ -59,6 +65,10 @@ def apply_subscription_event(event, *, deleted=False):
         return
 
     profile = Profile.objects.select_for_update().get(pk=profile.pk)
+    if event.get("id") and event.get("id") == profile.stripe_last_event_id:
+        logger.info("stripe.subscription.duplicate_event", extra={"event_id": event.get("id")})
+        return
+    previous_status = profile.stripe_subscription_status
     event_created = int(event.get("created") or 0)
     if event_created < profile.stripe_last_event_created:
         logger.info("stripe.subscription.stale_event", extra={"event_id": event.get("id")})
@@ -86,6 +96,28 @@ def apply_subscription_event(event, *, deleted=False):
     profile.stripe_last_event_created = event_created
     profile.stripe_last_event_id = event.get("id") or ""
     profile.save()
+    paid_statuses = {"active", "past_due"}
+    was_paid = previous_status in paid_statuses
+    is_paid = status in paid_statuses
+    event_name = None
+    if is_paid and not was_paid:
+        event_name = SUBSCRIPTION_ACTIVATED
+    elif is_paid and was_paid:
+        event_name = SUBSCRIPTION_RETAINED
+    elif was_paid and not is_paid:
+        event_name = SUBSCRIPTION_ENDED
+    if event_name:
+        track_funnel_event(
+            profile,
+            event_name,
+            {
+                "subscription_status": status,
+                "previous_status": previous_status,
+                "cancel_at_period_end": profile.stripe_cancel_at_period_end,
+            },
+            idempotency_key=f"stripe:{event.get('id') or event_created}",
+            source_function="apply_subscription_event",
+        )
 
 
 def handle_created_subscription(event):

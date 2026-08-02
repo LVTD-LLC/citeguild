@@ -167,6 +167,7 @@ def test_v1_search_uses_shared_service_contract(client, profile, monkeypatch):
             "limit": 7,
             "language": "en",
             "excluded_domains": ["requester.example"],
+            "transport": "api",
         }
     ]
 

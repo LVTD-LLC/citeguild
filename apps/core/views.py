@@ -33,6 +33,7 @@ from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
 from apps.core.crawl_jobs import retry_project_sync
 from apps.core.dashboard import DashboardService
 from apps.core.forms import ProfileUpdateForm, SiteCreateForm
+from apps.core.funnel_analytics import AGENT_CREDENTIAL_CREATED, track_funnel_event
 from apps.core.models import Profile, Project, StripeWebhookEvent
 from apps.core.projects import ProjectHostConflict
 from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
@@ -279,7 +280,15 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 @require_POST
 def rotate_api_key(request):
     profile, _created = Profile.objects.get_or_create(user=request.user)
+    rotation = profile.has_api_key
     api_key = profile.rotate_api_key()
+    track_funnel_event(
+        profile,
+        AGENT_CREDENTIAL_CREATED,
+        {"credential_kind": "api_key", "rotation": rotation},
+        idempotency_key=f"api-key:{profile.api_key_prefix}",
+        source_function="rotate_api_key",
+    )
     request.session[NEW_API_KEY_SESSION_KEY] = api_key
     messages.success(request, "New API key generated. Copy it now; it will only be shown once.")
     return redirect("settings")

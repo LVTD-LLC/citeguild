@@ -53,6 +53,11 @@ def test_embedding_is_one_current_record_and_unchanged_content_skips_provider(
     monkeypatch,
 ):
     article = create_article(profile)
+    tracked = []
+    monkeypatch.setattr(
+        "apps.core.article_embeddings.track_funnel_event",
+        lambda *args, **kwargs: tracked.append((args, kwargs)),
+    )
     times = iter([10.0, 10.125])
     monkeypatch.setattr(
         "apps.core.article_embeddings.time.perf_counter",
@@ -80,6 +85,10 @@ def test_embedding_is_one_current_record_and_unchanged_content_skips_provider(
     assert first.latency_ms == 125
     assert len(client.calls) == 1
     assert client.calls[0] == (article.content, 3)
+    assert len(tracked) == 1
+    assert tracked[0][0][1] == "citeguild_embedding_completed"
+    assert tracked[0][0][2]["input_tokens"] == 7
+    assert tracked[0][0][2]["duration_ms"] == 125
 
 
 @pytest.mark.django_db
