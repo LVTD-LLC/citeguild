@@ -100,6 +100,7 @@ POSTHOG_SERVICE_NAME = env("POSTHOG_SERVICE_NAME", default="citeguild")
 POSTHOG_SERVICE_VERSION = (
     env("SENTRY_RELEASE", default="") or env("GITHUB_SHA", default="") or "unknown"
 )
+CITEGUILD_RELEASE = env("CITEGUILD_RELEASE", default=POSTHOG_SERVICE_VERSION)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 

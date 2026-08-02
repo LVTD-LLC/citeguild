@@ -60,6 +60,7 @@ jobs:
           context: .
           push: true
           file: deployment/Dockerfile
+          build-args: CITEGUILD_RELEASE=${{ github.sha }}
           tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
 
       - name: Deploy server to CapRover
@@ -73,17 +74,22 @@ jobs:
 
       - name: Verify production health
         shell: bash
+        env:
+          EXPECTED_RELEASE: ${{ github.sha }}
         run: |
           set -euo pipefail
           for attempt in {1..24}; do
             if curl --fail --silent --show-error --max-time 10 \
               "$PRODUCTION_HEALTHCHECK_URL" | python -c '
           import json
+          import os
           import sys
 
           payload = json.load(sys.stdin)
           checks = payload.get("checks", {})
           expected = ("database", "redis", "qdrant")
+          if payload.get("release") != os.environ["EXPECTED_RELEASE"]:
+              raise SystemExit(1)
           if payload.get("healthy") is not True or not all(checks.get(name) is True for name in expected):
               raise SystemExit(1)
           '; then

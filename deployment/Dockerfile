@@ -14,9 +14,12 @@ FROM python:3.14.5
 
 WORKDIR /app
 
+ARG CITEGUILD_RELEASE=unknown
+
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV CITEGUILD_RELEASE=$CITEGUILD_RELEASE
 
 COPY --from=uv /uv /uvx /bin/
 COPY pyproject.toml uv.lock .python-version ./
