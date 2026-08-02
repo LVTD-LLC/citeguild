@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Added private encrypted daily PostgreSQL backups with bucket-scoped storage,
+  daily/weekly/monthly retention, integrity checks, failure alerts, and an
+  isolated PostgreSQL restore plus Qdrant rebuild recovery runbook.
 - Production deploys now validate required configuration up front, pin the
   CapRover action, and gate worker rollout on the exact expected release plus
   the public aggregate health contract for PostgreSQL, Redis, and Qdrant.

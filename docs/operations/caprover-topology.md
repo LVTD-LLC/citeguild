@@ -13,11 +13,16 @@ cache and queue delivery state, not a substitute for PostgreSQL.
 | `citeguild-postgres` | PostgreSQL 18 | 5432 | No | `citeguild-postgres-data:/var/lib/postgresql/data` | `pg_isready`; also covered by web aggregate health |
 | `citeguild-redis` | Redis 8 with password and AOF | 6379 | No | `citeguild-redis-data:/data` | Authenticated `PING`; also covered by web aggregate health |
 | `citeguild-qdrant` | Qdrant 1.18.3 with API key and telemetry disabled | 6333 | No | `citeguild-qdrant-data:/qdrant/storage` | Authenticated collection validation through web aggregate health |
+| `citeguild-backups` | Private PostgreSQL 18 client and restic loop | 80 unused | No | Encrypted private MinIO repository | Dedicated Healthchecks start/success/failure contract |
 
 Only `citeguild` is exposed through CapRover's proxy. Application connections
 use `srv-captain--citeguild-postgres`, `srv-captain--citeguild-redis`, and
 `srv-captain--citeguild-qdrant`; database, cache, queue, and vector ports never
 need public routing.
+
+The backup process is an operational sixth service added by CG-033. It has no
+public route or local application dependency and uses a bucket-scoped storage
+credential. See `docs/operations/backup-recovery.md` for its recovery contract.
 
 The worker role owns the Django Q2 scheduler. There is no separate scheduler
 container: named schedules and PostgreSQL uniqueness/claim constraints make

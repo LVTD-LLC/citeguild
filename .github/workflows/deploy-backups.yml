@@ -1,0 +1,73 @@
+name: Deploy Backups
+
+on:
+  pull_request:
+    paths:
+      - deployment/backup/**
+      - .github/workflows/deploy-backups.yml
+  push:
+    branches:
+      - main
+    paths:
+      - deployment/backup/**
+      - .github/workflows/deploy-backups.yml
+  workflow_dispatch:
+
+env:
+  CAPROVER_APP_NAME: citeguild-backups
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy backups
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
+          BACKUPS_APP_TOKEN: ${{ secrets.BACKUPS_APP_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CAPROVER_SERVER"
+          test -n "$BACKUPS_APP_TOKEN"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prepare image name
+        id: image
+        shell: bash
+        run: echo "image_name=ghcr.io/${GITHUB_REPOSITORY,,}-backups" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          file: deployment/backup/Dockerfile
+          tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
+
+      - name: Deploy backups to CapRover
+        if: github.event_name != 'pull_request'
+        uses: caprover/deploy-from-github@cb179160479b998a553b61700fe390980bfe7fe8
+        with:
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: ${{ env.CAPROVER_APP_NAME }}
+          token: ${{ secrets.BACKUPS_APP_TOKEN }}
+          image: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
