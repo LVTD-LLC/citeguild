@@ -21,3 +21,54 @@ class ProfileStates(models.TextChoices):
 class EmailType(models.TextChoices):
     EMAIL_CONFIRMATION = "EMAIL_CONFIRMATION", "Email Confirmation"
     WELCOME = "WELCOME", "Welcome"
+
+
+class ProjectStates(models.TextChoices):
+    ACTIVE = "active", "Active"
+    SUSPENDED = "suspended", "Suspended"
+
+
+class ProjectSyncKinds(models.TextChoices):
+    INITIAL = "initial", "Initial"
+    DAILY = "daily", "Daily"
+    MANUAL = "manual", "Manual"
+    REPAIR = "repair", "Repair"
+
+
+class ProjectSyncStates(models.TextChoices):
+    QUEUED = "queued", "Queued"
+    RUNNING = "running", "Running"
+    SUCCEEDED = "succeeded", "Succeeded"
+    PARTIAL = "partial", "Partial"
+    FAILED = "failed", "Failed"
+    CANCELLED = "cancelled", "Cancelled"
+
+
+class PageCrawlStates(models.TextChoices):
+    QUEUED = "queued", "Queued"
+    RUNNING = "running", "Running"
+    SUCCEEDED = "succeeded", "Succeeded"
+    FAILED = "failed", "Failed"
+    CANCELLED = "cancelled", "Cancelled"
+
+
+class ExtractionStates(models.TextChoices):
+    READY = "ready", "Ready"
+    EMPTY = "empty", "Empty"
+    NOINDEX = "noindex", "Noindex"
+
+
+class ArticleStates(models.TextChoices):
+    DISCOVERED = "discovered", "Discovered"
+    ACTIVE = "active", "Active"
+    INACTIVE = "inactive", "Inactive"
+
+
+class CrawlAttemptStates(models.TextChoices):
+    SUCCEEDED = "succeeded", "Succeeded"
+    FAILED = "failed", "Failed"
+
+
+class ArticleEmbeddingStates(models.TextChoices):
+    SUCCEEDED = "succeeded", "Succeeded"
+    FAILED = "failed", "Failed"

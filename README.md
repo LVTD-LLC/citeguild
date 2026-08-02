@@ -22,8 +22,8 @@ development guidance.
   `pg_stat_statements` migrations.
 - Docker, Fly.io, Render, and CapRover deployment files.
 
-- Tool-neutral `AGENTS.md`, `DESIGN.md`, and bundled `.agents/skills/`
-  workflows for humans and coding agents.
+- Tool-neutral `AGENTS.md` plus focused `PRODUCT.md`, `TECH.md`, `STRUCTURE.md`,
+  `DESIGN.md`, and `ANALYTICS.md` contracts for humans and coding agents.
 
 - ReviewGate AI reviews for same-repository pull requests.
 
@@ -290,11 +290,20 @@ cannot create superuser-only Postgres extensions.
 
 ## Architecture
 
+The target CiteGuild MVP domain model, PostgreSQL/Qdrant ownership, lifecycle
+states, job boundaries, idempotency rules, shared search contract, and CapRover
+topology are defined in [ADR 0001: Define the MVP domain and service
+boundaries](docs/architecture/0001-mvp-domain-and-service-boundaries.md).
+
 ### Directory Structure
 
 ```text
 .
 |-- AGENTS.md                         # Tool-neutral coding-agent guidance
+|-- PRODUCT.md                        # Product, pricing, MVP, and non-goals
+|-- TECH.md                           # Architecture, security, and deployment contract
+|-- STRUCTURE.md                      # Domain boundaries and placement rules
+|-- ANALYTICS.md                      # Metrics, events, identity, and privacy contract
 |-- DESIGN.md                         # Design-system source of truth
 |-- Makefile                          # Local, Compose, test, and analysis commands
 |-- apps/
@@ -369,6 +378,9 @@ Every Django request emits one `http.request.completed` event with a bounded
 `http.route`, status, duration, and actor IDs when already available. Django Q2
 workers emit `background_job.completed` without task arguments or results.
 These fields stay queryable in JSON logs and Sentry. PostHog receives an asynchronous clone restricted to an explicit field allowlist; unknown fields and the original formatted message are dropped, and `posthogDistinctId` is derived inside the exporter from `profile_id`.
+
+The server-truth product event catalog, deduplication rules, privacy boundary,
+and MVP metric recipes live in [the paid-to-citation analytics contract](docs/analytics/funnel-events.md).
 
 ### Application Boundaries
 
@@ -474,6 +486,19 @@ Database and Redis:
 | `CACHE_KEY_PREFIX` | Django cache key prefix. |
 | `Q_CLUSTER_NAME` | Django Q2 cluster name. |
 
+Qdrant collection and connection:
+
+| Variable | Description |
+| --- | --- |
+| `QDRANT_URL` | Qdrant HTTP API URL. Production uses the private CapRover service address. |
+| `QDRANT_API_KEY` | Qdrant admin API key. Keep it in the deployment environment only. |
+| `QDRANT_TIMEOUT_SECONDS` | Client request timeout in seconds. Defaults to `5`. |
+| `CITEGUILD_QDRANT_COLLECTION` | Stable article collection name. Defaults to `citeguild-articles`. |
+| `CITEGUILD_EMBEDDING_DIMENSIONS` | Must exactly match the collection vector size. Defaults to `1536`. |
+
+The server startup validates or creates the cosine article collection. Use
+`python manage.py rebuild_qdrant_articles` to reconstruct it from PostgreSQL.
+
 Production security variables:
 
 | Variable | Default |
@@ -514,7 +539,7 @@ Optional feature variables:
 | `AWS_S3_ENDPOINT_URL`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME` | S3-compatible media storage. |
 
 
-| `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_YEARLY`, `WEBHOOK_UUID` | Stripe Checkout, Billing Portal, and webhook verification. |
+| `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_CONTEXT`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_MONTHLY`, `WEBHOOK_UUID` | Stripe Checkout, Billing Portal, explicit account routing, and webhook verification for the single $10 monthly plan. |
 
 
 | `MJML_URL` | MJML HTTP server for email rendering. |
@@ -553,6 +578,7 @@ The API is mounted at `/api/` and implemented with Django Ninja.
 | Endpoint | Auth | Purpose |
 | --- | --- | --- |
 | `GET /api/healthcheck` | none | Checks database and Redis connectivity. |
+| `POST /api/projects` | `X-API-Key` or Bearer API key | Validates one XML sitemap and queues its initial sync. |
 | `GET /api/user` | `X-API-Key` or Bearer API key | Returns safe account/profile details for the authenticated profile. |
 | `GET /api/user/settings` | browser session | Private settings data for the authenticated user settings page. |
 
@@ -583,8 +609,13 @@ discovery endpoints, Dynamic Client Registration, browser authorization, token
 refresh/revocation, and ready-to-copy runtime agent instructions at
 `/AGENTS.md`.
 
-The first tool is `get_user_info`, backed by the same serializer as
-`GET /api/user`.
+The server intentionally exposes only two tools:
+
+- `get_user_info`, backed by the same serializer as `GET /api/user`.
+- `search_member_articles`, backed by the shared versioned `SearchService` used
+  by `POST /api/v1/search`. It accepts a query or draft passage, a 1–50 result
+  limit, an optional language, and up to 20 exact excluded domains. Results are
+  candidate sources, not endorsements or forced-link instructions.
 
 MCP URLs:
 
@@ -616,6 +647,20 @@ Authorization: Bearer <api_key>
 ```
 
 API keys are intentionally not accepted in query strings.
+
+For environment-backed bearer authentication in Codex, export
+`CITEGUILD_API_KEY` and configure `~/.codex/config.toml` without placing the raw
+key in the file:
+
+```toml
+[mcp_servers.citeguild]
+url = "<production-url>/mcp/"
+bearer_token_env_var = "CITEGUILD_API_KEY"
+```
+
+For Claude Code, use its OAuth flow or an HTTP MCP entry whose Authorization
+header is `Bearer ${CITEGUILD_API_KEY}`. Project `.mcp.json` supports environment
+variable expansion; never commit an expanded credential.
 
 Give an agent this starter prompt:
 
@@ -693,9 +738,15 @@ conflict with text entry.
 
 ## AI-Assisted Development
 
-The generated project keeps coding-agent guidance tool-neutral:
+The CiteGuild repository keeps coding-agent guidance tool-neutral and separates
+durable context by concern:
 
 - `AGENTS.md` is the canonical repo guidance for coding agents.
+- `PRODUCT.md` is the canonical pricing, workflow, scope, and non-goal contract.
+- `TECH.md` is the canonical architecture, security, integration, deployment,
+  and command contract.
+- `STRUCTURE.md` is the canonical file-placement and domain-boundary guide.
+- `ANALYTICS.md` is the canonical metrics, event, identity, and privacy contract.
 - `DESIGN.md` is the canonical design-system source of truth.
 - `docs/quality.md` is the local CI path and touched-area quality command
   matrix for humans and coding agents.
@@ -732,9 +783,10 @@ The generated project keeps coding-agent guidance tool-neutral:
 - The hosted app serves runtime MCP setup instructions at `/AGENTS.md`.
 
 
-Do not add IDE-specific or agent-vendor-specific instruction files unless your
-team explicitly standardizes on one tool. Keep durable project workflow, test,
-security, architecture, and design rules in `AGENTS.md` and `DESIGN.md`.
+Do not add IDE-specific or agent-vendor-specific instruction files unless the
+team explicitly standardizes on one tool. Codex, Claude Code, Gemini, and other
+agents should read the same canonical files rather than maintain duplicate
+copies that drift.
 
 `make pyscn-check` runs a CI-friendly static analysis gate for complexity and
 dead code. `make pyscn-analyze` creates a local `.pyscn/` report with broader
@@ -878,7 +930,7 @@ make pyscn-check
 Run focused pytest checks:
 
 ```bash
-make terminal-test apps/core/tests/test_example.py
+make terminal-test apps/core/tests/test_api_keys.py
 make terminal-test -- -k keyword -q
 ```
 
@@ -926,15 +978,15 @@ different value.
 `deployment/Dockerfile` builds one image for both web and worker roles:
 
 ```bash
-docker build -f deployment/Dockerfile -t citeguild:latest .
+docker build -f deployment/Dockerfile -t citeguild:dev .
 ```
 
 At runtime, `deployment/entrypoint.sh` chooses the process from
 `APP_PROCESS_TYPE`:
 
 ```bash
-docker run --env-file .env -e APP_PROCESS_TYPE=server -p 8000:80 citeguild:latest
-docker run --env-file .env -e APP_PROCESS_TYPE=worker citeguild:latest
+docker run --env-file .env -e APP_PROCESS_TYPE=server -p 8000:80 citeguild:dev
+docker run --env-file .env -e APP_PROCESS_TYPE=worker citeguild:dev
 ```
 
 The server role waits for the database, runs `collectstatic`, applies
@@ -943,16 +995,17 @@ Gunicorn. The worker role starts Django Q2.
 
 ### Production Docker Compose
 
-`docker-compose-prod.yml` runs Postgres, Redis, web, and workers:
+`docker-compose-prod.yml` runs Postgres, Redis, authenticated Qdrant, web, and workers:
 
 ```bash
 cp .env.example .env
-docker build -f deployment/Dockerfile -t citeguild:latest .
+docker build -f deployment/Dockerfile -t citeguild:dev .
+export APP_IMAGE=ghcr.io/lvtd-llc/citeguild:<40-character-git-sha>
 docker compose -f docker-compose-prod.yml -p "citeguild" up --detach --remove-orphans
 ```
 
-Set `APP_IMAGE=ghcr.io/<owner>/<repository>:latest` in `.env` when pulling an
-image built by GitHub Actions instead of using a local image.
+`APP_IMAGE` is required and must name an immutable git-SHA image built by GitHub
+Actions. Floating tags are intentionally rejected.
 
 Expose the backend container through your reverse proxy and point it at port
 `80` inside the container.
@@ -987,12 +1040,13 @@ Before deploying:
 
 The Python package slug is `citeguild`. The CapRover app slug is separate and the generated deploy workflow sets `CAPROVER_APP_NAME=citeguild`.
 
-Create four CapRover apps:
+Create five CapRover apps:
 
 - `citeguild`
 - `citeguild-workers`
 - `citeguild-postgres`
 - `citeguild-redis`
+- `citeguild-qdrant`
 
 Runtime app settings:
 
@@ -1006,7 +1060,12 @@ GitHub Actions settings:
 - Repository secrets: `CAPROVER_SERVER`, `APP_TOKEN`, and `WORKERS_APP_TOKEN`.
 
 On push to `main`, `.github/workflows/deploy.yml` builds one GHCR image and
-deploys it to both CapRover apps.
+deploys its git-SHA tag to both CapRover apps. The complete topology, release,
+health, persistence, and rollback contract is in
+`docs/operations/caprover-topology.md`.
+The evidence-linked launch checklist, named ownership, incident paths, metrics
+cadence, and current launch risks are in
+`docs/operations/launch-readiness.md`.
 
 ### Render
 
@@ -1055,10 +1114,10 @@ Configure these variables:
 
 ```env
 STRIPE_SECRET_KEY=
+STRIPE_CONTEXT=
 STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_ID_MONTHLY=
-STRIPE_PRICE_ID_YEARLY=
 WEBHOOK_UUID=
 ```
 

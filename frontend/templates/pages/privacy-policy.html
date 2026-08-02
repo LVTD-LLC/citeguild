@@ -38,7 +38,9 @@
             <ul>
                 <li>Name and email address</li>
                 <li>Account credentials</li>
-                <li>Project information and content</li>
+                <li>Submitted sitemap URLs, site names, and crawl status</li>
+                <li>Public page text, titles, canonical URLs, language, and outbound links discovered from submitted sites</li>
+                <li>Embeddings and detected member-to-member link records derived from public pages</li>
                 <li>Payment information (processed securely through Stripe)</li>
                 <li>Communication preferences</li>
             </ul>
@@ -50,6 +52,7 @@
                 <li>Send technical notices, updates, and support messages</li>
                 <li>Respond to your comments and questions</li>
                 <li>Monitor and analyze usage and trends</li>
+                <li>Protect the crawler, search service, members, and public sites from abuse</li>
             </ul>
             <h2>3. Information Sharing</h2>
             <p>
@@ -58,6 +61,7 @@
             </p>
             <ul>
                 <li>With service providers who assist us in operating our platform</li>
+                <li>With authenticated members and agents as search results containing public titles, URLs, excerpts, and relevance metadata</li>
                 <li>When required by law or to protect our rights</li>
                 <li>In connection with a business transfer or acquisition</li>
                 <li>
@@ -70,8 +74,8 @@
             <p>We implement industry-standard security measures including:</p>
             <ul>
                 <li>Encryption of data in transit (TLS/SSL)</li>
-                <li>Encryption of sensitive data at rest</li>
-                <li>Regular security audits and updates</li>
+                <li>Hashed passwords and API credentials that are shown only when created or rotated</li>
+                <li>Encrypted database backups with limited retention</li>
                 <li>Access controls and authentication requirements</li>
                 <li>Secure payment processing through PCI-compliant providers (Stripe)</li>
             </ul>
@@ -89,8 +93,7 @@
             <p>Third-party services that may set cookies include:</p>
             <ul>
                 <li>Stripe (payment processing)</li>
-                <li>PostHog (consented, privacy-conscious product analytics)</li>
-                <li>[Any other third-party services you use]</li>
+                <li>PostHog (consented browser analytics and privacy-minimized operational events)</li>
             </ul>
             <p>
                 You can control cookies through your browser settings. Note that disabling
@@ -161,27 +164,29 @@
             </p>
             <ul>
                 <li>Account information: Retained while your account is active</li>
-                <li>Content and projects: Retained until you delete them or close your account</li>
-                <li>Payment records: Retained for 7 years for tax and accounting purposes</li>
+                <li>Site indexes and derived records: Retained while the site or account is active, then removed from active search and deleted or anonymized when no longer needed</li>
+                <li>Encrypted backups: Rotate under our documented daily, weekly, and monthly retention schedule</li>
+                <li>Payment records: Retained by Stripe and by us as required for tax, accounting, fraud, and dispute obligations</li>
                 <li>Marketing data: Retained until you unsubscribe or request deletion</li>
             </ul>
             <p>
                 After account deletion, we may retain certain information for legal compliance,
                 fraud prevention, and dispute resolution purposes.
             </p>
-            <h2>13. AI Service Providers</h2>
+            <h2>13. Embedding Service Providers</h2>
             <p>
-                We use OpenRouter to route optional AI-powered features across supported model
-                providers. Your content may be processed by OpenRouter and the selected model
-                provider in accordance with their privacy policies:
+                We use OpenRouter to route page text and search queries to the configured embedding
+                model. OpenRouter and the selected model provider process that data to return numeric
+                vectors used for semantic search. Review their current policies before submitting a
+                site:
             </p>
             <ul>
-                <li>OpenRouter Privacy Policy: [link]</li>
-                <li>Selected model provider privacy policy: [link]</li>
+                <li><a href="https://openrouter.ai/privacy" rel="noopener noreferrer">OpenRouter Privacy Policy</a></li>
+                <li><a href="https://openrouter.ai/terms" rel="noopener noreferrer">OpenRouter Terms of Service</a></li>
             </ul>
             <p>
-                We configure these services to not use your data for training their models where
-                possible, but you should review their policies directly.
+                Provider handling, retention, and model-training terms can change, so you should
+                review the linked policies directly.
             </p>
             <h2>14. Children's Privacy</h2>
             <p>
@@ -191,15 +196,15 @@
             </p>
             <h2>15. Automated Decision Making</h2>
             <p>
-                We use AI to generate content suggestions, but all final decisions about content
-                publication remain with you. We do not use automated decision-making that produces
-                legal effects or similarly significant impacts on you.
+                We use embeddings to rank potentially relevant public sources. CiteGuild does not
+                automatically publish citations or make editorial decisions. We do not use this
+                ranking for automated decisions that produce legal or similarly significant effects.
             </p>
             <h2>16. Data Breach Notification</h2>
             <p>
                 In the event of a data breach that affects your personal information, we will
-                notify you and relevant authorities as required by applicable law, typically
-                within 72 hours of discovering the breach.
+                notify affected people and relevant authorities within the periods required by
+                applicable law.
             </p>
         </div>
     </div>

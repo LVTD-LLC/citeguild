@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -15,15 +16,141 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-08-02
 
+### Fixed
+
+- Crawl recovery now clears every stale queued broker reservation, including
+  task IDs left behind after a worker replacement, so phantom in-flight work
+  cannot consume a site's concurrency slots indefinitely.
+- Sitemap page dispatch now reserves only the available per-site worker slots
+  and refills each slot after a page finishes, so large crawls cannot stall
+  after their first concurrent batch.
+- Hosted MCP now uses stateless Streamable HTTP so authenticated multi-call
+  clients remain reliable across the three production Gunicorn workers.
+
 ### Changed
 
 - The browser favicon, public and authenticated navigation, and publisher
   metadata now use the CiteGuild guild mark.
+- Replaced generic policy copy with CiteGuild-specific crawler, semantic search,
+  public indexing, data processing, billing, abuse, and no-guaranteed-backlink
+  terms that match the deployed MVP.
+
+### Added
+
+- Added the evidence-linked launch checklist, named operator ownership,
+  component and abuse incident paths, metric cadence, production failure
+  exercise, and explicit launch/no-launch risks.
+- Added private encrypted daily PostgreSQL backups with bucket-scoped storage,
+  daily/weekly/monthly retention, integrity checks, failure alerts, and an
+  isolated PostgreSQL restore plus Qdrant rebuild recovery runbook.
+- Production deploys now validate required configuration up front, pin the
+  CapRover action, and gate worker rollout on the exact expected release plus
+  the public aggregate health contract for PostgreSQL, Redis, and Qdrant.
+- Codified the five-service CapRover topology, private networking, persistent
+  volumes, dependency health, immutable image identity, scheduler ownership,
+  deployment order, and rollback boundary with tested Compose/workflow parity,
+  including portable Qdrant readiness and explicit HTTP 200 web health probes.
+- Added a dedicated real-service MVP acceptance lane covering paid site
+  submission, article indexing, semantic search, detected links, Redis, pinned
+  dependency audits, documented risk coverage, and explicit smoke budgets.
+- Added a documented, allowlisted paid-to-citation PostHog contract with
+  server-truth conversions, deterministic retry deduplication, safe reliability
+  and unit-cost inputs, and privacy tests that exclude content, URLs, and PII.
+- The dashboard now presents bounded owner-scoped site pagination, current sync
+  progress and safe errors, account indexing totals, and paginated detected
+  links given/received with accessible empty and historical states.
+- Normalized outbound observations now resolve into durable detected network
+  links with historical URL matching, lifecycle reconciliation, owner-scoped
+  detail queries, and page/site citation aggregates without attribution claims.
+- Outbound article links now strip an explicit allowlist of campaign tracking
+  identifiers while preserving query semantics and atomic observation history.
+- Confirmed article lifecycle reconciliation now handles repeated sitemap
+  omissions, terminal 404/410 responses, redirects, reappearance, and Qdrant
+  deactivation while preserving article and crawl history.
+- Active paid sites now receive jittered daily sitemap reconciliation through a
+  named, idempotent Django Q2 schedule with PostgreSQL claims, selective
+  new/changed/stale page work, visible failures, and an owner-scoped manual retry.
+- The dashboard now reveals a credential-safe Copy Prompt after the first site
+  submission, with provider-neutral MCP/API onboarding, current public URLs,
+  explicit source-evaluation guardrails, and linked key rotation guidance.
+- Added the authenticated `search_member_articles` Streamable HTTP MCP tool on
+  the shared v1 semantic-search contract, with bounded inputs, safe errors,
+  bearer/OAuth integration coverage, and Codex/Claude Code setup guidance.
+- Authenticated `/api/v1` endpoints now expose shared semantic search, account
+  state, bounded owner-scoped project listing/detail/creation, stable errors and
+  request IDs, and atomic per-key rate limits through generated OpenAPI docs.
+- A versioned shared semantic-search service now embeds bounded queries, searches
+  the active paid-member corpus, applies language and exact-domain exclusions,
+  reauthorizes every Qdrant hit through PostgreSQL, and returns deterministic
+  public-safe results with content-free latency and failure telemetry.
+- Initial sitemap syncs now orchestrate fetch, extraction, PostgreSQL article
+  persistence, whole-article embedding, and Qdrant upsert as one retryable page
+  workflow. Progress reaches success only after durable search publication;
+  repeated runs reuse the article, embedding, and vector, while partial failures
+  remain visible and resumable.
+- Qdrant now has an idempotent cosine collection contract, authenticated
+  startup and health checks, stable article upsert/deactivation, tenant-scoped
+  bounded search, and a PostgreSQL-authoritative rebuild command. Local Compose
+  persists an API-key-protected Qdrant service.
+- Active extracted articles can now produce one durable, content-addressed
+  whole-article embedding with bounded deterministic input, explicit model and
+  dimension metadata, safe retry classification, and privacy-safe usage and
+  latency metrics.
+- PostgreSQL now retains tenant-owned article identities, normalized content
+  hashes, source URL aliases, append-only crawl attempts, lifecycle timestamps,
+  and reconciled outbound-link observations without storing raw HTML.
+- Page workers now deterministically extract bounded article text and canonical
+  metadata with Trafilatura, persist immutable extraction results, honor
+  noindex directives, and reject unsupported, empty, oversized, or off-host
+  content without retaining raw HTML.
 
 ## 2026-08-01
 
+### Changed
+
+- Billing now offers one fixed $10 USD monthly subscription with Stripe-hosted
+  Checkout and portal management, synchronous server-side access truth,
+  durable webhook receipts, stale-event protection, and a reusable paywall.
+- Replaced generic generated agent context with aligned CiteGuild product,
+  architecture, structure, design, and analytics contracts covering the
+  $10/month sitemap-to-search MVP, explicit non-goals, hostile-content and
+  tenant-isolation boundaries, CapRover topology, real validation commands,
+  and the Rowset/PR ship workflow.
+
+### Added
+
+- Durable Django Q2 sitemap/page jobs now provide idempotent enqueueing,
+  bounded retries, per-site concurrency, progress, cancellation, and recovery.
+- XML sitemap indexes now produce deterministic, host-scoped candidate
+  inventories with bounded recursion, gzip handling, and atomic promotion.
+- Sitemap-only dashboard and API submission now validate bounded XML through
+  the shared SSRF-safe transport and create one durable, idempotent initial-sync
+  request with retry-safe error responses.
+- A shared SSRF-safe crawler fetch client now pins validated public DNS answers,
+  revalidates redirects, and bounds response types, encodings, time, size,
+  concurrency, and per-host request pace.
+- Add the subscription-aware dashboard onboarding shell, owner-scoped site
+  list, and accessible Add Site flow.
+- Account-owned `Project` records now model submitted sites with global
+  normalized-host uniqueness, unlimited paid-account membership, owner-scoped
+  services, suspension/reactivation audit history, and sync eligibility gates.
+- A shared typed runtime configuration contract now validates production
+  database, Redis, Qdrant, Stripe feature-gate, embedding, crawler, scheduler,
+  and process settings, with a secret-safe fingerprint reported by web and
+  worker startup.
+- ADR 0001 defines the CiteGuild MVP systems of record, domain entities,
+  lifecycle states, stable identifiers, unique constraints, idempotent worker
+  boundaries, shared API/MCP/CLI search contract, failure recovery, and
+  CapRover deployment topology.
+- CiteGuild can now construct a shared authenticated Qdrant client from
+  environment configuration, without creating collections or writing vectors.
+- Production now has a private, API-key-authenticated Qdrant 1.18.3 service
+  with persistent storage and matching web/worker connection configuration.
+
 ### Fixed
 
+- Stripe SDK Event objects are normalized to plain dictionaries after signature
+  verification so production webhooks use the same safe contract as tests.
 - The agent development preflight now runs a low-noise typed baseline inside
   the locked project environment, and GitHub CI executes the same check.
 - Local MinIO startup now uses the current client command and credentials and

@@ -1,326 +1,155 @@
 import logging
+from datetime import UTC, datetime
 
-import stripe
-from django.conf import settings
+from django.db import transaction
 
 from apps.core.choices import ProfileStates
-from apps.core.models import Profile
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from apps.core.funnel_analytics import (
+    SUBSCRIPTION_ACTIVATED,
+    SUBSCRIPTION_ENDED,
+    SUBSCRIPTION_RETAINED,
+    track_funnel_event,
+)
+from apps.core.models import Profile, ProfileStateTransition
 
 logger = logging.getLogger(__name__)
 
 
 def get_profile_for_customer(customer_id, metadata=None):
-    profile = None
-    if customer_id:
-        profile = Profile.objects.filter(stripe_customer_id=customer_id).first()
-
+    profile = (
+        Profile.objects.filter(stripe_customer_id=customer_id).first() if customer_id else None
+    )
     if not profile and metadata:
+        profile_id = metadata.get("profile_id")
         user_id = metadata.get("user_id") or metadata.get("pk")
-        if user_id:
-            try:
-                profile = Profile.objects.get(user_id=int(user_id))
-            except (Profile.DoesNotExist, ValueError, TypeError):
-                profile = None
-
+        try:
+            if profile_id:
+                profile = Profile.objects.filter(id=int(profile_id)).first()
+            elif user_id:
+                profile = Profile.objects.filter(user_id=int(user_id)).first()
+        except (ValueError, TypeError):
+            profile = None
     return profile
 
 
-def update_profile_stripe_ids(profile, customer_id=None, subscription_id=None):
-    update_fields = []
-    if customer_id and profile.stripe_customer_id != customer_id:
-        profile.stripe_customer_id = customer_id
-        update_fields.append("stripe_customer_id")
-    if subscription_id and profile.stripe_subscription_id != subscription_id:
-        profile.stripe_subscription_id = subscription_id
-        update_fields.append("stripe_subscription_id")
-    if update_fields:
-        profile.save(update_fields=update_fields)
-
-
-def get_subscription_target_state(subscription_data, previous_status=None):
+def get_subscription_target_state(subscription_data):
     status = subscription_data.get("status")
-    cancel_at_period_end = subscription_data.get("cancel_at_period_end")
-    cancel_at = subscription_data.get("cancel_at")
-    cancellation_details = subscription_data.get("cancellation_details") or {}
-    cancellation_reason = cancellation_details.get("reason") or cancellation_details.get("feedback")
-
-    if status == "trialing":
-        return ProfileStates.TRIAL_STARTED
-
-    cancel_requested = bool(cancel_at_period_end) or bool(cancel_at) or bool(cancellation_reason)
-
-    if cancel_requested and status in {"active", "past_due", "trialing"}:
-        return ProfileStates.CANCELLED
-
     if status in {"active", "past_due"}:
+        if subscription_data.get("cancel_at_period_end"):
+            return ProfileStates.CANCELLED
         return ProfileStates.SUBSCRIBED
-
     if status in {"canceled", "unpaid", "incomplete_expired"}:
-        if previous_status == "trialing":
-            return ProfileStates.TRIAL_ENDED
         return ProfileStates.CHURNED
-
     return None
 
 
-def handle_created_subscription(event):
-    event_id = event.get("id")
-    subscription_data = event["data"]["object"]
-    customer_id = subscription_data.get("customer")
-    subscription_id = subscription_data.get("id")
+def _record_state(profile, target_state, event):
+    if not target_state or profile.state == target_state:
+        return
+    ProfileStateTransition.objects.create(
+        profile=profile,
+        backup_profile_id=profile.id,
+        from_state=profile.state,
+        to_state=target_state,
+        metadata={"stripe_event_id": event.get("id"), "stripe_event_type": event.get("type")},
+    )
+    profile.state = target_state
 
-    profile = get_profile_for_customer(customer_id, subscription_data.get("metadata", {}))
+
+@transaction.atomic
+def apply_subscription_event(event, *, deleted=False):
+    subscription = event["data"]["object"]
+    profile = get_profile_for_customer(subscription.get("customer"), subscription.get("metadata"))
     if not profile:
-        logger.warning(
-            "stripe.subscription.create.completed",
-            extra={
-                "event.name": "stripe.subscription.create.completed",
-                "event_id": event_id,
-                "customer_id": customer_id,
-                "subscription_id": subscription_id,
-                "operation.status": "profile_missing",
-                "outcome": "failure",
-            },
-        )
+        logger.warning("stripe.subscription.profile_missing", extra={"event_id": event.get("id")})
         return
 
-    update_profile_stripe_ids(profile, customer_id=customer_id, subscription_id=subscription_id)
+    profile = Profile.objects.select_for_update().get(pk=profile.pk)
+    if event.get("id") and event.get("id") == profile.stripe_last_event_id:
+        logger.info("stripe.subscription.duplicate_event", extra={"event_id": event.get("id")})
+        return
+    previous_status = profile.stripe_subscription_status
+    event_created = int(event.get("created") or 0)
+    if event_created < profile.stripe_last_event_created:
+        logger.info("stripe.subscription.stale_event", extra={"event_id": event.get("id")})
+        return
 
-    target_state = get_subscription_target_state(subscription_data)
-    if target_state:
-        profile.track_state_change(
-            to_state=target_state,
-            source_function="stripe_webhook handle_created_subscription",
-            metadata={
-                "event": "subscription_created",
-                "subscription_id": subscription_id,
-                "stripe_event_id": event_id,
-                "status": subscription_data.get("status"),
-                "cancel_at_period_end": subscription_data.get("cancel_at_period_end"),
-                "trial_end": subscription_data.get("trial_end"),
-            },
-        )
-    logger.info(
-        "stripe.subscription.create.completed",
-        extra={
-            "event.name": "stripe.subscription.create.completed",
-            "profile_id": profile.id,
-            "subscription_id": subscription_id,
-            "event_id": event_id,
-            "subscription_status": subscription_data.get("status"),
-            "target_state": target_state or "",
-            "state_transition": bool(target_state),
-            "outcome": "success",
-        },
+    status = "canceled" if deleted else (subscription.get("status") or "")
+    terminal_statuses = {"canceled", "unpaid", "incomplete_expired"}
+    if (
+        event_created == profile.stripe_last_event_created
+        and profile.stripe_subscription_status in terminal_statuses
+        and status not in terminal_statuses
+    ):
+        logger.info("stripe.subscription.stale_event", extra={"event_id": event.get("id")})
+        return
+    target_state = get_subscription_target_state({**subscription, "status": status})
+    _record_state(profile, target_state, event)
+    profile.stripe_customer_id = subscription.get("customer") or profile.stripe_customer_id
+    profile.stripe_subscription_id = "" if deleted else (subscription.get("id") or "")
+    profile.stripe_subscription_status = status
+    profile.stripe_cancel_at_period_end = bool(subscription.get("cancel_at_period_end"))
+    period_end = subscription.get("current_period_end")
+    profile.stripe_current_period_end = (
+        datetime.fromtimestamp(period_end, tz=UTC) if period_end else None
     )
+    profile.stripe_last_event_created = event_created
+    profile.stripe_last_event_id = event.get("id") or ""
+    profile.save()
+    paid_statuses = {"active", "past_due"}
+    was_paid = previous_status in paid_statuses
+    is_paid = status in paid_statuses
+    event_name = None
+    if is_paid and not was_paid:
+        event_name = SUBSCRIPTION_ACTIVATED
+    elif is_paid and was_paid:
+        event_name = SUBSCRIPTION_RETAINED
+    elif was_paid and not is_paid:
+        event_name = SUBSCRIPTION_ENDED
+    if event_name:
+        track_funnel_event(
+            profile,
+            event_name,
+            {
+                "subscription_status": status,
+                "previous_status": previous_status,
+                "cancel_at_period_end": profile.stripe_cancel_at_period_end,
+            },
+            idempotency_key=f"stripe:{event.get('id') or event_created}",
+            source_function="apply_subscription_event",
+        )
+
+
+def handle_created_subscription(event):
+    apply_subscription_event(event)
 
 
 def handle_updated_subscription(event):
-    event_id = event.get("id")
-    subscription_data = event["data"]["object"]
-    customer_id = subscription_data.get("customer")
-    subscription_id = subscription_data.get("id")
-
-    profile = get_profile_for_customer(customer_id, subscription_data.get("metadata", {}))
-    if not profile:
-        logger.error(
-            "stripe.subscription.update.completed",
-            extra={
-                "event.name": "stripe.subscription.update.completed",
-                "event_id": event_id,
-                "subscription_id": subscription_id,
-                "customer_id": customer_id,
-                "operation.status": "profile_missing",
-                "outcome": "failure",
-            },
-        )
-        return
-
-    update_profile_stripe_ids(profile, customer_id=customer_id, subscription_id=subscription_id)
-
-    previous_attributes = event.get("data", {}).get("previous_attributes", {}) or {}
-    previous_status = previous_attributes.get("status")
-    target_state = get_subscription_target_state(subscription_data, previous_status=previous_status)
-    if target_state:
-        profile.track_state_change(
-            to_state=target_state,
-            source_function="stripe_webhook handle_updated_subscription",
-            metadata={
-                "event": "subscription_updated",
-                "subscription_id": subscription_id,
-                "stripe_event_id": event_id,
-                "status": subscription_data.get("status"),
-                "previous_status": previous_status,
-                "cancel_at_period_end": subscription_data.get("cancel_at_period_end"),
-                "cancel_at": subscription_data.get("cancel_at"),
-                "current_period_end": subscription_data.get("current_period_end"),
-                "cancellation_details": subscription_data.get("cancellation_details"),
-                "trial_end": subscription_data.get("trial_end"),
-            },
-        )
-
-    logger.info(
-        "stripe.subscription.update.completed",
-        extra={
-            "event.name": "stripe.subscription.update.completed",
-            "event_id": event_id,
-            "profile_id": profile.id,
-            "subscription_id": subscription_id,
-            "subscription_status": subscription_data.get("status"),
-            "previous_status": previous_status or "",
-            "target_state": target_state or "",
-            "state_transition": bool(target_state),
-            "outcome": "success",
-        },
-    )
+    apply_subscription_event(event)
 
 
 def handle_deleted_subscription(event):
-    event_id = event.get("id")
-    subscription_data = event["data"]["object"]
-    customer_id = subscription_data.get("customer")
-    subscription_id = subscription_data.get("id")
-
-    profile = get_profile_for_customer(customer_id, subscription_data.get("metadata", {}))
-    if not profile:
-        logger.error(
-            "stripe.subscription.delete.completed",
-            extra={
-                "event.name": "stripe.subscription.delete.completed",
-                "event_id": event_id,
-                "subscription_id": subscription_id,
-                "customer_id": customer_id,
-                "operation.status": "profile_missing",
-                "outcome": "failure",
-            },
-        )
-        return
-
-    profile.track_state_change(
-        to_state=ProfileStates.CHURNED,
-        source_function="stripe_webhook handle_deleted_subscription",
-        metadata={
-            "event": "subscription_deleted",
-            "subscription_id": subscription_id,
-            "ended_at": subscription_data.get("ended_at"),
-        },
-    )
-
-    profile.stripe_subscription_id = ""
-    profile.save(update_fields=["stripe_subscription_id"])
-
-    logger.info(
-        "stripe.subscription.delete.completed",
-        extra={
-            "event.name": "stripe.subscription.delete.completed",
-            "event_id": event_id,
-            "profile_id": profile.id,
-            "subscription_id": subscription_id,
-            "ended_at": subscription_data.get("ended_at"),
-            "target_state": ProfileStates.CHURNED,
-            "outcome": "success",
-        },
-    )
+    apply_subscription_event(event, deleted=True)
 
 
 def handle_checkout_completed(event):
-    event_id = event.get("id")
-    checkout_data = event["data"]["object"]
-    customer_id = checkout_data.get("customer")
-    checkout_id = checkout_data.get("id")
-    subscription_id = checkout_data.get("subscription")
-    payment_status = checkout_data.get("payment_status")
-    mode = checkout_data.get("mode")
-
-    metadata = checkout_data.get("metadata", {})
-    price_id = metadata.get("price_id")
-
-    if payment_status != "paid":
-        logger.warning(
-            "stripe.checkout.completed",
-            extra={
-                "event.name": "stripe.checkout.completed",
-                "event_id": event_id,
-                "checkout_id": checkout_id,
-                "payment_status": payment_status,
-                "mode": mode,
-                "metadata_count": len(metadata),
-                "operation.status": "payment_incomplete",
-                "outcome": "failure",
-            },
-        )
+    """Associate Stripe IDs only; subscription webhooks exclusively grant access."""
+    checkout = event["data"]["object"]
+    if checkout.get("mode") != "subscription":
         return
-
-    profile = get_profile_for_customer(customer_id, metadata)
+    profile = get_profile_for_customer(checkout.get("customer"), checkout.get("metadata"))
     if not profile:
-        logger.error(
-            "stripe.checkout.completed",
-            extra={
-                "event.name": "stripe.checkout.completed",
-                "event_id": event_id,
-                "checkout_id": checkout_id,
-                "customer_id": customer_id,
-                "mode": mode,
-                "metadata_count": len(metadata),
-                "operation.status": "profile_missing",
-                "outcome": "failure",
-            },
-        )
         return
-
-    update_profile_stripe_ids(profile, customer_id=customer_id, subscription_id=subscription_id)
-
-    if mode == "payment":
-        amount_total = checkout_data.get("amount_total")
-        currency = checkout_data.get("currency")
-        payment_intent = checkout_data.get("payment_intent")
-
-        profile.track_state_change(
-            to_state=ProfileStates.SUBSCRIBED,
-            source_function="stripe_webhook handle_checkout_completed",
-            metadata={
-                "event": "checkout_payment_completed",
-                "payment_intent": payment_intent,
-                "checkout_id": checkout_id,
-                "amount": amount_total,
-                "currency": currency,
-                "price_id": price_id,
-                "stripe_event_id": event_id,
-            },
-        )
-
-        logger.info(
-            "stripe.checkout.completed",
-            extra={
-                "event.name": "stripe.checkout.completed",
-                "event_id": event_id,
-                "profile_id": profile.id,
-                "payment_intent": payment_intent,
-                "checkout_id": checkout_id,
-                "amount_total": amount_total,
-                "currency": currency,
-                "mode": mode,
-                "payment_status": payment_status,
-                "metadata_count": len(metadata),
-                "outcome": "success",
-            },
-        )
-    else:
-        logger.info(
-            "stripe.checkout.completed",
-            extra={
-                "event.name": "stripe.checkout.completed",
-                "event_id": event_id,
-                "checkout_id": checkout_id,
-                "mode": mode,
-                "payment_status": payment_status,
-                "profile_id": profile.id,
-                "metadata_count": len(metadata),
-                "outcome": "success",
-            },
-        )
+    update_fields = []
+    for field, value in (
+        ("stripe_customer_id", checkout.get("customer")),
+        ("stripe_subscription_id", checkout.get("subscription")),
+    ):
+        if value and getattr(profile, field) != value:
+            setattr(profile, field, value)
+            update_fields.append(field)
+    if update_fields:
+        profile.save(update_fields=[*update_fields, "updated_at"])
 
 
 EVENT_HANDLERS = {

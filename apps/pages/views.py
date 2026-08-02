@@ -311,7 +311,7 @@ def docs_page_view(request, category, page):
             "api_base_url": build_absolute_public_url("/api/").rstrip("/"),
             "api_key_env_var": "CITEGUILD_API_KEY",
             "api_docs_url": build_absolute_public_url("/api/docs"),
-            "agent_setup_prompt": build_agent_setup_prompt(request),
+            "agent_setup_prompt": build_agent_setup_prompt(),
             "mcp_url": build_absolute_public_url("/mcp/"),
             "agent_instructions_url": build_absolute_public_url("/AGENTS.md"),
             "site_url": build_absolute_public_url("/").rstrip("/"),

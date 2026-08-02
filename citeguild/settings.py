@@ -20,6 +20,7 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
+from citeguild.config import RuntimeConfig
 from citeguild.sentry_utils import (
     CustomLoggingIntegration,
     before_send,
@@ -37,9 +38,12 @@ env = environ.Env(
     DEBUG=(bool, False)
 )
 
-# Options: dev, prod
-ENVIRONMENT = env("ENVIRONMENT")
-APP_PROCESS_TYPE = env("APP_PROCESS_TYPE", default="server")
+CITEGUILD_CONFIG = RuntimeConfig.from_mapping(env.ENVIRON)
+CITEGUILD_CONFIG_FINGERPRINT = CITEGUILD_CONFIG.fingerprint
+
+# Options: dev, test, prod
+ENVIRONMENT = CITEGUILD_CONFIG.environment
+APP_PROCESS_TYPE = CITEGUILD_CONFIG.process_type
 DEFAULT_SERVICE_NAME = "citeguild-worker" if APP_PROCESS_TYPE == "worker" else "citeguild-web"
 SERVICE_NAME = env("SERVICE_NAME", default=DEFAULT_SERVICE_NAME)
 SERVICE_VERSION = env("SERVICE_VERSION", default="")
@@ -96,16 +100,17 @@ POSTHOG_SERVICE_NAME = env("POSTHOG_SERVICE_NAME", default="citeguild")
 POSTHOG_SERVICE_VERSION = (
     env("SENTRY_RELEASE", default="") or env("GITHUB_SHA", default="") or "unknown"
 )
+CITEGUILD_RELEASE = env("CITEGUILD_RELEASE", default=POSTHOG_SERVICE_VERSION)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = CITEGUILD_CONFIG.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-SITE_URL = env("SITE_URL")
+SITE_URL = CITEGUILD_CONFIG.site_url
 SITE_HOST = SITE_URL.replace("http://", "").replace("https://", "").split("/")[0].split(":")[0]
 BLOG_POSTS_DIR = BASE_DIR / "apps" / "pages" / "posts"
 
@@ -452,11 +457,12 @@ Q_CLUSTER = {
     "name": Q_CLUSTER_NAME,
     "timeout": 3600,  # 1 hour
     "retry": 4800,  # 80 minutes
-    "workers": 4,
+    "workers": CITEGUILD_CONFIG.crawl_concurrency,
     "max_attempts": 2,
     "redis": REDIS_URL,
     "ALT_CLUSTERS": {},
     "error_reporter": {},
+    "catch_up": False,
 }
 
 USE_EXISTING_TEST_DATABASE = env.bool("DJANGO_TEST_USE_EXISTING_DATABASE", default=False)
@@ -624,15 +630,11 @@ APPRISE_NOTIFICATION_FORMAT = env("APPRISE_NOTIFICATION_FORMAT", default="markdo
 APPRISE_REQUEST_TIMEOUT = env.int("APPRISE_REQUEST_TIMEOUT", default=10)
 
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default="")
+STRIPE_CONTEXT = env("STRIPE_CONTEXT", default="")
 STRIPE_LIVE_MODE = ENVIRONMENT == "prod"
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
 STRIPE_WEBHOOK_UUID = env("WEBHOOK_UUID", default="")
 STRIPE_PRICE_ID_MONTHLY = env("STRIPE_PRICE_ID_MONTHLY", default="")
-STRIPE_PRICE_ID_YEARLY = env("STRIPE_PRICE_ID_YEARLY", default="")
-STRIPE_PRICE_IDS = {
-    "monthly": STRIPE_PRICE_ID_MONTHLY,
-    "yearly": STRIPE_PRICE_ID_YEARLY,
-}
 
 MJML_BACKEND_MODE = "httpserver"
 MJML_URL = env("MJML_URL", default="")
@@ -651,3 +653,29 @@ AI_MODELS = {
     "fast": env("OPENROUTER_MODEL_FAST", default="openai/gpt-5-nano"),
     "smart": env("OPENROUTER_MODEL_SMART", default="anthropic/claude-sonnet-4.5"),
 }
+
+QDRANT_URL = CITEGUILD_CONFIG.qdrant_url
+QDRANT_API_KEY = CITEGUILD_CONFIG.qdrant_api_key
+QDRANT_TIMEOUT_SECONDS = CITEGUILD_CONFIG.qdrant_timeout_seconds
+QDRANT_COLLECTION = CITEGUILD_CONFIG.qdrant_collection
+EMBEDDING_MODEL = CITEGUILD_CONFIG.embedding_model
+EMBEDDING_DIMENSIONS = CITEGUILD_CONFIG.embedding_dimensions
+EMBEDDING_MAX_INPUT_CHARS = CITEGUILD_CONFIG.embedding_max_input_chars
+CRAWL_REQUEST_TIMEOUT_SECONDS = CITEGUILD_CONFIG.crawl_request_timeout_seconds
+CRAWL_MAX_REDIRECTS = CITEGUILD_CONFIG.crawl_max_redirects
+CRAWL_MAX_SITEMAP_BYTES = CITEGUILD_CONFIG.crawl_max_sitemap_bytes
+CRAWL_MAX_SITEMAP_ENTRIES = CITEGUILD_CONFIG.crawl_max_sitemap_entries
+CRAWL_MAX_SITEMAP_DEPTH = CITEGUILD_CONFIG.crawl_max_sitemap_depth
+CRAWL_MAX_SITEMAP_FILES = CITEGUILD_CONFIG.crawl_max_sitemap_files
+CRAWL_MAX_PAGE_BYTES = CITEGUILD_CONFIG.crawl_max_page_bytes
+CRAWL_CONCURRENCY = CITEGUILD_CONFIG.crawl_concurrency
+CRAWL_PER_SITE_CONCURRENCY = CITEGUILD_CONFIG.crawl_per_site_concurrency
+CRAWL_DISPATCH_BATCH_SIZE = CITEGUILD_CONFIG.crawl_dispatch_batch_size
+CRAWL_MAX_ATTEMPTS = CITEGUILD_CONFIG.crawl_max_attempts
+CRAWL_STALE_AFTER_SECONDS = CITEGUILD_CONFIG.crawl_stale_after_seconds
+EXTRACTION_MIN_TEXT_CHARS = CITEGUILD_CONFIG.extraction_min_text_chars
+EXTRACTION_MAX_TEXT_CHARS = CITEGUILD_CONFIG.extraction_max_text_chars
+EXTRACTION_MAX_TREE_SIZE = CITEGUILD_CONFIG.extraction_max_tree_size
+RECONCILE_INTERVAL_HOURS = CITEGUILD_CONFIG.reconcile_interval_hours
+CITEGUILD_INDEXING_ENABLED = CITEGUILD_CONFIG.indexing_enabled
+CITEGUILD_BILLING_ENABLED = CITEGUILD_CONFIG.billing_enabled

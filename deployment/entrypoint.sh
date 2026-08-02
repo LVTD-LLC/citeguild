@@ -19,6 +19,8 @@ while getopts ":sw" option; do
 done
 shift $((OPTIND - 1))
 
+export APP_PROCESS_TYPE="$process_type"
+
 if [ -z "$process_type" ]; then
     if [ "${ENVIRONMENT:-}" = "prod" ]; then
         echo "APP_PROCESS_TYPE must be set to 'server' or 'worker' when ENVIRONMENT=prod." >&2
@@ -27,6 +29,8 @@ if [ -z "$process_type" ]; then
 
     process_type="server"
 fi
+
+uv run --no-sync python manage.py config_fingerprint
 
 wait_for_database() {
     echo "Waiting for database..."
@@ -68,11 +72,13 @@ case "$process_type" in
         else
             uv run --no-sync python manage.py migrate --noinput
         fi
+        uv run --no-sync python manage.py ensure_qdrant_collection
         exec uv run --no-sync gunicorn ${PROJECT_NAME}.asgi:application --bind 0.0.0.0:${APP_PORT} --workers 3 --worker-class uvicorn_worker.UvicornWorker
 
         ;;
     worker)
         echo "Starting CiteGuild workers..."
+        uv run --no-sync python manage.py ensure_crawl_schedules
         exec uv run --no-sync python manage.py qcluster
         ;;
     *)

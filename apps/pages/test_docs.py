@@ -42,3 +42,25 @@ def test_docs_navigation_uses_frontmatter_titles():
 
     assert api_reference["category"] == "API Reference"
     assert [page["title"] for page in api_reference["pages"]][:2] == ["Introduction", "User API"]
+
+
+@pytest.mark.django_db
+def test_mcp_docs_cover_safe_agent_onboarding(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username="agentdocs",
+        email="agentdocs@example.com",
+        password="password123",
+    )
+    client.force_login(user)
+
+    response = client.get(reverse("docs_page", kwargs={"category": "features", "page": "mcp"}))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Provider-neutral setup" in content
+    assert "search_member_articles" in content
+    assert "CITEGUILD_API_KEY" in content
+    assert "immediately revokes the previous value" in content
+    assert "candidate ranking only" in content
+    assert "never an API key" in content
+    assert "?api_key=" not in content

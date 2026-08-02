@@ -15,14 +15,34 @@ services:
 
   redis:
     image: redis:8.6.3-alpine
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     env_file:
       - .env
 
+  qdrant:
+    image: qdrant/qdrant:v1.18.3
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
+      QDRANT__TELEMETRY_DISABLED: "true"
+    healthcheck:
+      # The official image has no HTTP client; verify the Linux listening socket.
+      # Authenticated collection readiness is checked by the backend aggregate health endpoint.
+      test: ["CMD-SHELL", "grep -q ':18BD ' /proc/net/tcp /proc/net/tcp6"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
-    image: "${APP_IMAGE:-citeguild:latest}"
+    image: "${APP_IMAGE:?Set APP_IMAGE to an immutable git-SHA image tag}"
     working_dir: /app
     ports:
       - "8000:80"
@@ -32,12 +52,20 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; response = urllib.request.urlopen('http://127.0.0.1:80/api/healthcheck', timeout=5); assert response.status == 200"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     env_file:
       - .env
 
   workers:
-    image: "${APP_IMAGE:-citeguild:latest}"
+    image: "${APP_IMAGE:?Set APP_IMAGE to an immutable git-SHA image tag}"
     working_dir: /app
     environment:
       APP_PROCESS_TYPE: worker
@@ -45,10 +73,13 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
     env_file:
       - .env
 
 volumes:
   postgres_data:
   redis_data:
+  qdrant_data:

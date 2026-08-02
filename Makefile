@@ -8,6 +8,7 @@ PYTEST_RUN ?= uv run pytest
 MUTMUT_RUN ?= uv run mutmut
 PYSCN_VERSION ?= 1.24.0
 TYPE_CHECK_PATHS = \
+	apps/api/rate_limits.py \
 	apps/api/schemas.py \
 	apps/core/agents/base.py \
 	apps/core/ai_observability.py \
@@ -15,6 +16,9 @@ TYPE_CHECK_PATHS = \
 	apps/core/notifications.py \
 	apps/mcp_server/server.py \
 	apps/pages/services.py \
+	apps/search/qdrant.py \
+	apps/search/service.py \
+	citeguild/config.py \
 	citeguild/logging_utils.py \
 	citeguild/sentry_utils.py
 PYSCN_PATHS ?= apps citeguild manage.py
@@ -44,11 +48,12 @@ LOCAL_MINIO_CONSOLE_PORT ?= 9001
 
 DJANGO_RUNSERVER_HOST ?= 0.0.0.0
 DJANGO_RUNSERVER_PORT ?= $(LOCAL_WEB_PORT)
-LOCAL_COMPOSE_SERVICES = db redis mailhog mjml minio
+LOCAL_COMPOSE_SERVICES = db redis qdrant mailhog mjml minio
 DOCKER_COMPOSE = docker compose -f docker-compose-local.yml
 
 .PHONY: \
 	api-fuzz \
+	acceptance-test \
 	ci-local \
 	coverage \
 	coverage-high-risk \
@@ -70,6 +75,7 @@ DOCKER_COMPOSE = docker compose -f docker-compose-local.yml
 	pyscn-analyze \
 	pyscn-check \
 	restart-worker \
+	security-check \
 	serve \
 	shell \
 	terminal-assets \
@@ -130,6 +136,13 @@ terminal-shell:
 api-fuzz:
 	$(PYTEST_RUN) apps/api/test_schema.py $(TARGET_ARGS)
 
+acceptance-test:
+	CITEGUILD_RUN_ACCEPTANCE=1 $(PYTEST_RUN) -m acceptance $(TARGET_ARGS)
+
+security-check:
+	uv export --locked --no-dev --no-emit-project | uv run pip-audit --strict --disable-pip -r /dev/stdin
+	$(NPM) audit --omit=dev --audit-level=high
+
 shell:
 	$(DOCKER_COMPOSE) run --rm backend uv run --no-sync python ./manage.py shell_plus --ipython
 
@@ -149,6 +162,7 @@ ci-local:
 	$(MAKE) python-quality
 	$(MAKE) type-check
 	$(MAKE) frontend-check
+	$(MAKE) security-check
 	$(MAKE) migrations-check
 	$(MAKE) django-check
 	$(MAKE) coverage-high-risk -- -q

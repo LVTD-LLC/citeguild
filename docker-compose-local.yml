@@ -17,13 +17,35 @@ services:
 
   redis:
     image: redis:8.6.3-alpine
-    command: redis-server --requirepass citeguild
+    command: redis-server --requirepass citeguild --appendonly yes
     ports:
       - "${LOCAL_REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     environment:
       - REDIS_PASSWORD=citeguild
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a citeguild ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.18.3
+    ports:
+      - "${LOCAL_QDRANT_PORT:-6333}:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__API_KEY: citeguild
+      QDRANT__TELEMETRY_DISABLED: "true"
+    healthcheck:
+      # The official image has no HTTP client; verify the Linux listening socket.
+      # Authenticated collection readiness is checked by the backend aggregate health endpoint.
+      test: ["CMD-SHELL", "grep -q ':18BD ' /proc/net/tcp /proc/net/tcp6"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -39,7 +61,9 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
       frontend:
         condition: service_healthy
     env_file:
@@ -57,7 +81,9 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
     env_file:
       - .env
 
@@ -140,4 +166,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  qdrant_data:
   minio_data:

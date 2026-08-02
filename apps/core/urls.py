@@ -10,12 +10,17 @@ urlpatterns = [
     path("admin-panel", views.AdminPanelView.as_view(), name="admin_panel"),
     # Utils
     path("settings/api-key/rotate/", views.rotate_api_key, name="rotate_api_key"),
+    path(
+        "sites/<uuid:project_uuid>/retry-sync/",
+        views.retry_site_sync,
+        name="retry_site_sync",
+    ),
     path("resend-confirmation/", views.resend_confirmation_email, name="resend_confirmation"),
     path("delete-account/", views.delete_account, name="delete_account"),
     # Payments
     path("stripe-webhook/", views.stripe_webhook, name="stripe_webhook"),
     path(
-        "create-checkout-session/<int:pk>/<str:plan>/",
+        "create-checkout-session/",
         views.create_checkout_session,
         name="user_upgrade_checkout_session",
     ),

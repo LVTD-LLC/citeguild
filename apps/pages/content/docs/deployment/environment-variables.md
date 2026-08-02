@@ -199,6 +199,26 @@ Redis backs Django's default cache, the `django-q2` worker queue, and the `/api/
 - Defaults to `citeguild`
 - Override when two same-slug clones intentionally share one Redis service
 
+### Qdrant configuration
+
+Qdrant stores the derived semantic-search index. PostgreSQL remains authoritative.
+
+**QDRANT_URL**
+- Authenticated Qdrant HTTP endpoint
+- Local Compose example: `http://qdrant:6333`
+
+**QDRANT_API_KEY**
+- Required secret for all Qdrant operations; use a unique random value in production
+
+**QDRANT_TIMEOUT_SECONDS**
+- Bounded client timeout; defaults to `5`
+
+**CITEGUILD_QDRANT_COLLECTION**
+- Stable article collection name; defaults to `citeguild-articles`
+
+**CITEGUILD_EMBEDDING_DIMENSIONS**
+- Exact unnamed-vector size; an incompatible existing collection fails startup
+
 **CACHE_KEY_PREFIX**
 - Prefix for Django cache keys stored in Redis
 - Defaults to `LOCAL_INSTANCE_ID`

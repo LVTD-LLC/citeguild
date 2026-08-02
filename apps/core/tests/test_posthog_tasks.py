@@ -33,3 +33,29 @@ def test_track_event_uses_event_first_posthog_capture_signature(monkeypatch):
             },
         )
     ]
+
+
+def test_track_event_sends_posthog_insert_id_without_logging_source_key(monkeypatch):
+    monkeypatch.setattr(tasks.settings, "POSTHOG_API_KEY", "phc_test")
+    captures = []
+    records = []
+    monkeypatch.setattr(
+        tasks.posthog,
+        "capture",
+        lambda event, **kwargs: captures.append((event, kwargs)),
+    )
+    monkeypatch.setattr(
+        tasks.logger, "info", lambda *args, **kwargs: records.append((args, kwargs))
+    )
+
+    tasks.track_event(
+        7,
+        "citeguild_site_submitted",
+        "subscribed",
+        {"site_id": "site-uuid"},
+        insert_id="a" * 64,
+        source_function="test",
+    )
+
+    assert captures[0][1]["properties"]["$insert_id"] == "a" * 64
+    assert "$insert_id" not in repr(records)
