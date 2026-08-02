@@ -20,7 +20,12 @@ from apps.core.article_ingestion import (
     ArticlePersistenceError,
     CrawlAttemptService,
 )
-from apps.core.choices import ExtractionStates, PageCrawlStates, ProjectSyncStates
+from apps.core.choices import (
+    ExtractionStates,
+    PageCrawlStates,
+    ProjectStates,
+    ProjectSyncStates,
+)
 from apps.core.html_extraction import (
     HtmlExtraction,
     HtmlExtractionError,
@@ -31,6 +36,7 @@ from apps.core.models import (
     Article,
     PageCrawlWork,
     PageExtractionResult,
+    Profile,
     Project,
     ProjectSyncRequest,
 )
@@ -397,14 +403,21 @@ def _cancel_if_project_ineligible(sync_uuid) -> bool:
 def _index_ready_article(article: Article) -> None:
     """Complete embedding and durable vector upsert inside one observable page job."""
     EmbeddingService().embed_article(article_uuid=article.uuid)
-    project = Project.objects.select_related("owner__user").get(pk=article.project_id)
-    if not project.is_sync_eligible:
-        raise ProjectBecameIneligibleError
-
-    try:
-        upsert_article(article=article)
-    except ApiException as error:
-        raise ArticleIndexingError("qdrant_unavailable", retryable=True) from error
+    owner_id = Project.objects.values_list("owner_id", flat=True).get(pk=article.project_id)
+    # Lock in Article -> Profile -> Project order. Deactivation locks Article before
+    # updating Project, while subscription and project transitions lock Profile
+    # before Project. Holding all three makes the eligibility decision linearizable
+    # with the bounded Qdrant publication and avoids cross-path deadlocks.
+    with transaction.atomic():
+        article = Article.objects.select_for_update().get(pk=article.pk)
+        owner = Profile.objects.select_for_update().select_related("user").get(pk=owner_id)
+        project = Project.objects.select_for_update().get(pk=article.project_id)
+        if project.state != ProjectStates.ACTIVE or not owner.has_active_subscription:
+            raise ProjectBecameIneligibleError
+        try:
+            upsert_article(article=article)
+        except ApiException as error:
+            raise ArticleIndexingError("qdrant_unavailable", retryable=True) from error
 
 
 def _process_page_work(work: PageCrawlWork) -> None:

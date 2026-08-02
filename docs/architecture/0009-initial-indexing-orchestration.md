@@ -16,8 +16,10 @@ Known provider and Qdrant transport failures use the existing bounded page retry
 state. Non-retryable extraction, embedding, or Qdrant contract failures remain
 on the page work and reconcile the parent sync to failed or partial. A retry
 reuses durable extraction and article state rather than refetching successful
-work. Project eligibility is checked before embedding and again before vector
-publication; suspension or lost subscription cancels outstanding work.
+work. Project eligibility is checked before embedding and again while holding
+the article, profile, and project row locks across the bounded vector publication.
+Subscription and project transitions use the same lock order, so suspension or
+lost subscription is linearized against publication and cancels outstanding work.
 
 When `CITEGUILD_INDEXING_ENABLED` is false, the pipeline intentionally stops
 after PostgreSQL ingestion and retains the pre-existing non-searchable behavior.

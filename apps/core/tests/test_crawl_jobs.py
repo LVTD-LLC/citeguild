@@ -1,8 +1,9 @@
 from datetime import timedelta
+from threading import Event, Thread
 
 import pytest
 from django.core.management import call_command
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, close_old_connections, connection, transaction
 from django.utils import timezone
 from django_q.models import Schedule
 from qdrant_client import QdrantClient
@@ -16,6 +17,7 @@ from apps.core.choices import (
 )
 from apps.core.crawl_jobs import (
     _claim_page_work,
+    _index_ready_article,
     enqueue_sitemap_sync,
     enqueue_sitemap_sync_safely,
     recover_crawl_jobs,
@@ -468,6 +470,76 @@ def test_project_suspension_after_ingestion_cancels_before_indexing(
     work.refresh_from_db()
     assert sync_request.state == ProjectSyncStates.CANCELLED
     assert work.state == PageCrawlStates.CANCELLED
+
+
+@pytest.mark.django_db(transaction=True)
+def test_vector_publication_serializes_subscription_changes(
+    sync_request,
+    monkeypatch,
+):
+    if connection.vendor != "postgresql":
+        pytest.skip("row-lock concurrency is exercised by PostgreSQL CI")
+
+    from apps.core.article_ingestion import ArticleIngestionService
+    from apps.core.models import Profile
+
+    work = _page_work(sync_request)
+    PageExtractionService.persist(work=work, extraction=_extraction(work))
+    article = ArticleIngestionService.ingest(work=work, queue_embedding=False)
+    owner_id = sync_request.project.owner_id
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.EmbeddingService.embed_article",
+        lambda self, *, article_uuid: None,
+    )
+    publication_entered = Event()
+    publication_release = Event()
+    subscription_updated = Event()
+    thread_errors = []
+
+    def held_upsert(*, article):
+        publication_entered.set()
+        if not publication_release.wait(timeout=5):
+            raise TimeoutError("test did not release publication")
+
+    monkeypatch.setattr("apps.core.crawl_jobs.upsert_article", held_upsert)
+
+    def publish():
+        close_old_connections()
+        try:
+            _index_ready_article(article)
+        except Exception as error:  # pragma: no cover - asserted in parent thread
+            thread_errors.append(error)
+        finally:
+            close_old_connections()
+
+    def cancel_subscription():
+        close_old_connections()
+        try:
+            with transaction.atomic():
+                owner = Profile.objects.select_for_update().get(pk=owner_id)
+                owner.stripe_subscription_status = "canceled"
+                owner.save(update_fields=["stripe_subscription_status", "updated_at"])
+            subscription_updated.set()
+        except Exception as error:  # pragma: no cover - asserted in parent thread
+            thread_errors.append(error)
+        finally:
+            close_old_connections()
+
+    publisher = Thread(target=publish)
+    publisher.start()
+    assert publication_entered.wait(timeout=5)
+    canceller = Thread(target=cancel_subscription)
+    canceller.start()
+
+    assert subscription_updated.wait(timeout=0.25) is False
+    publication_release.set()
+    publisher.join(timeout=5)
+    canceller.join(timeout=5)
+
+    assert publisher.is_alive() is False
+    assert canceller.is_alive() is False
+    assert subscription_updated.is_set()
+    assert thread_errors == []
 
 
 @pytest.mark.django_db
