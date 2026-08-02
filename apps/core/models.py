@@ -225,7 +225,10 @@ class ProjectSyncRequest(BaseModel):
             ),
             models.UniqueConstraint(fields=["uuid"], name="core_project_sync_uuid_unique"),
         ]
-        indexes = [models.Index(fields=["state", "created_at"], name="core_sync_state_created_idx")]
+        indexes = [
+            models.Index(fields=["state", "created_at"], name="core_sync_state_created_idx"),
+            models.Index(fields=["project", "-created_at"], name="core_sync_project_latest_idx"),
+        ]
 
 
 class PageCrawlWork(BaseModel):

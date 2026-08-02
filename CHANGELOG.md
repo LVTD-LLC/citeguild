@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- The dashboard now presents bounded owner-scoped site pagination, current sync
+  progress and safe errors, account indexing totals, and paginated detected
+  links given/received with accessible empty and historical states.
 - Normalized outbound observations now resolve into durable detected network
   links with historical URL matching, lifecycle reconciliation, owner-scoped
   detail queries, and page/site citation aggregates without attribution claims.

@@ -31,9 +31,10 @@ from apps.core.analytics import (
 )
 from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
 from apps.core.crawl_jobs import retry_project_sync
+from apps.core.dashboard import DashboardService
 from apps.core.forms import ProfileUpdateForm, SiteCreateForm
 from apps.core.models import Profile, Project, StripeWebhookEvent
-from apps.core.projects import ProjectHostConflict, ProjectService
+from apps.core.projects import ProjectHostConflict
 from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 
@@ -179,7 +180,14 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         context["profile"] = profile
         context["has_subscription"] = profile.has_active_subscription
-        context["projects"] = ProjectService.dashboard_for_owner(profile)
+        dashboard = DashboardService.for_owner(
+            profile,
+            site_page=self.request.GET.get("site_page", 1),
+            given_page=self.request.GET.get("given_page", 1),
+            received_page=self.request.GET.get("received_page", 1),
+        )
+        context["dashboard"] = dashboard
+        context["projects"] = dashboard.projects
         context["site_form"] = kwargs.get("site_form") or SiteCreateForm()
         context["agent_setup_prompt"] = build_agent_setup_prompt()
         context["agent_instructions_url"] = build_absolute_public_url("/AGENTS.md")
