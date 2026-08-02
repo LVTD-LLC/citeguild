@@ -193,7 +193,7 @@ class ArticleIngestionService:
             .get(pk=work.pk)
         )
         existing_attempt = (
-            ArticleCrawlAttempt.objects.select_for_update()
+            ArticleCrawlAttempt.objects.select_for_update(of=("self",))
             .select_related("article")
             .filter(work=work, state=CrawlAttemptStates.SUCCEEDED)
             .first()
