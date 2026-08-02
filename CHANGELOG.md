@@ -29,6 +29,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- A shared SSRF-safe crawler fetch client now pins validated public DNS answers,
+  revalidates redirects, and bounds response types, encodings, time, size,
+  concurrency, and per-host request pace.
 - Add the subscription-aware dashboard onboarding shell, owner-scoped site
   list, and accessible Add Site flow.
 - Account-owned `Project` records now model submitted sites with global
