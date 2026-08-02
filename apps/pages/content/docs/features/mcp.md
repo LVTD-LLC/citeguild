@@ -13,6 +13,10 @@ The server exposes two focused tools:
 
 Search relevance identifies candidate sources; it is not an endorsement or a requirement to link. Read and verify a result before citing it.
 
+The dashboard reveals the **Connect an AI agent** prompt after the first site is
+submitted. Copy that prompt into a clean agent session; it contains public URLs
+and safe workflow instructions, never an API key.
+
 ## URLs
 
 ```text
@@ -38,6 +42,30 @@ Legacy clients can still authenticate with the API key shown on the user setting
 - `Authorization: Bearer <api_key>`
 
 API keys are intentionally not accepted in query strings.
+
+Create an API key from **Settings** only when a client cannot complete OAuth.
+The key is shown once. Store it in `CITEGUILD_API_KEY`, then close the page.
+Rotating the key immediately revokes the previous value, so update every client
+that still needs access. Never paste a key into a prompt, config file, URL,
+support message, screenshot, or log.
+
+### Provider-neutral setup
+
+1. Start a clean agent session and paste the dashboard prompt.
+2. Configure `{{ mcp_url }}` using the client's OAuth flow when supported.
+3. Otherwise export `CITEGUILD_API_KEY` and configure an
+   `Authorization: Bearer` header through the client's environment-variable
+   mechanism.
+4. Call `get_user_info`, then call `search_member_articles` with a real research
+   question or draft passage.
+5. Open and evaluate promising results. Cite only sources that genuinely support
+   the work; never force a link or treat a similarity score as factual proof.
+
+If the client does not support MCP, send the same Bearer credential to
+`POST {{ api_base_url }}/v1/search`. The REST and MCP search surfaces return the
+same versioned contract: public article identity and citation fields, an excerpt,
+language, last-seen timestamp, and a `relevance` score from 0 to 1. That score is
+for candidate ranking only.
 
 ### Codex bearer configuration
 
