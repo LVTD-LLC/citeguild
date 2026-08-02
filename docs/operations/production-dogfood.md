@@ -40,6 +40,10 @@ key in a secret manager and pass it only through an authorization header.
   workers did not share FastMCP's in-memory session state, so valid clients could
   receive `Session terminated`. The hosted app now uses stateless Streamable HTTP
   so tool discovery, account verification, and search remain safe across workers.
+- The 465-page Built with Django crawl exposed a dispatch starvation defect:
+  work beyond the per-site concurrency limit could leave the broker without a
+  later refill. Dispatch now reserves only open site slots and refills a slot
+  after every terminal page outcome.
 
 The dogfood is complete only after the editorial agent selects or rejects a
 candidate, any approved publication is synced, and the expected active graph edge

@@ -608,11 +608,27 @@ def dispatch_page_work(sync_uuid: str) -> int:
         if not sync_request.project.is_sync_eligible:
             _cancel_sync(sync_request)
             return 0
+        in_flight_count = (
+            PageCrawlWork.objects.filter(
+                sync_request__project=sync_request.project,
+            )
+            .filter(
+                Q(state=PageCrawlStates.RUNNING)
+                | Q(state=PageCrawlStates.QUEUED, broker_task_id__gt="")
+            )
+            .count()
+        )
+        available_slots = max(
+            settings.CRAWL_PER_SITE_CONCURRENCY - in_flight_count,
+            0,
+        )
+        if not available_slots:
+            return 0
         work_items = list(
             PageCrawlWork.objects.select_for_update(skip_locked=True)
             .filter(sync_request=sync_request, state=PageCrawlStates.QUEUED, broker_task_id="")
             .filter(Q(next_attempt_at__isnull=True) | Q(next_attempt_at__lte=now))
-            .order_by("id")[: settings.CRAWL_DISPATCH_BATCH_SIZE]
+            .order_by("id")[: min(settings.CRAWL_DISPATCH_BATCH_SIZE, available_slots)]
         )
         for work in work_items:
             work.broker_task_id = "dispatching"
@@ -638,17 +654,6 @@ def dispatch_page_work(sync_uuid: str) -> int:
             broker_task_id=_task_id(broker_task_id)
         )
 
-    remaining = PageCrawlWork.objects.filter(
-        sync_request__uuid=sync_uuid,
-        state=PageCrawlStates.QUEUED,
-        broker_task_id="",
-    ).exists()
-    if remaining and work_items:
-        async_task(
-            DISPATCH_TASK,
-            str(sync_uuid),
-            q_options={"group": f"crawl:{sync_request.project.uuid}"},
-        )
     return len(work_items)
 
 
@@ -833,6 +838,8 @@ def _record_page_outcome(work_uuid, *, error=None) -> str:
         sync_uuid = work.sync_request.uuid
     _refresh_sync_counts(sync_uuid)
     sync_state = _finalize_sync(sync_uuid)
+    if sync_state == ProjectSyncStates.RUNNING:
+        dispatch_page_work(sync_uuid)
     log = logger.warning if error is not None else logger.info
     log(
         "crawl.page.completed",

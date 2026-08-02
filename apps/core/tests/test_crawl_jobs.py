@@ -20,6 +20,7 @@ from apps.core.choices import (
 from apps.core.crawl_jobs import (
     _claim_page_work,
     _index_ready_article,
+    dispatch_page_work,
     enqueue_sitemap_sync,
     enqueue_sitemap_sync_safely,
     recover_crawl_jobs,
@@ -753,6 +754,64 @@ def test_per_site_concurrency_defers_extra_work(sync_request, settings):
     second.refresh_from_db()
     assert second.state == PageCrawlStates.QUEUED
     assert second.broker_task_id == ""
+
+
+@pytest.mark.django_db
+def test_dispatch_limits_brokered_work_to_available_site_slots(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    settings.CRAWL_PER_SITE_CONCURRENCY = 2
+    first = _page_work(sync_request, "first")
+    first.state = PageCrawlStates.RUNNING
+    first.save(update_fields=["state", "updated_at"])
+    for path in ("second", "third", "fourth"):
+        candidate = sync_request.sitemap_inventory.candidates.create(
+            url=f"https://example.com/{path}",
+            normalized_url=f"https://example.com/{path}",
+        )
+        PageCrawlWork.objects.create(sync_request=sync_request, candidate=candidate)
+    published = []
+
+    def publish(*args, **kwargs):
+        published.append((args, kwargs))
+        return f"broker-{len(published)}"
+
+    monkeypatch.setattr("apps.core.crawl_jobs.async_task", publish)
+
+    assert dispatch_page_work(str(sync_request.uuid)) == 1
+    assert len(published) == 1
+    assert (
+        PageCrawlWork.objects.filter(
+            sync_request=sync_request,
+            state=PageCrawlStates.QUEUED,
+        )
+        .exclude(broker_task_id="")
+        .count()
+        == 1
+    )
+
+
+@pytest.mark.django_db
+def test_completed_page_refills_available_site_slot(sync_request, monkeypatch, settings):
+    settings.CRAWL_PER_SITE_CONCURRENCY = 1
+    first = _page_work(sync_request, "first")
+    candidate = sync_request.sitemap_inventory.candidates.create(
+        url="https://example.com/second",
+        normalized_url="https://example.com/second",
+    )
+    PageCrawlWork.objects.create(sync_request=sync_request, candidate=candidate)
+    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", _extraction)
+    monkeypatch.setattr("apps.core.crawl_jobs._index_ready_article", lambda article: None)
+    refills = []
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.dispatch_page_work",
+        lambda sync_uuid: refills.append(sync_uuid) or 1,
+    )
+
+    assert run_page_crawl(str(first.uuid)) == PageCrawlStates.SUCCEEDED
+    assert refills == [sync_request.uuid]
 
 
 @pytest.mark.django_db

@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Fixed
 
+- Sitemap page dispatch now reserves only the available per-site worker slots
+  and refills each slot after a page finishes, so large crawls cannot stall
+  after their first concurrent batch.
 - Hosted MCP now uses stateless Streamable HTTP so authenticated multi-call
   clients remain reliable across the three production Gunicorn workers.
 
