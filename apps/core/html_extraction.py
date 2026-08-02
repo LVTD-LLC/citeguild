@@ -138,7 +138,7 @@ def _validated_final_url(value: str, allowed_host: str) -> str:
     return normalized
 
 
-def _extractor(final_url: str) -> Extractor:
+def _extractor() -> Extractor:
     config = use_config()
     config["DEFAULT"]["MAX_TREE_SIZE"] = str(settings.EXTRACTION_MAX_TREE_SIZE)
     config["DEFAULT"]["MAX_FILE_SIZE"] = str(settings.CRAWL_MAX_PAGE_BYTES)
@@ -156,7 +156,6 @@ def _extractor(final_url: str) -> Extractor:
         # identical document extract differently after another page is seen.
         dedup=False,
         with_metadata=True,
-        url=final_url,
     )
 
 
@@ -183,7 +182,7 @@ def extract_article(response: SafeFetchResult, *, allowed_host: str) -> HtmlExtr
     root = _parse_dom(document)
     noindex = _robots_noindex(root, response.headers)
     try:
-        extracted = trafilatura.bare_extraction(document, options=_extractor(final_url))
+        extracted = trafilatura.bare_extraction(document, options=_extractor())
     except (ValueError, etree.LxmlError) as error:
         raise HtmlExtractionError(HtmlExtractionErrorCode.INVALID_HTML) from error
 
