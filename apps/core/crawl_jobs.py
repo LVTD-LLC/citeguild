@@ -959,16 +959,22 @@ def recover_crawl_jobs() -> dict[str, int]:
         next_attempt_at=now,
         error_code="worker_lost",
     )
-    ProjectSyncRequest.objects.filter(
-        state=ProjectSyncStates.QUEUED,
-        broker_task_id="dispatching",
-        updated_at__lt=cutoff,
-    ).update(broker_task_id="")
-    PageCrawlWork.objects.filter(
-        state=PageCrawlStates.QUEUED,
-        broker_task_id="dispatching",
-        updated_at__lt=cutoff,
-    ).update(broker_task_id="")
+    stale_sync_reservations = (
+        ProjectSyncRequest.objects.filter(
+            state=ProjectSyncStates.QUEUED,
+            updated_at__lt=cutoff,
+        )
+        .exclude(broker_task_id="")
+        .update(broker_task_id="")
+    )
+    stale_page_reservations = (
+        PageCrawlWork.objects.filter(
+            state=PageCrawlStates.QUEUED,
+            updated_at__lt=cutoff,
+        )
+        .exclude(broker_task_id="")
+        .update(broker_task_id="")
+    )
 
     syncs = list(
         ProjectSyncRequest.objects.filter(state=ProjectSyncStates.QUEUED, broker_task_id="")
@@ -988,6 +994,8 @@ def recover_crawl_jobs() -> dict[str, int]:
     return {
         "stale_syncs": stale_syncs,
         "stale_pages": stale_pages,
+        "stale_sync_reservations": stale_sync_reservations,
+        "stale_page_reservations": stale_page_reservations,
         "enqueued_syncs": len(syncs),
         "dispatched_syncs": len(running_syncs),
     }
