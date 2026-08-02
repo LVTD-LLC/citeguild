@@ -45,9 +45,7 @@ def fetch_result(body, content_type="application/xml"):
 def test_validate_sitemap_accepts_supported_xml_roots(settings, root, kind):
     settings.CRAWL_MAX_SITEMAP_BYTES = 1234
     client = RecordingFetchClient(
-        fetch_result(
-            f'<{root} xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" />'.encode()
-        )
+        fetch_result(f'<{root} xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" />'.encode())
     )
 
     result = validate_sitemap("https://example.com/sitemap.xml", client=client)
@@ -67,7 +65,10 @@ def test_validate_sitemap_accepts_supported_xml_roots(settings, root, kind):
     [
         (b"<urlset>", SitemapSubmissionErrorCode.INVALID_XML),
         (b"<html />", SitemapSubmissionErrorCode.UNSUPPORTED_DOCUMENT),
-        (b"<!DOCTYPE urlset [<!ENTITY x 'boom'>]><urlset>&x;</urlset>", SitemapSubmissionErrorCode.INVALID_XML),
+        (
+            b"<!DOCTYPE urlset [<!ENTITY x 'boom'>]><urlset>&x;</urlset>",
+            SitemapSubmissionErrorCode.INVALID_XML,
+        ),
     ],
 )
 def test_validate_sitemap_rejects_invalid_or_unsafe_xml(body, code):

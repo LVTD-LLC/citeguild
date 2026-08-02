@@ -40,9 +40,7 @@ _ERROR_MESSAGES = {
     SitemapSubmissionErrorCode.TEMPORARY_FETCH: (
         "The sitemap could not be reached right now. Try again."
     ),
-    SitemapSubmissionErrorCode.INVALID_CONTENT_TYPE: (
-        "The URL did not return an XML sitemap."
-    ),
+    SitemapSubmissionErrorCode.INVALID_CONTENT_TYPE: ("The URL did not return an XML sitemap."),
     SitemapSubmissionErrorCode.INVALID_ENCODING: (
         "The sitemap uses an invalid or unsupported content encoding."
     ),
@@ -81,12 +79,8 @@ _FETCH_ERROR_MAP = {
     SafeFetchErrorCode.BLOCKED_ADDRESS: SitemapSubmissionErrorCode.BLOCKED_DESTINATION,
     SafeFetchErrorCode.BLOCKED_PORT: SitemapSubmissionErrorCode.BLOCKED_DESTINATION,
     SafeFetchErrorCode.INVALID_URL: SitemapSubmissionErrorCode.BLOCKED_DESTINATION,
-    SafeFetchErrorCode.UNSUPPORTED_CONTENT_TYPE: (
-        SitemapSubmissionErrorCode.INVALID_CONTENT_TYPE
-    ),
-    SafeFetchErrorCode.UNSUPPORTED_CONTENT_ENCODING: (
-        SitemapSubmissionErrorCode.INVALID_ENCODING
-    ),
+    SafeFetchErrorCode.UNSUPPORTED_CONTENT_TYPE: (SitemapSubmissionErrorCode.INVALID_CONTENT_TYPE),
+    SafeFetchErrorCode.UNSUPPORTED_CONTENT_ENCODING: (SitemapSubmissionErrorCode.INVALID_ENCODING),
     SafeFetchErrorCode.INVALID_CONTENT_ENCODING: SitemapSubmissionErrorCode.INVALID_ENCODING,
     SafeFetchErrorCode.BODY_TOO_LARGE: SitemapSubmissionErrorCode.TOO_LARGE,
     SafeFetchErrorCode.TOO_MANY_REDIRECTS: SitemapSubmissionErrorCode.UNAVAILABLE,
