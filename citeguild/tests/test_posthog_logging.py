@@ -182,6 +182,7 @@ def test_production_settings_attach_posthog_handler():
             "REDIS_PASSWORD": "redis-test-password",
         }
     )
+    environment.pop("DATABASE_URL", None)
     environment.pop("POSTHOG_LOGS_ENABLED", None)
     result = subprocess.run(
         [

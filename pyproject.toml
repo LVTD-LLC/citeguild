@@ -52,6 +52,7 @@ dependencies = [
 dev = [
     "djlint>=1.36.4",
     "mutmut>=3.6.0",
+    "pip-audit==2.10.0",
     "pre-commit>=4.6.0",
     "ruff>=0.15.16",
     "schemathesis>=4.23.0",

@@ -20,9 +20,10 @@ make ci-local
 1. `make python-quality`
 2. `make type-check`
 3. `make frontend-check`
-4. `make migrations-check`
-5. `make django-check`
-6. `make coverage-high-risk -- -q`
+4. `make security-check`
+5. `make migrations-check`
+6. `make django-check`
+7. `make coverage-high-risk -- -q`
 
 This path expects the same host prerequisites as terminal development: uv,
 Node.js, a reachable PostgreSQL database, and Redis when runtime settings need
@@ -41,6 +42,8 @@ PGSandbox database.
 | Django Q2 tasks, schedules, workers, or broker behavior | `make pytest-check -- apps/core -q` | Read `.agents/skills/django-q2/SKILL.md`; run a worker locally when behavior depends on the queue |
 | HTMX, Alpine.js, templates, Tailwind, or browser modules | `make frontend-check` | Read the matching frontend skill; run targeted Django tests for changed views or forms |
 | Shared services or high-risk behavior kernels | `make coverage-high-risk -- <affected pytest args>` | After tests pass, run `make mutation-high-risk -- '<module-or-function-pattern>'` when test strength matters |
+| Cross-component MVP acceptance | `make acceptance-test -- -q` with PostgreSQL, Redis, and Qdrant configured | See `docs/quality/mvp-acceptance.md` for the matrix and budgets |
+| Locked dependency security | `make security-check` | High-severity npm runtime findings or any known Python vulnerability fail the command |
 | Docs, README, or agent instructions | Review the rendered Markdown path | Run focused tests only when docs rendering, routes, or navigation changed |
 | Deployment, Docker, CapRover, Fly.io, or DigitalOcean config | Run the smallest changed deploy command or syntax check available | Read the relevant deployment skill/docs and run `make ci-local` before PR |
 | Disposable Postgres verification | `DATABASE_URL="<pgsandbox connection string>" make test-local-postgres` | Delete the sandbox after checks and never commit sandbox URLs |
@@ -79,6 +82,8 @@ rather than a plain `@pytest.mark.django_db` test.
 | `make django-check` | Runs Django system checks. |
 | `make pytest-check -- <args>` | Runs pytest on the host with optional pytest args. |
 | `make api-fuzz` | Runs Schemathesis property tests directly against the Django WSGI app using the generated OpenAPI schema and test-owned authentication. |
+| `make acceptance-test` | Runs the opt-in paid-site scenario and Redis check against real PostgreSQL, Redis, and Qdrant services. |
+| `make security-check` | Audits the locked Python runtime graph and npm runtime dependencies without live provider calls. |
 | `make coverage` | Runs pytest through coverage and reports overall coverage. |
 | `make coverage-high-risk` | Runs pytest through coverage and reports selected high-risk files. Defaults to `COVERAGE_FAIL_UNDER=0` until the project sets a baseline. |
 | `make mutation-high-risk` | Runs mutmut against the configured high-risk Python files, optionally narrowed by a module or function pattern. |
@@ -182,6 +187,7 @@ same Makefile targets:
 make python-quality
 make type-check
 make frontend-check
+make security-check
 make migrations-check
 make django-check
 make coverage-high-risk COVERAGE_FAIL_UNDER=0 -- -q

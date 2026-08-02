@@ -21,6 +21,12 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 MEDIA_ROOT = str(TEST_RUNTIME_ROOT / "media")
 ALLOWED_HOSTS = [*base_settings.ALLOWED_HOSTS, "localhost", "testserver"]
 
+# Ordinary tests must never inherit a developer or agent's live PostHog token.
+POSTHOG_API_KEY = ""
+POSTHOG_LOGS_ENABLED = False
+POSTHOG_LOGS_ACTIVE = False
+POSTHOG_AI_OBSERVABILITY_ENABLED = False
+
 STORAGES = {
     **base_settings.STORAGES,
     "default": {

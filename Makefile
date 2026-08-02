@@ -53,6 +53,7 @@ DOCKER_COMPOSE = docker compose -f docker-compose-local.yml
 
 .PHONY: \
 	api-fuzz \
+	acceptance-test \
 	ci-local \
 	coverage \
 	coverage-high-risk \
@@ -74,6 +75,7 @@ DOCKER_COMPOSE = docker compose -f docker-compose-local.yml
 	pyscn-analyze \
 	pyscn-check \
 	restart-worker \
+	security-check \
 	serve \
 	shell \
 	terminal-assets \
@@ -134,6 +136,13 @@ terminal-shell:
 api-fuzz:
 	$(PYTEST_RUN) apps/api/test_schema.py $(TARGET_ARGS)
 
+acceptance-test:
+	CITEGUILD_RUN_ACCEPTANCE=1 $(PYTEST_RUN) -m acceptance $(TARGET_ARGS)
+
+security-check:
+	uv export --locked --no-dev --no-emit-project | uv run pip-audit --strict --disable-pip -r /dev/stdin
+	$(NPM) audit --omit=dev --audit-level=high
+
 shell:
 	$(DOCKER_COMPOSE) run --rm backend uv run --no-sync python ./manage.py shell_plus --ipython
 
@@ -153,6 +162,7 @@ ci-local:
 	$(MAKE) python-quality
 	$(MAKE) type-check
 	$(MAKE) frontend-check
+	$(MAKE) security-check
 	$(MAKE) migrations-check
 	$(MAKE) django-check
 	$(MAKE) coverage-high-risk -- -q
