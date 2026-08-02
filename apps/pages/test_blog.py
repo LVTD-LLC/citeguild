@@ -7,7 +7,12 @@ from django.contrib.sitemaps.views import sitemap as sitemap_view
 from django.core.checks import run_checks
 from django.urls import reverse
 
-from apps.pages.services import BLOG_DEFAULT_IMAGE_URL, get_blog_post, list_blog_posts
+from apps.pages.services import (
+    BLOG_DEFAULT_IMAGE_URL,
+    get_blog_post,
+    list_blog_posts,
+    publisher_schema,
+)
 from citeguild.sitemaps import BlogSitemap, sitemaps
 
 pytestmark = pytest.mark.django_db
@@ -104,6 +109,13 @@ def test_blog_posts_are_sorted_by_publication_date(blog_posts_dir):
     )
 
     assert [post.slug for post in list_blog_posts()] == ["newer-post", "older-post"]
+
+
+def test_publisher_schema_uses_citeguild_logo(blog_posts_dir):
+    assert publisher_schema()["logo"] == {
+        "@type": "ImageObject",
+        "url": "https://canonical.example/static/images/citeguild-logo.svg",
+    }
 
 
 def test_blog_post_absolute_url_uses_django_method_convention(blog_posts_dir):

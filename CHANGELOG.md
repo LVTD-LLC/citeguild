@@ -29,6 +29,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Changed
 
+- The browser favicon, public and authenticated navigation, and publisher
+  metadata now use the CiteGuild guild mark.
 - Replaced generic policy copy with CiteGuild-specific crawler, semantic search,
   public indexing, data processing, billing, abuse, and no-guaranteed-backlink
   terms that match the deployed MVP.
