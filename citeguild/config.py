@@ -65,6 +65,8 @@ class RuntimeConfig:
     crawl_max_redirects: int
     crawl_max_sitemap_bytes: int
     crawl_max_sitemap_entries: int
+    crawl_max_sitemap_depth: int
+    crawl_max_sitemap_files: int
     crawl_max_page_bytes: int
     crawl_concurrency: int
     reconcile_interval_hours: int
@@ -106,6 +108,10 @@ class RuntimeConfig:
             crawl_max_sitemap_entries=_integer(
                 values, "CITEGUILD_CRAWL_MAX_SITEMAP_ENTRIES", 50_000
             ),
+            crawl_max_sitemap_depth=_integer(
+                values, "CITEGUILD_CRAWL_MAX_SITEMAP_DEPTH", 3, minimum=0
+            ),
+            crawl_max_sitemap_files=_integer(values, "CITEGUILD_CRAWL_MAX_SITEMAP_FILES", 100),
             crawl_max_page_bytes=_integer(values, "CITEGUILD_CRAWL_MAX_PAGE_BYTES", 5_000_000),
             crawl_concurrency=_integer(values, "CITEGUILD_CRAWL_CONCURRENCY", 4),
             reconcile_interval_hours=_integer(values, "CITEGUILD_RECONCILE_INTERVAL_HOURS", 24),
@@ -192,6 +198,8 @@ class RuntimeConfig:
             "crawl_max_redirects": self.crawl_max_redirects,
             "crawl_max_sitemap_bytes": self.crawl_max_sitemap_bytes,
             "crawl_max_sitemap_entries": self.crawl_max_sitemap_entries,
+            "crawl_max_sitemap_depth": self.crawl_max_sitemap_depth,
+            "crawl_max_sitemap_files": self.crawl_max_sitemap_files,
             "crawl_request_timeout_seconds": self.crawl_request_timeout_seconds,
             "embedding_dimensions": self.embedding_dimensions,
             "embedding_model": self.embedding_model,

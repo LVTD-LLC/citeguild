@@ -29,6 +29,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- XML sitemap indexes now produce deterministic, host-scoped candidate
+  inventories with bounded recursion, gzip handling, and atomic promotion.
 - Sitemap-only dashboard and API submission now validate bounded XML through
   the shared SSRF-safe transport and create one durable, idempotent initial-sync
   request with retry-safe error responses.
