@@ -1,5 +1,9 @@
+import logging
+from unittest.mock import patch
+
 import pytest
 from allauth.account.models import EmailAddress
+from django.core.exceptions import PermissionDenied
 from django.test import override_settings
 from django.urls import reverse
 
@@ -88,6 +92,26 @@ class TestHomeView:
         assert response.status_code == 302
         assert response.url == reverse("pricing")
         assert not Project.objects.exists()
+
+    @patch("apps.core.views.ProjectService.create", side_effect=PermissionDenied)
+    def test_subscription_race_is_logged_and_redirects_to_billing(
+        self, create_project, auth_client, profile, caplog
+    ):
+        subscribe(profile)
+
+        with caplog.at_level(logging.WARNING, logger="apps.core.views"):
+            response = auth_client.post(
+                reverse("home"),
+                {"name": "Race", "sitemap_url": "https://race.example/sitemap.xml"},
+                follow=True,
+            )
+
+        create_project.assert_called_once()
+        assert response.redirect_chain[0][0] == reverse("pricing")
+        assert "subscription became inactive" in response.content.decode()
+        record = next(item for item in caplog.records if item.msg == "project.create.completed")
+        assert record.__dict__["operation.status"] == "subscription_became_inactive"
+        assert record.outcome == "failure"
 
     def test_site_list_is_owner_scoped(self, auth_client, profile, django_user_model):
         subscribe(profile)

@@ -192,7 +192,20 @@ class HomeView(LoginRequiredMixin, TemplateView):
             except ValidationError as error:
                 form.add_error(None, error)
             except PermissionDenied:
-                messages.error(request, "Your subscription is not active.")
+                logger.warning(
+                    "project.create.completed",
+                    extra={
+                        "event.name": "project.create.completed",
+                        "user_id": request.user.id,
+                        "profile_id": profile.id,
+                        "operation.status": "subscription_became_inactive",
+                        "outcome": "failure",
+                    },
+                )
+                messages.error(
+                    request,
+                    "Your subscription became inactive. Update billing before adding a site.",
+                )
                 return redirect("pricing")
             else:
                 messages.success(request, f"{project.name} was added. Indexing will start soon.")
