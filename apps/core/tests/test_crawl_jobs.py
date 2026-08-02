@@ -843,6 +843,30 @@ def test_recovery_requeues_stale_worker_state(sync_request, monkeypatch, setting
 
 
 @pytest.mark.django_db
+def test_recovery_clears_stale_queued_broker_reservations(sync_request, monkeypatch, settings):
+    settings.CRAWL_STALE_AFTER_SECONDS = 60
+    work = _page_work(sync_request)
+    old = timezone.now() - timedelta(minutes=5)
+    PageCrawlWork.objects.filter(pk=work.pk).update(
+        broker_task_id="broker-task-that-no-longer-exists",
+        updated_at=old,
+    )
+    dispatched = []
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.dispatch_page_work",
+        lambda sync_uuid: dispatched.append(sync_uuid) or 1,
+    )
+
+    result = recover_crawl_jobs()
+
+    work.refresh_from_db()
+    assert result["stale_page_reservations"] == 1
+    assert work.state == PageCrawlStates.QUEUED
+    assert work.broker_task_id == ""
+    assert dispatched == [str(sync_request.uuid)]
+
+
+@pytest.mark.django_db
 def test_recovery_finalizes_completed_page_work(sync_request, monkeypatch):
     work = _page_work(sync_request)
     work.state = PageCrawlStates.SUCCEEDED

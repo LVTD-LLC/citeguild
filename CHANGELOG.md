@@ -18,6 +18,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Fixed
 
+- Crawl recovery now clears every stale queued broker reservation, including
+  task IDs left behind after a worker replacement, so phantom in-flight work
+  cannot consume a site's concurrency slots indefinitely.
 - Sitemap page dispatch now reserves only the available per-site worker slots
   and refills each slot after a page finishes, so large crawls cannot stall
   after their first concurrent batch.
