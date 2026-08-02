@@ -44,6 +44,8 @@ def test_local_configuration_uses_safe_bounded_defaults() -> None:
     assert config.qdrant_collection == "citeguild-articles"
     assert config.embedding_dimensions == 1536
     assert config.crawl_max_sitemap_entries == 50_000
+    assert config.crawl_max_sitemap_depth == 3
+    assert config.crawl_max_sitemap_files == 100
     assert config.crawl_max_redirects == 5
     assert config.reconcile_interval_hours == 24
 

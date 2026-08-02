@@ -1,3 +1,5 @@
+import gzip
+
 import pytest
 from django.core.exceptions import PermissionDenied
 
@@ -55,9 +57,21 @@ def test_validate_sitemap_accepts_supported_xml_roots(settings, root, kind):
         (
             "https://example.com/sitemap.xml",
             1234,
-            {"application/xml", "text/xml"},
+            {"application/xml", "text/xml", "application/gzip", "application/x-gzip"},
         )
     ]
+
+
+def test_validate_sitemap_accepts_gzip_document(settings):
+    settings.CRAWL_MAX_SITEMAP_BYTES = 1234
+    settings.CRAWL_MAX_SITEMAP_ENTRIES = 10
+    client = RecordingFetchClient(
+        fetch_result(gzip.compress(b"<urlset />"), content_type="application/gzip")
+    )
+
+    result = validate_sitemap("https://example.com/sitemap.xml.gz", client=client)
+
+    assert result.kind == SitemapDocumentKind.URL_SET
 
 
 @pytest.mark.parametrize(

@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from defusedxml import ElementTree
-from defusedxml.common import DefusedXmlException
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -15,6 +13,13 @@ from apps.core.choices import ProjectSyncKinds
 from apps.core.models import Profile, Project, ProjectSyncRequest
 from apps.core.projects import ProjectService, normalize_sitemap_url
 from apps.core.safe_fetch import SafeFetchClient, SafeFetchError, SafeFetchErrorCode
+from apps.core.sitemap_parser import (
+    SITEMAP_CONTENT_TYPES,
+    SitemapParseError,
+    SitemapParseErrorCode,
+    parse_sitemap_document,
+    sitemap_document_body,
+)
 
 
 class SitemapDocumentKind(StrEnum):
@@ -101,10 +106,6 @@ def _map_fetch_error(error: SafeFetchError) -> SitemapSubmissionError:
     )
 
 
-def _local_name(tag: str) -> str:
-    return tag.rsplit("}", 1)[-1]
-
-
 def validate_sitemap(
     sitemap_url: str,
     *,
@@ -115,17 +116,27 @@ def validate_sitemap(
         response = client.fetch(
             sitemap_url,
             max_bytes=settings.CRAWL_MAX_SITEMAP_BYTES,
-            allowed_content_types={"application/xml", "text/xml"},
+            allowed_content_types=SITEMAP_CONTENT_TYPES,
         )
     except SafeFetchError as error:
         raise _map_fetch_error(error) from error
 
     try:
-        root = ElementTree.fromstring(response.body)
-    except (ElementTree.ParseError, DefusedXmlException) as error:
-        raise SitemapSubmissionError(SitemapSubmissionErrorCode.INVALID_XML) from error
+        root_name, _entries = parse_sitemap_document(
+            sitemap_document_body(response, settings.CRAWL_MAX_SITEMAP_BYTES),
+            max_entries=settings.CRAWL_MAX_SITEMAP_ENTRIES,
+        )
+    except SitemapParseError as error:
+        if error.code == SitemapParseErrorCode.UNSUPPORTED_DOCUMENT:
+            code = SitemapSubmissionErrorCode.UNSUPPORTED_DOCUMENT
+        elif error.code == SitemapParseErrorCode.INVALID_COMPRESSION:
+            code = SitemapSubmissionErrorCode.INVALID_ENCODING
+        elif error.code in {SitemapParseErrorCode.ENTRY_LIMIT, SitemapParseErrorCode.TOO_LARGE}:
+            code = SitemapSubmissionErrorCode.TOO_LARGE
+        else:
+            code = SitemapSubmissionErrorCode.INVALID_XML
+        raise SitemapSubmissionError(code) from error
 
-    root_name = _local_name(root.tag)
     if root_name == "urlset":
         return SitemapValidation(SitemapDocumentKind.URL_SET)
     if root_name == "sitemapindex":

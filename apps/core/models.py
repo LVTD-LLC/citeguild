@@ -135,6 +135,13 @@ class Project(BaseModel):
     article_count = models.PositiveIntegerField(default=0)
     active_article_count = models.PositiveIntegerField(default=0)
     last_error_code = models.CharField(max_length=64, blank=True, default="")
+    active_sitemap_inventory = models.ForeignKey(
+        "SitemapInventory",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="active_for_projects",
+    )
 
     class Meta:
         ordering = ["name", "id"]
@@ -197,6 +204,53 @@ class ProjectSyncRequest(BaseModel):
             models.UniqueConstraint(fields=["uuid"], name="core_project_sync_uuid_unique"),
         ]
         indexes = [models.Index(fields=["state", "created_at"], name="core_sync_state_created_idx")]
+
+
+class SitemapInventory(BaseModel):
+    """Immutable candidate set promoted only after a complete successful parse."""
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="inventories")
+    sync_request = models.OneToOneField(
+        ProjectSyncRequest,
+        on_delete=models.CASCADE,
+        related_name="sitemap_inventory",
+    )
+    candidate_count = models.PositiveIntegerField(default=0)
+    sitemap_count = models.PositiveIntegerField(default=0)
+    diagnostics = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(fields=["uuid"], name="core_sitemap_inventory_uuid_unique")
+        ]
+
+
+class SitemapCandidate(BaseModel):
+    inventory = models.ForeignKey(
+        SitemapInventory,
+        on_delete=models.CASCADE,
+        related_name="candidates",
+    )
+    url = models.URLField(max_length=2048)
+    normalized_url = models.URLField(max_length=2048)
+    lastmod_hint = models.CharField(max_length=40, blank=True, default="")
+
+    class Meta:
+        ordering = ["normalized_url", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["inventory", "normalized_url"],
+                name="core_sitemap_candidate_unique",
+            ),
+            models.UniqueConstraint(fields=["uuid"], name="core_sitemap_candidate_uuid_unique"),
+        ]
+        indexes = [
+            models.Index(
+                fields=["inventory", "normalized_url"],
+                name="core_sitemap_candidate_url_idx",
+            )
+        ]
 
 
 class ProfileStateTransition(BaseModel):
