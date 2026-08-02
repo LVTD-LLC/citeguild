@@ -40,7 +40,9 @@ services:
       QDRANT__SERVICE__API_KEY: citeguild
       QDRANT__TELEMETRY_DISABLED: "true"
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/6333'"]
+      # The official image has no HTTP client; verify the Linux listening socket.
+      # Authenticated collection readiness is checked by the backend aggregate health endpoint.
+      test: ["CMD-SHELL", "grep -q ':18BD ' /proc/net/tcp /proc/net/tcp6"]
       interval: 5s
       timeout: 5s
       retries: 10

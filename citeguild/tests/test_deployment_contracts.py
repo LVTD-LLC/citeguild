@@ -21,7 +21,12 @@ def test_production_compose_has_private_persistent_healthy_dependencies():
     assert services["redis"]["volumes"] == ["redis_data:/data"]
     assert services["qdrant"]["volumes"] == ["qdrant_data:/qdrant/storage"]
     assert all("healthcheck" in services[name] for name in ("db", "redis", "qdrant"))
-    assert services["backend"]["healthcheck"]["test"][-1].find("/api/healthcheck") >= 0
+    qdrant_health = services["qdrant"]["healthcheck"]["test"][-1]
+    assert "/proc/net/tcp" in qdrant_health
+    assert "/dev/tcp" not in qdrant_health
+    backend_health = services["backend"]["healthcheck"]["test"][-1]
+    assert "/api/healthcheck" in backend_health
+    assert "response.status == 200" in backend_health
 
 
 def test_production_roles_share_one_required_immutable_image():

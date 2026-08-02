@@ -34,7 +34,9 @@ services:
       QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
       QDRANT__TELEMETRY_DISABLED: "true"
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/6333'"]
+      # The official image has no HTTP client; verify the Linux listening socket.
+      # Authenticated collection readiness is checked by the backend aggregate health endpoint.
+      test: ["CMD-SHELL", "grep -q ':18BD ' /proc/net/tcp /proc/net/tcp6"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -54,7 +56,7 @@ services:
       qdrant:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:80/api/healthcheck', timeout=5).read()"]
+      test: ["CMD", "python", "-c", "import urllib.request; response = urllib.request.urlopen('http://127.0.0.1:80/api/healthcheck', timeout=5); assert response.status == 200"]
       interval: 15s
       timeout: 5s
       retries: 10
