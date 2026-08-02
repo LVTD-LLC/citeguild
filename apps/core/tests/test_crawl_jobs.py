@@ -6,7 +6,12 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django_q.models import Schedule
 
-from apps.core.choices import PageCrawlStates, ProjectStates, ProjectSyncStates
+from apps.core.choices import (
+    ExtractionStates,
+    PageCrawlStates,
+    ProjectStates,
+    ProjectSyncStates,
+)
 from apps.core.crawl_jobs import (
     _claim_page_work,
     enqueue_sitemap_sync,
@@ -15,6 +20,7 @@ from apps.core.crawl_jobs import (
     run_page_crawl,
     run_sitemap_sync,
 )
+from apps.core.html_extraction import HtmlExtraction, PageExtractionService
 from apps.core.models import PageCrawlWork, ProjectSyncRequest
 from apps.core.projects import ProjectService
 from apps.core.safe_fetch import SafeFetchError, SafeFetchErrorCode
@@ -199,6 +205,23 @@ def _page_work(sync_request, path="a"):
     )
 
 
+def _extraction(work):
+    return HtmlExtraction(
+        state=ExtractionStates.READY,
+        final_url=work.candidate.normalized_url,
+        canonical_url=work.candidate.normalized_url,
+        http_status=200,
+        title="Article",
+        description="",
+        language="en",
+        text="Useful article text",
+        noindex=False,
+        source_bytes=100,
+        text_chars=19,
+        diagnostics={"canonical_rejected": False},
+    )
+
+
 @pytest.mark.django_db
 def test_page_retry_then_success_finalizes_sync(sync_request, monkeypatch, settings):
     settings.CRAWL_PER_SITE_CONCURRENCY = 2
@@ -215,12 +238,34 @@ def test_page_retry_then_success_finalizes_sync(sync_request, monkeypatch, setti
     assert work.attempt_count == 1
     work.next_attempt_at = None
     work.save(update_fields=["next_attempt_at", "updated_at"])
-    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", lambda work: None)
+    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", _extraction)
 
     assert run_page_crawl(str(work.uuid)) == PageCrawlStates.SUCCEEDED
     sync_request.refresh_from_db()
     assert sync_request.state == ProjectSyncStates.SUCCEEDED
     assert sync_request.succeeded_count == 1
+    assert work.extraction.text == "Useful article text"
+
+
+@pytest.mark.django_db
+def test_page_retry_finishes_existing_extraction_without_refetch(
+    sync_request,
+    monkeypatch,
+    settings,
+):
+    settings.CRAWL_PER_SITE_CONCURRENCY = 2
+    work = _page_work(sync_request)
+    extraction = _extraction(work)
+    PageExtractionService.persist(work=work, extraction=extraction)
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs._fetch_page",
+        lambda work: pytest.fail("an existing extraction must not be fetched again"),
+    )
+
+    assert run_page_crawl(str(work.uuid)) == PageCrawlStates.SUCCEEDED
+    work.refresh_from_db()
+    assert work.attempt_count == 1
+    assert work.extraction.text == extraction.text
 
 
 @pytest.mark.django_db
@@ -236,7 +281,7 @@ def test_mixed_terminal_page_outcomes_finalize_partial(sync_request, monkeypatch
         candidate=second_candidate,
         max_attempts=1,
     )
-    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", lambda work: None)
+    monkeypatch.setattr("apps.core.crawl_jobs._fetch_page", _extraction)
     assert run_page_crawl(str(first.uuid)) == PageCrawlStates.SUCCEEDED
     monkeypatch.setattr(
         "apps.core.crawl_jobs._fetch_page",

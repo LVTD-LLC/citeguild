@@ -73,6 +73,9 @@ class RuntimeConfig:
     crawl_dispatch_batch_size: int
     crawl_max_attempts: int
     crawl_stale_after_seconds: int
+    extraction_min_text_chars: int
+    extraction_max_text_chars: int
+    extraction_max_tree_size: int
     reconcile_interval_hours: int
     indexing_enabled: bool
     billing_enabled: bool
@@ -122,6 +125,13 @@ class RuntimeConfig:
             crawl_dispatch_batch_size=_integer(values, "CITEGUILD_CRAWL_DISPATCH_BATCH_SIZE", 100),
             crawl_max_attempts=_integer(values, "CITEGUILD_CRAWL_MAX_ATTEMPTS", 3),
             crawl_stale_after_seconds=_integer(values, "CITEGUILD_CRAWL_STALE_AFTER_SECONDS", 3600),
+            extraction_min_text_chars=_integer(values, "CITEGUILD_EXTRACTION_MIN_TEXT_CHARS", 200),
+            extraction_max_text_chars=_integer(
+                values, "CITEGUILD_EXTRACTION_MAX_TEXT_CHARS", 500_000
+            ),
+            extraction_max_tree_size=_integer(
+                values, "CITEGUILD_EXTRACTION_MAX_TREE_SIZE", 100_000
+            ),
             reconcile_interval_hours=_integer(values, "CITEGUILD_RECONCILE_INTERVAL_HOURS", 24),
             indexing_enabled=_boolean(values, "CITEGUILD_INDEXING_ENABLED"),
             billing_enabled=_boolean(values, "CITEGUILD_BILLING_ENABLED"),
@@ -154,6 +164,11 @@ class RuntimeConfig:
             raise ImproperlyConfigured("SECRET_KEY is required.")
         if not self.site_url:
             raise ImproperlyConfigured("SITE_URL is required.")
+        if self.extraction_max_text_chars < self.extraction_min_text_chars:
+            raise ImproperlyConfigured(
+                "CITEGUILD_EXTRACTION_MAX_TEXT_CHARS must be at least "
+                "CITEGUILD_EXTRACTION_MIN_TEXT_CHARS."
+            )
 
     def _validate_production(self, values: Mapping[str, str]) -> None:
         if self.secret_key == "super-secret-key":
@@ -206,6 +221,9 @@ class RuntimeConfig:
             "crawl_dispatch_batch_size": self.crawl_dispatch_batch_size,
             "crawl_max_attempts": self.crawl_max_attempts,
             "crawl_stale_after_seconds": self.crawl_stale_after_seconds,
+            "extraction_min_text_chars": self.extraction_min_text_chars,
+            "extraction_max_text_chars": self.extraction_max_text_chars,
+            "extraction_max_tree_size": self.extraction_max_tree_size,
             "crawl_max_page_bytes": self.crawl_max_page_bytes,
             "crawl_max_redirects": self.crawl_max_redirects,
             "crawl_max_sitemap_bytes": self.crawl_max_sitemap_bytes,

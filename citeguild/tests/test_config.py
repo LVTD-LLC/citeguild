@@ -51,6 +51,9 @@ def test_local_configuration_uses_safe_bounded_defaults() -> None:
     assert config.crawl_dispatch_batch_size == 100
     assert config.crawl_max_attempts == 3
     assert config.crawl_stale_after_seconds == 3600
+    assert config.extraction_min_text_chars == 200
+    assert config.extraction_max_text_chars == 500_000
+    assert config.extraction_max_tree_size == 100_000
     assert config.reconcile_interval_hours == 24
 
 
@@ -135,6 +138,19 @@ def test_invalid_numeric_value_names_the_setting() -> None:
                 "POSTGRES_PASSWORD": "citeguild",
                 "POSTGRES_HOST": "localhost",
                 "CITEGUILD_EMBEDDING_DIMENSIONS": "many",
+            }
+        )
+
+
+def test_extraction_maximum_must_cover_minimum() -> None:
+    with pytest.raises(ImproperlyConfigured, match="EXTRACTION_MAX_TEXT_CHARS"):
+        RuntimeConfig.from_mapping(
+            {
+                "ENVIRONMENT": "dev",
+                "SECRET_KEY": "local-only",
+                "SITE_URL": "http://localhost:8000",
+                "CITEGUILD_EXTRACTION_MIN_TEXT_CHARS": "500",
+                "CITEGUILD_EXTRACTION_MAX_TEXT_CHARS": "100",
             }
         )
 

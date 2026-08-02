@@ -11,7 +11,7 @@ import time
 import zlib
 from collections.abc import Callable, Iterator, Mapping, Set
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol
 from urllib.parse import quote, unquote_to_bytes, urljoin, urlsplit, urlunsplit
@@ -99,6 +99,7 @@ class SafeFetchResult:
     final_url: str
     status: int
     redirect_count: int
+    headers: Mapping[str, str] = field(default_factory=dict)
 
 
 def _blocked_address() -> SafeFetchError:
@@ -534,6 +535,12 @@ class SafeFetchClient:
                             final_url=target.normalized_url,
                             status=response.status,
                             redirect_count=redirect_count,
+                            headers={
+                                "x-robots-tag": _header_value(response.headers, "x-robots-tag"),
+                                "content-language": _header_value(
+                                    response.headers, "content-language"
+                                ),
+                            },
                         )
                     finally:
                         response.close()

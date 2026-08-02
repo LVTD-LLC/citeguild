@@ -3,6 +3,7 @@ from django.contrib import admin
 from apps.core.models import (
     EmailSent,
     PageCrawlWork,
+    PageExtractionResult,
     Project,
     ProjectStateTransition,
     ProjectSyncRequest,
@@ -17,3 +18,4 @@ admin.site.register(ProjectSyncRequest)
 admin.site.register(SitemapInventory)
 admin.site.register(SitemapCandidate)
 admin.site.register(PageCrawlWork)
+admin.site.register(PageExtractionResult)

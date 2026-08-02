@@ -108,7 +108,12 @@ def test_resolver_rejects_mixed_public_and_private_dns_answers(monkeypatch):
 
 def test_fetch_pins_connection_to_validated_ip_and_preserves_tls_hostname():
     response = FakeResponse(
-        headers={"Content-Type": "application/xml"},
+        headers={
+            "Content-Type": "application/xml",
+            "Content-Language": "en-US",
+            "X-Robots-Tag": "noindex",
+            "Set-Cookie": "private=session-value",
+        },
         chunks=[b"<urlset />"],
     )
     transport = FakeTransport([response])
@@ -131,6 +136,11 @@ def test_fetch_pins_connection_to_validated_ip_and_preserves_tls_hostname():
     assert transport.headers[0]["Host"] == "example.com"
     assert transport.headers[0]["User-Agent"].startswith("CiteGuildBot/")
     assert result.body == b"<urlset />"
+    assert result.headers == {
+        "content-language": "en-US",
+        "x-robots-tag": "noindex",
+    }
+    assert "session-value" not in repr(result)
     assert response.closed is True
 
 
