@@ -69,6 +69,10 @@ class RuntimeConfig:
     crawl_max_sitemap_files: int
     crawl_max_page_bytes: int
     crawl_concurrency: int
+    crawl_per_site_concurrency: int
+    crawl_dispatch_batch_size: int
+    crawl_max_attempts: int
+    crawl_stale_after_seconds: int
     reconcile_interval_hours: int
     indexing_enabled: bool
     billing_enabled: bool
@@ -114,6 +118,10 @@ class RuntimeConfig:
             crawl_max_sitemap_files=_integer(values, "CITEGUILD_CRAWL_MAX_SITEMAP_FILES", 100),
             crawl_max_page_bytes=_integer(values, "CITEGUILD_CRAWL_MAX_PAGE_BYTES", 5_000_000),
             crawl_concurrency=_integer(values, "CITEGUILD_CRAWL_CONCURRENCY", 4),
+            crawl_per_site_concurrency=_integer(values, "CITEGUILD_CRAWL_PER_SITE_CONCURRENCY", 2),
+            crawl_dispatch_batch_size=_integer(values, "CITEGUILD_CRAWL_DISPATCH_BATCH_SIZE", 100),
+            crawl_max_attempts=_integer(values, "CITEGUILD_CRAWL_MAX_ATTEMPTS", 3),
+            crawl_stale_after_seconds=_integer(values, "CITEGUILD_CRAWL_STALE_AFTER_SECONDS", 3600),
             reconcile_interval_hours=_integer(values, "CITEGUILD_RECONCILE_INTERVAL_HOURS", 24),
             indexing_enabled=_boolean(values, "CITEGUILD_INDEXING_ENABLED"),
             billing_enabled=_boolean(values, "CITEGUILD_BILLING_ENABLED"),
@@ -194,6 +202,10 @@ class RuntimeConfig:
         public_contract = {
             "billing_enabled": self.billing_enabled,
             "crawl_concurrency": self.crawl_concurrency,
+            "crawl_per_site_concurrency": self.crawl_per_site_concurrency,
+            "crawl_dispatch_batch_size": self.crawl_dispatch_batch_size,
+            "crawl_max_attempts": self.crawl_max_attempts,
+            "crawl_stale_after_seconds": self.crawl_stale_after_seconds,
             "crawl_max_page_bytes": self.crawl_max_page_bytes,
             "crawl_max_redirects": self.crawl_max_redirects,
             "crawl_max_sitemap_bytes": self.crawl_max_sitemap_bytes,

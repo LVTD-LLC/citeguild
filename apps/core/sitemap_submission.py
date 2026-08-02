@@ -10,6 +10,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 
 from apps.core.choices import ProjectSyncKinds
+from apps.core.crawl_jobs import enqueue_sitemap_sync_safely
 from apps.core.models import Profile, Project, ProjectSyncRequest
 from apps.core.projects import ProjectService, normalize_sitemap_url
 from apps.core.safe_fetch import SafeFetchClient, SafeFetchError, SafeFetchErrorCode
@@ -154,17 +155,19 @@ class SitemapSubmissionService:
     ) -> ProjectSyncRequest:
         if sitemap_kind is None:
             existing = ProjectSyncRequest.objects.filter(
-                project=project,
-                kind=ProjectSyncKinds.INITIAL,
+                idempotency_key=f"initial:{project.uuid}",
             ).first()
             if existing is not None:
                 return existing
             raise ValueError("sitemap_kind is required for a new initial sync")
 
         sync_request, _created = ProjectSyncRequest.objects.get_or_create(
-            project=project,
-            kind=ProjectSyncKinds.INITIAL,
-            defaults={"sitemap_kind": sitemap_kind.value},
+            idempotency_key=f"initial:{project.uuid}",
+            defaults={
+                "project": project,
+                "kind": ProjectSyncKinds.INITIAL,
+                "sitemap_kind": sitemap_kind.value,
+            },
         )
         if project.current_sync_uuid != sync_request.uuid:
             project.current_sync_uuid = sync_request.uuid
@@ -208,5 +211,8 @@ class SitemapSubmissionService:
             sync_request = cls.enqueue_initial_sync(
                 project,
                 sitemap_kind=validation.kind,
+            )
+            transaction.on_commit(
+                lambda sync_uuid=sync_request.uuid: enqueue_sitemap_sync_safely(sync_uuid)
             )
         return SitemapSubmission(project, sync_request, validation.kind)

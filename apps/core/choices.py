@@ -30,10 +30,23 @@ class ProjectStates(models.TextChoices):
 
 class ProjectSyncKinds(models.TextChoices):
     INITIAL = "initial", "Initial"
+    DAILY = "daily", "Daily"
+    MANUAL = "manual", "Manual"
+    REPAIR = "repair", "Repair"
 
 
 class ProjectSyncStates(models.TextChoices):
     QUEUED = "queued", "Queued"
     RUNNING = "running", "Running"
     SUCCEEDED = "succeeded", "Succeeded"
+    PARTIAL = "partial", "Partial"
     FAILED = "failed", "Failed"
+    CANCELLED = "cancelled", "Cancelled"
+
+
+class PageCrawlStates(models.TextChoices):
+    QUEUED = "queued", "Queued"
+    RUNNING = "running", "Running"
+    SUCCEEDED = "succeeded", "Succeeded"
+    FAILED = "failed", "Failed"
+    CANCELLED = "cancelled", "Cancelled"

@@ -456,11 +456,12 @@ Q_CLUSTER = {
     "name": Q_CLUSTER_NAME,
     "timeout": 3600,  # 1 hour
     "retry": 4800,  # 80 minutes
-    "workers": 4,
+    "workers": CITEGUILD_CONFIG.crawl_concurrency,
     "max_attempts": 2,
     "redis": REDIS_URL,
     "ALT_CLUSTERS": {},
     "error_reporter": {},
+    "catch_up": False,
 }
 
 USE_EXISTING_TEST_DATABASE = env.bool("DJANGO_TEST_USE_EXISTING_DATABASE", default=False)
@@ -666,6 +667,10 @@ CRAWL_MAX_SITEMAP_DEPTH = CITEGUILD_CONFIG.crawl_max_sitemap_depth
 CRAWL_MAX_SITEMAP_FILES = CITEGUILD_CONFIG.crawl_max_sitemap_files
 CRAWL_MAX_PAGE_BYTES = CITEGUILD_CONFIG.crawl_max_page_bytes
 CRAWL_CONCURRENCY = CITEGUILD_CONFIG.crawl_concurrency
+CRAWL_PER_SITE_CONCURRENCY = CITEGUILD_CONFIG.crawl_per_site_concurrency
+CRAWL_DISPATCH_BATCH_SIZE = CITEGUILD_CONFIG.crawl_dispatch_batch_size
+CRAWL_MAX_ATTEMPTS = CITEGUILD_CONFIG.crawl_max_attempts
+CRAWL_STALE_AFTER_SECONDS = CITEGUILD_CONFIG.crawl_stale_after_seconds
 RECONCILE_INTERVAL_HOURS = CITEGUILD_CONFIG.reconcile_interval_hours
 CITEGUILD_INDEXING_ENABLED = CITEGUILD_CONFIG.indexing_enabled
 CITEGUILD_BILLING_ENABLED = CITEGUILD_CONFIG.billing_enabled
