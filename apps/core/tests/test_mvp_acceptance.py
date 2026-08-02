@@ -11,11 +11,18 @@ from qdrant_client import QdrantClient, models
 from redis import Redis
 
 from apps.core.article_ingestion import ArticleIngestionService
-from apps.core.models import DetectedNetworkLink
+from apps.core.choices import ProjectSyncStates
+from apps.core.models import DetectedNetworkLink, PageCrawlWork
 from apps.core.network_graph import DetectedNetworkLinkService
+from apps.core.sitemap_parser import (
+    ParsedCandidate,
+    SitemapDiagnostics,
+    SitemapInventoryService,
+    SitemapParseResult,
+)
 from apps.core.sitemap_submission import SitemapSubmissionService
 from apps.core.tests.test_article_embeddings import FakeEmbeddingClient
-from apps.core.tests.test_article_ingestion import create_sync, extraction_for
+from apps.core.tests.test_article_ingestion import extraction_for
 from apps.core.tests.test_sitemap_submission import RecordingFetchClient, fetch_result
 from apps.search.qdrant import ensure_article_collection, upsert_article
 from apps.search.service import SearchService
@@ -70,8 +77,22 @@ def _submit_site(profile, host: str):
     ).project
 
 
-def _crawl_article(project, key: str, url: str, *, links=()):
-    _sync, [work] = create_sync(project, key, url)
+def _crawl_article(project, url: str, *, links=()):
+    sync = project.sync_requests.get()
+    sync.state = ProjectSyncStates.RUNNING
+    sync.save(update_fields=["state", "updated_at"])
+    inventory = SitemapInventoryService.promote(
+        project=project,
+        sync_request=sync,
+        result=SitemapParseResult(
+            (ParsedCandidate(url, url),),
+            SitemapDiagnostics(1, 1, 1, 0, 0, 0, 0),
+        ),
+    )
+    work = PageCrawlWork.objects.create(
+        sync_request=sync,
+        candidate=inventory.candidates.get(),
+    )
     extraction_for(
         work,
         text=f"Useful editorial source for {url}",
@@ -114,7 +135,6 @@ def test_paid_sites_become_searchable_and_form_a_detected_link(qdrant_client):
 
     target = _crawl_article(
         target_project,
-        "acceptance-target-crawl",
         "https://target.acceptance.example/guide",
     )
     add_embedding(target)
@@ -122,7 +142,6 @@ def test_paid_sites_become_searchable_and_form_a_detected_link(qdrant_client):
 
     source = _crawl_article(
         source_project,
-        "acceptance-source-crawl",
         "https://source.acceptance.example/post",
         links=({"url": target.normalized_canonical_url, "anchor_text": "Useful guide"},),
     )
