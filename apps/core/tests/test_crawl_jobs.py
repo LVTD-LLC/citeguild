@@ -2,6 +2,7 @@ from datetime import timedelta
 from threading import Event, Thread
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.db import IntegrityError, close_old_connections, connection, transaction
 from django.utils import timezone
@@ -470,6 +471,47 @@ def test_project_suspension_after_ingestion_cancels_before_indexing(
     work.refresh_from_db()
     assert sync_request.state == ProjectSyncStates.CANCELLED
     assert work.state == PageCrawlStates.CANCELLED
+
+
+@pytest.mark.django_db
+def test_vector_publication_retries_if_prefetched_owner_changed(
+    sync_request,
+    monkeypatch,
+):
+    from apps.core.article_ingestion import ArticleIngestionService
+    from apps.core.crawl_jobs import ArticleIndexingError
+
+    work = _page_work(sync_request)
+    PageExtractionService.persist(work=work, extraction=_extraction(work))
+    article = ArticleIngestionService.ingest(work=work, queue_embedding=False)
+    other_user = get_user_model().objects.create_user(
+        username="other-owner",
+        email="other-owner@example.com",
+    )
+    other_user.profile.stripe_subscription_status = "active"
+    other_user.profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.EmbeddingService.embed_article",
+        lambda self, *, article_uuid: None,
+    )
+
+    class StaleOwnerLookup:
+        def get(self, **kwargs):
+            return other_user.profile.pk
+
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.Project.objects.values_list",
+        lambda *args, **kwargs: StaleOwnerLookup(),
+    )
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.upsert_article",
+        lambda **kwargs: pytest.fail("owner mismatch must stop publication"),
+    )
+
+    with pytest.raises(ArticleIndexingError) as raised:
+        _index_ready_article(article)
+    assert raised.value.code == "project_owner_changed"
+    assert raised.value.retryable is True
 
 
 @pytest.mark.django_db(transaction=True)

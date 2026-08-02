@@ -412,6 +412,11 @@ def _index_ready_article(article: Article) -> None:
         article = Article.objects.select_for_update().get(pk=article.pk)
         owner = Profile.objects.select_for_update().select_related("user").get(pk=owner_id)
         project = Project.objects.select_for_update().get(pk=article.project_id)
+        if project.owner_id != owner.pk:
+            # Ownership is immutable through the product service, but verify the
+            # prefetched lock target so a direct concurrent reassignment cannot
+            # publish under the previous owner's eligibility.
+            raise ArticleIndexingError("project_owner_changed", retryable=True)
         if project.state != ProjectStates.ACTIVE or not owner.has_active_subscription:
             raise ProjectBecameIneligibleError
         try:

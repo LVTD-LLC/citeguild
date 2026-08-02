@@ -20,6 +20,9 @@ work. Project eligibility is checked before embedding and again while holding
 the article, profile, and project row locks across the bounded vector publication.
 Subscription and project transitions use the same lock order, so suspension or
 lost subscription is linearized against publication and cancels outstanding work.
+Project ownership is immutable through the service; the publication path still
+verifies that the prefetched profile lock matches the locked project and retries
+instead of publishing if a direct concurrent reassignment occurred.
 
 When `CITEGUILD_INDEXING_ENABLED` is false, the pipeline intentionally stops
 after PostgreSQL ingestion and retains the pre-existing non-searchable behavior.
