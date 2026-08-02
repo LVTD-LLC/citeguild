@@ -33,6 +33,29 @@ def test_monthly_price_contract_accepts_exact_ten_dollar_price():
     validate_monthly_price(_price())
 
 
+@override_settings(STRIPE_PRICE_ID_MONTHLY="price_monthly")
+def test_monthly_price_contract_accepts_stripe_sdk_price():
+    price = stripe.Price.construct_from(_price(), "sk_test_value")
+
+    validate_monthly_price(price)
+
+
+@override_settings(STRIPE_PRICE_ID_MONTHLY="price_monthly")
+def test_monthly_price_contract_rejects_unexpanded_product():
+    price = stripe.Price.construct_from(
+        _price(product="prod_monthly"),
+        "sk_test_value",
+    )
+
+    with pytest.raises(ImproperlyConfigured, match="response is invalid"):
+        validate_monthly_price(price)
+
+
+def test_monthly_price_contract_rejects_unsupported_response():
+    with pytest.raises(ImproperlyConfigured, match="response is invalid"):
+        validate_monthly_price(SimpleNamespace())
+
+
 @override_settings(STRIPE_WEBHOOK_SECRET="whsec_test")
 @patch("apps.core.views.stripe.Webhook.construct_event")
 def test_construct_stripe_event_normalizes_sdk_object(construct_event, rf):
@@ -83,7 +106,7 @@ def test_subscription_required_redirects_inactive_user(rf, user):
 def test_checkout_is_fixed_post_only_contract(
     retrieve, create_customer, create_session, auth_client
 ):
-    retrieve.return_value = _price()
+    retrieve.return_value = stripe.Price.construct_from(_price(), "sk_test_value")
     create_customer.return_value = SimpleNamespace(id="cus_test")
     create_session.return_value = SimpleNamespace(url="https://checkout.stripe.test/session")
     url = reverse("user_upgrade_checkout_session")
@@ -92,6 +115,11 @@ def test_checkout_is_fixed_post_only_contract(
     response = auth_client.post(url)
 
     assert response.status_code == 303
+    retrieve.assert_called_once_with(
+        "price_monthly",
+        expand=["product"],
+        stripe_context="acct_lvtd",
+    )
     params = create_session.call_args.kwargs
     assert params["mode"] == "subscription"
     assert params["line_items"] == [{"price": "price_monthly", "quantity": 1}]
