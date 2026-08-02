@@ -33,6 +33,7 @@ from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
 from apps.core.forms import ProfileUpdateForm, SiteCreateForm
 from apps.core.models import Profile, StripeWebhookEvent
 from apps.core.projects import ProjectHostConflict, ProjectService
+from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -186,11 +187,15 @@ class HomeView(LoginRequiredMixin, TemplateView):
         form = SiteCreateForm(request.POST)
         if form.is_valid():
             try:
-                project = ProjectService.create(owner=profile, **form.cleaned_data)
+                submission = SitemapSubmissionService.submit(owner=profile, **form.cleaned_data)
             except ProjectHostConflict as error:
                 form.add_error("sitemap_url", error)
             except ValidationError as error:
                 form.add_error(None, error)
+            except SitemapSubmissionError as error:
+                form.add_error("sitemap_url", str(error))
+                context = self.get_context_data(site_form=form)
+                return self.render_to_response(context, status=503 if error.retryable else 400)
             except PermissionDenied:
                 logger.warning(
                     "project.create.completed",
@@ -208,7 +213,10 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 )
                 return redirect("pricing")
             else:
-                messages.success(request, f"{project.name} was added. Indexing will start soon.")
+                messages.success(
+                    request,
+                    f"{submission.project.name} was validated and queued for indexing.",
+                )
                 return redirect("home")
 
         context = self.get_context_data(site_form=form)

@@ -570,6 +570,7 @@ The API is mounted at `/api/` and implemented with Django Ninja.
 | Endpoint | Auth | Purpose |
 | --- | --- | --- |
 | `GET /api/healthcheck` | none | Checks database and Redis connectivity. |
+| `POST /api/projects` | `X-API-Key` or Bearer API key | Validates one XML sitemap and queues its initial sync. |
 | `GET /api/user` | `X-API-Key` or Bearer API key | Returns safe account/profile details for the authenticated profile. |
 | `GET /api/user/settings` | browser session | Private settings data for the authenticated user settings page. |
 

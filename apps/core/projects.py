@@ -15,6 +15,8 @@ class ProjectHostConflict(ValidationError):
 def normalize_sitemap_url(value: str) -> tuple[str, str]:
     """Return a canonical sitemap URL and its IDNA-normalized host."""
     raw = value.strip()
+    if len(raw) > 2048:
+        raise ValidationError("Sitemap URL must be 2048 characters or fewer.")
     parsed = urlsplit(raw)
     if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
         raise ValidationError("Sitemap URL must use HTTP or HTTPS and include a host.")
@@ -60,6 +62,8 @@ class ProjectService:
         name = name.strip()
         if not name:
             raise ValidationError("Site name is required.")
+        if len(name) > 120:
+            raise ValidationError("Site name must be 120 characters or fewer.")
         normalized_url, host = normalize_sitemap_url(sitemap_url)
         try:
             return Project.objects.create(
@@ -83,6 +87,8 @@ class ProjectService:
         name = name.strip()
         if not name:
             raise ValidationError("Site name is required.")
+        if len(name) > 120:
+            raise ValidationError("Site name must be 120 characters or fewer.")
         normalized_url, host = normalize_sitemap_url(sitemap_url)
         project.name = name
         project.sitemap_url = sitemap_url.strip()

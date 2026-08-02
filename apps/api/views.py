@@ -2,14 +2,23 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connection
 from django.http import HttpRequest
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 
 from apps.api.auth import api_key_auth, session_auth
-from apps.api.schemas import UserInfoOut, UserSettingsOut
+from apps.api.schemas import (
+    ProjectSubmissionErrorOut,
+    ProjectSubmissionIn,
+    ProjectSubmissionOut,
+    UserInfoOut,
+    UserSettingsOut,
+)
 from apps.api.services import serialize_user_info
+from apps.core.projects import ProjectHostConflict
+from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +116,60 @@ def healthcheck(request: HttpRequest):
 def get_user_info(request: HttpRequest):
     """Return safe profile and account details for the authenticated API key."""
     return serialize_user_info(request.auth)
+
+
+@api.post(
+    "/projects",
+    response={
+        201: ProjectSubmissionOut,
+        400: ProjectSubmissionErrorOut,
+        403: ProjectSubmissionErrorOut,
+        409: ProjectSubmissionErrorOut,
+        422: ProjectSubmissionErrorOut,
+        503: ProjectSubmissionErrorOut,
+    },
+    auth=api_key_auth,
+    tags=["projects"],
+)
+def create_project(request: HttpRequest, payload: ProjectSubmissionIn):
+    """Validate one sitemap and stage one idempotent initial sync."""
+    try:
+        submission = SitemapSubmissionService.submit(
+            owner=request.auth,
+            name=payload.name,
+            sitemap_url=payload.sitemap_url,
+        )
+    except PermissionDenied:
+        return 403, {
+            "code": "subscription_required",
+            "message": "An active subscription is required to add a site.",
+            "retryable": False,
+        }
+    except ProjectHostConflict:
+        return 409, {
+            "code": "host_conflict",
+            "message": "This site host already belongs to a CiteGuild project.",
+            "retryable": False,
+        }
+    except SitemapSubmissionError as error:
+        return (503 if error.retryable else 422), error.as_dict()
+    except ValidationError:
+        return 400, {
+            "code": "invalid_submission",
+            "message": "The site name or sitemap URL is invalid.",
+            "retryable": False,
+        }
+
+    return 201, {
+        "id": submission.project.uuid,
+        "name": submission.project.name,
+        "sitemap_url": submission.project.normalized_sitemap_url,
+        "normalized_host": submission.project.normalized_host,
+        "state": submission.project.state,
+        "sitemap_kind": submission.sitemap_kind.value,
+        "sync_request_id": submission.sync_request.uuid,
+        "sync_state": submission.sync_request.state,
+    }
 
 
 @api.get(

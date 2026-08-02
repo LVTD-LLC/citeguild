@@ -18,6 +18,11 @@ def test_sitemap_url_normalization_is_deterministic():
     assert host == "xn--bcher-kva.example"
 
 
+def test_project_input_lengths_are_bounded_before_database_or_network():
+    with pytest.raises(ValidationError, match="2048 characters"):
+        normalize_sitemap_url(f"https://example.com/{'x' * 2048}")
+
+
 @pytest.mark.django_db
 def test_unsubscribed_profile_cannot_create_project(profile):
     with pytest.raises(PermissionDenied):

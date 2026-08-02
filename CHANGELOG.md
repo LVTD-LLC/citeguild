@@ -29,6 +29,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Sitemap-only dashboard and API submission now validate bounded XML through
+  the shared SSRF-safe transport and create one durable, idempotent initial-sync
+  request with retry-safe error responses.
 - A shared SSRF-safe crawler fetch client now pins validated public DNS answers,
   revalidates redirects, and bounds response types, encodings, time, size,
   concurrency, and per-host request pace.

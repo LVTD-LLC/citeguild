@@ -9,6 +9,12 @@ from django.urls import reverse
 
 from apps.core.models import Project
 from apps.core.projects import ProjectService
+from apps.core.sitemap_submission import (
+    SitemapDocumentKind,
+    SitemapSubmissionError,
+    SitemapSubmissionErrorCode,
+    SitemapValidation,
+)
 
 
 def subscribe(profile):
@@ -19,6 +25,13 @@ def subscribe(profile):
 
 @pytest.mark.django_db
 class TestHomeView:
+    @pytest.fixture(autouse=True)
+    def valid_sitemap(self, monkeypatch):
+        monkeypatch.setattr(
+            "apps.core.sitemap_submission.validate_sitemap",
+            lambda *args, **kwargs: SitemapValidation(SitemapDocumentKind.URL_SET),
+        )
+
     def test_home_view_status_code(self, auth_client):
         url = reverse("home")
         response = auth_client.get(url)
@@ -79,7 +92,7 @@ class TestHomeView:
         )
 
         assert response.status_code == 200
-        assert "Example was added" in response.content.decode()
+        assert "Example was validated and queued" in response.content.decode()
         project = Project.objects.get(owner=profile)
         assert project.normalized_host == "example.com"
 
@@ -93,7 +106,7 @@ class TestHomeView:
         assert response.url == reverse("pricing")
         assert not Project.objects.exists()
 
-    @patch("apps.core.views.ProjectService.create", side_effect=PermissionDenied)
+    @patch("apps.core.views.SitemapSubmissionService.submit", side_effect=PermissionDenied)
     def test_subscription_race_is_logged_and_redirects_to_billing(
         self, create_project, auth_client, profile, caplog
     ):
@@ -112,6 +125,29 @@ class TestHomeView:
         record = next(item for item in caplog.records if item.msg == "project.create.completed")
         assert record.__dict__["operation.status"] == "subscription_became_inactive"
         assert record.outcome == "failure"
+
+    def test_temporary_sitemap_failure_is_visible_and_retryable(
+        self, auth_client, profile, monkeypatch
+    ):
+        subscribe(profile)
+        monkeypatch.setattr(
+            "apps.core.sitemap_submission.validate_sitemap",
+            lambda *args, **kwargs: (_ for _ in ()).throw(
+                SitemapSubmissionError(
+                    SitemapSubmissionErrorCode.TEMPORARY_FETCH,
+                    retryable=True,
+                )
+            ),
+        )
+
+        response = auth_client.post(
+            reverse("home"),
+            {"name": "Temporary", "sitemap_url": "https://temporary.example/sitemap.xml"},
+        )
+
+        assert response.status_code == 503
+        assert "could not be reached right now. Try again" in response.content.decode()
+        assert not Project.objects.filter(name="Temporary").exists()
 
     def test_site_list_is_owner_scoped(self, auth_client, profile, django_user_model):
         subscribe(profile)
