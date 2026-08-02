@@ -18,6 +18,11 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Initial sitemap syncs now orchestrate fetch, extraction, PostgreSQL article
+  persistence, whole-article embedding, and Qdrant upsert as one retryable page
+  workflow. Progress reaches success only after durable search publication;
+  repeated runs reuse the article, embedding, and vector, while partial failures
+  remain visible and resumable.
 - Qdrant now has an idempotent cosine collection contract, authenticated
   startup and health checks, stable article upsert/deactivation, tenant-scoped
   bounded search, and a PostgreSQL-authoritative rebuild command. Local Compose
