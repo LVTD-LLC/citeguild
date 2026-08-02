@@ -68,8 +68,10 @@ workers to compensate for a failing dependency or an unbounded queue.
 
 The GitHub deployment validates all required CapRover secrets before building,
 deploys web first, and waits up to two minutes for the public aggregate health
-contract before updating workers. A failed web health gate leaves workers on
-the previous image, which is the intentional safe stopping point. The CapRover
+contract to report the exact expected Git SHA before updating workers. Requiring
+the release identity prevents a still-healthy old task from satisfying the gate
+while Swarm is replacing it. A failed web health gate leaves workers on the
+previous image, which is the intentional safe stopping point. The CapRover
 deployment action is pinned to a reviewed commit rather than a floating branch.
 `PRODUCTION_HEALTHCHECK_URL` is a repository variable so domain changes do not
 require a workflow edit.

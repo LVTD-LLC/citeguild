@@ -253,6 +253,7 @@ def healthcheck(request: HttpRequest):
         "healthy": healthy,
         "checks": checks,
         "configuration_fingerprint": settings.CITEGUILD_CONFIG_FINGERPRINT,
+        "release": settings.CITEGUILD_RELEASE,
     }
 
     if healthy:
