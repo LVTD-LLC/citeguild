@@ -66,6 +66,7 @@ def test_deploy_workflow_gates_workers_on_aggregate_production_health():
     health = next(step for step in steps if step.get("name") == "Verify production health")
     script = health["run"]
 
+    assert workflow["env"]["PRODUCTION_HEALTHCHECK_URL"] == "${{ vars.PRODUCTION_HEALTHCHECK_URL }}"
     assert names.index("Deploy server to CapRover") < names.index("Verify production health")
     assert names.index("Verify production health") < names.index("Deploy workers to CapRover")
     assert "curl --fail" in script

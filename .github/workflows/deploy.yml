@@ -7,7 +7,7 @@ on:
 
 env:
   CAPROVER_APP_NAME: citeguild
-  PRODUCTION_HEALTHCHECK_URL: https://citeguild.cap.gregagi.com/api/healthcheck
+  PRODUCTION_HEALTHCHECK_URL: ${{ vars.PRODUCTION_HEALTHCHECK_URL }}
 
 permissions:
   contents: read
@@ -33,6 +33,7 @@ jobs:
           test -n "$CAPROVER_SERVER"
           test -n "$APP_TOKEN"
           test -n "$WORKERS_APP_TOKEN"
+          test -n "$PRODUCTION_HEALTHCHECK_URL"
           if [ "$WORKERS_APP_PROCESS_TYPE" != "worker" ]; then
             echo "::error::Set WORKERS_APP_PROCESS_TYPE=worker and APP_PROCESS_TYPE=worker on the workers app."
             exit 1

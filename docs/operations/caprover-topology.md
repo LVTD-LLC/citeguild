@@ -71,6 +71,8 @@ deploys web first, and waits up to two minutes for the public aggregate health
 contract before updating workers. A failed web health gate leaves workers on
 the previous image, which is the intentional safe stopping point. The CapRover
 deployment action is pinned to a reviewed commit rather than a floating branch.
+`PRODUCTION_HEALTHCHECK_URL` is a repository variable so domain changes do not
+require a workflow edit.
 
 App-scoped deploy tokens must remain enabled for both web and workers. Rotate a
 token in CapRover and update its matching GitHub Actions secret as one operation;
