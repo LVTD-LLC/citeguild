@@ -259,12 +259,14 @@ def test_streamable_http_initializes_lists_and_calls_search_with_bearer_auth(
         )
         async with Client(transport) as client:
             tools = await client.list_tools()
+            user_info = await client.call_tool("get_user_info", {})
             result = await client.call_tool(
                 "search_member_articles",
                 {"query": "Django commit hooks", "limit": 3},
             )
 
         assert "search_member_articles" in {tool.name for tool in tools}
+        assert user_info.data["email"] == profile.user.email
         assert result.data["contract_version"] == "v1"
         assert result.data["results"][0]["article_id"] == str(expected.results[0].article_id)
 

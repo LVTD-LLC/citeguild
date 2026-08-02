@@ -16,6 +16,11 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-08-02
 
+### Fixed
+
+- Hosted MCP now uses stateless Streamable HTTP so authenticated multi-call
+  clients remain reliable across the three production Gunicorn workers.
+
 ### Added
 
 - Added private encrypted daily PostgreSQL backups with bucket-scoped storage,
