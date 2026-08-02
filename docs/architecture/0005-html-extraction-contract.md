@@ -10,7 +10,9 @@ Trafilatura provides the main-content baseline with precision mode and bounded
 file/tree settings. CiteGuild owns the stable product policy around it: input is
 decoded as UTF-8 when possible with a bounded charset fallback, text and metadata
 are NFC/whitespace normalized, and output length is capped. The original body is
-discarded after extraction. An immutable `PageExtractionResult` retains only the
+discarded after extraction. Trafilatura's process-global deduplication cache is
+disabled because prior pages must not affect a later extraction. An immutable
+`PageExtractionResult` retains only the
 final/canonical URL, HTTP status, bounded title/description/language, extraction
 state, text, size counters, noindex decision, and non-sensitive diagnostics.
 

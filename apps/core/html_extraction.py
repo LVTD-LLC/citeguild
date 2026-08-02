@@ -152,7 +152,9 @@ def _extractor(final_url: str) -> Extractor:
         links=False,
         images=False,
         tables=True,
-        dedup=True,
+        # Trafilatura's deduplication cache spans calls, which can make an
+        # identical document extract differently after another page is seen.
+        dedup=False,
         with_metadata=True,
         url=final_url,
     )
