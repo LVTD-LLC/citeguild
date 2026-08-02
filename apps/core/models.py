@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -6,6 +8,7 @@ from django_q.tasks import async_task
 from apps.core.base_models import BaseModel
 from apps.core.choices import (
     EmailType,
+    PageCrawlStates,
     ProfileStates,
     ProjectStates,
     ProjectSyncKinds,
@@ -191,19 +194,73 @@ class ProjectSyncRequest(BaseModel):
         default=ProjectSyncStates.QUEUED,
     )
     sitemap_kind = models.CharField(max_length=20)
+    idempotency_key = models.CharField(
+        max_length=160,
+        unique=True,
+        default=uuid.uuid4,
+    )
     attempt_count = models.PositiveIntegerField(default=0)
+    max_attempts = models.PositiveSmallIntegerField(default=3)
     error_code = models.CharField(max_length=64, blank=True, default="")
+    broker_task_id = models.CharField(max_length=64, blank=True, default="")
+    next_attempt_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    total_count = models.PositiveIntegerField(default=0)
+    queued_count = models.PositiveIntegerField(default=0)
+    succeeded_count = models.PositiveIntegerField(default=0)
+    failed_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["created_at", "id"]
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "kind"],
-                name="core_project_one_sync_kind",
+                fields=["project"],
+                condition=models.Q(state__in=["queued", "running"]),
+                name="core_project_one_active_sync",
             ),
             models.UniqueConstraint(fields=["uuid"], name="core_project_sync_uuid_unique"),
         ]
         indexes = [models.Index(fields=["state", "created_at"], name="core_sync_state_created_idx")]
+
+
+class PageCrawlWork(BaseModel):
+    sync_request = models.ForeignKey(
+        ProjectSyncRequest,
+        on_delete=models.CASCADE,
+        related_name="page_work",
+    )
+    candidate = models.ForeignKey(
+        "SitemapCandidate",
+        on_delete=models.CASCADE,
+        related_name="crawl_work",
+    )
+    state = models.CharField(
+        max_length=20,
+        choices=PageCrawlStates.choices,
+        default=PageCrawlStates.QUEUED,
+    )
+    attempt_count = models.PositiveSmallIntegerField(default=0)
+    max_attempts = models.PositiveSmallIntegerField(default=3)
+    error_code = models.CharField(max_length=64, blank=True, default="")
+    broker_task_id = models.CharField(max_length=64, blank=True, default="")
+    next_attempt_at = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sync_request", "candidate"],
+                name="core_page_work_unique",
+            ),
+            models.UniqueConstraint(fields=["uuid"], name="core_page_work_uuid_unique"),
+        ]
+        indexes = [
+            models.Index(fields=["state", "next_attempt_at"], name="core_page_work_retry_idx"),
+            models.Index(fields=["sync_request", "state"], name="core_page_work_sync_state_idx"),
+        ]
 
 
 class SitemapInventory(BaseModel):

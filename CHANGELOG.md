@@ -29,6 +29,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Durable Django Q2 sitemap/page jobs now provide idempotent enqueueing,
+  bounded retries, per-site concurrency, progress, cancellation, and recovery.
 - XML sitemap indexes now produce deterministic, host-scoped candidate
   inventories with bounded recursion, gzip handling, and atomic promotion.
 - Sitemap-only dashboard and API submission now validate bounded XML through

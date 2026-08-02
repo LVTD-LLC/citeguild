@@ -47,6 +47,10 @@ def test_local_configuration_uses_safe_bounded_defaults() -> None:
     assert config.crawl_max_sitemap_depth == 3
     assert config.crawl_max_sitemap_files == 100
     assert config.crawl_max_redirects == 5
+    assert config.crawl_per_site_concurrency == 2
+    assert config.crawl_dispatch_batch_size == 100
+    assert config.crawl_max_attempts == 3
+    assert config.crawl_stale_after_seconds == 3600
     assert config.reconcile_interval_hours == 24
 
 

@@ -275,6 +275,7 @@ def test_failed_inventory_write_does_not_replace_previous_active_set(profile, mo
     previous_sync = ProjectSyncRequest.objects.create(
         project=project,
         kind="initial",
+        state="succeeded",
         sitemap_kind="urlset",
     )
     previous = SitemapInventory.objects.create(
