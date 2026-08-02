@@ -102,9 +102,7 @@ def _robots_noindex(root, headers) -> bool:
     directives = [headers.get("x-robots-tag", "")]
     directives.extend(_meta_content(root, name) for name in ("robots", "googlebot", "bingbot"))
     tokens = {
-        token.strip().lower()
-        for directive in directives
-        for token in re.split(r"[,;:]", directive)
+        token.strip().lower() for directive in directives for token in re.split(r"[,;:]", directive)
     }
     return "noindex" in tokens or "none" in tokens
 

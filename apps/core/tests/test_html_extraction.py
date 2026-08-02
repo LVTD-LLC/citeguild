@@ -65,9 +65,7 @@ def article_html(*, head: str = "", body: str = ARTICLE_PARAGRAPHS) -> str:
 
 def test_extracts_readable_text_and_metadata_without_boilerplate(settings):
     settings.EXTRACTION_MIN_TEXT_CHARS = 100
-    subject = response(
-        article_html(head='<link rel="canonical" href="../guides/hello#section">')
-    )
+    subject = response(article_html(head='<link rel="canonical" href="../guides/hello#section">'))
 
     result = extract_article(subject, allowed_host="example.com")
 
