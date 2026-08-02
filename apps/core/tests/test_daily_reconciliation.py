@@ -17,8 +17,8 @@ from apps.core.crawl_jobs import (
     RECONCILIATION_TASK,
     reconciliation_due_at,
     retry_project_sync,
-    schedule_due_sitemap_reconciliations,
     run_sitemap_sync,
+    schedule_due_sitemap_reconciliations,
 )
 from apps.core.models import Article, ArticleSourceURL, PageCrawlWork, Project, ProjectSyncRequest
 from apps.core.projects import ProjectService
@@ -190,10 +190,13 @@ def test_concurrent_due_schedulers_create_one_sync(profile, monkeypatch, setting
     assert all(not thread.is_alive() for thread in threads)
     assert errors == []
     assert len(results) == 2
-    assert ProjectSyncRequest.objects.filter(
-        project=project,
-        kind=ProjectSyncKinds.DAILY,
-    ).count() == 1
+    assert (
+        ProjectSyncRequest.objects.filter(
+            project=project,
+            kind=ProjectSyncKinds.DAILY,
+        ).count()
+        == 1
+    )
 
 
 @pytest.mark.django_db
@@ -319,9 +322,7 @@ def test_manual_retry_cannot_cross_owner_boundary(profile, django_user_model):
 
 
 @pytest.mark.django_db
-def test_terminal_daily_sitemap_failure_remains_visible_on_project(
-    profile, monkeypatch, settings
-):
+def test_terminal_daily_sitemap_failure_remains_visible_on_project(profile, monkeypatch, settings):
     settings.CRAWL_MAX_ATTEMPTS = 1
     project = create_project(profile)
     completed_inventory(
@@ -346,9 +347,7 @@ def test_terminal_daily_sitemap_failure_remains_visible_on_project(
 
 
 @pytest.mark.django_db
-def test_daily_sync_only_crawls_new_and_lastmod_changed_candidates(
-    profile, monkeypatch, settings
-):
+def test_daily_sync_only_crawls_new_and_lastmod_changed_candidates(profile, monkeypatch, settings):
     settings.CRAWL_MAX_ATTEMPTS = 3
     project = create_project(profile)
     completed_inventory(

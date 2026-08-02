@@ -235,7 +235,8 @@ def _claim_due_reconciliation(project_id: int, *, now: datetime) -> tuple[bool, 
         with transaction.atomic():
             project = (
                 Project.objects.select_for_update(
-                    skip_locked=connection.features.has_select_for_update_skip_locked
+                    of=("self",),
+                    skip_locked=connection.features.has_select_for_update_skip_locked,
                 )
                 .select_related(
                     "owner__user",
@@ -355,7 +356,7 @@ def retry_project_sync(*, owner: Profile, project_uuid) -> ProjectSyncRequest:
     """Create or republish one owner-scoped manual sync request."""
     with transaction.atomic():
         project = (
-            Project.objects.select_for_update()
+            Project.objects.select_for_update(of=("self",))
             .select_related("owner__user", "active_sitemap_inventory__sync_request")
             .get(owner=owner, uuid=project_uuid)
         )
