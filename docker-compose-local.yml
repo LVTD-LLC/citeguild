@@ -17,13 +17,18 @@ services:
 
   redis:
     image: redis:8.6.3-alpine
-    command: redis-server --requirepass citeguild
+    command: redis-server --requirepass citeguild --appendonly yes
     ports:
       - "${LOCAL_REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     environment:
       - REDIS_PASSWORD=citeguild
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a citeguild ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   qdrant:
     image: qdrant/qdrant:v1.18.3
@@ -35,7 +40,9 @@ services:
       QDRANT__SERVICE__API_KEY: citeguild
       QDRANT__TELEMETRY_DISABLED: "true"
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/6333'"]
+      # The official image has no HTTP client; verify the Linux listening socket.
+      # Authenticated collection readiness is checked by the backend aggregate health endpoint.
+      test: ["CMD-SHELL", "grep -q ':18BD ' /proc/net/tcp /proc/net/tcp6"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -54,7 +61,7 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       qdrant:
         condition: service_healthy
       frontend:
@@ -74,7 +81,7 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       qdrant:
         condition: service_healthy
     env_file:

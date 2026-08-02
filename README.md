@@ -978,15 +978,15 @@ different value.
 `deployment/Dockerfile` builds one image for both web and worker roles:
 
 ```bash
-docker build -f deployment/Dockerfile -t citeguild:latest .
+docker build -f deployment/Dockerfile -t citeguild:dev .
 ```
 
 At runtime, `deployment/entrypoint.sh` chooses the process from
 `APP_PROCESS_TYPE`:
 
 ```bash
-docker run --env-file .env -e APP_PROCESS_TYPE=server -p 8000:80 citeguild:latest
-docker run --env-file .env -e APP_PROCESS_TYPE=worker citeguild:latest
+docker run --env-file .env -e APP_PROCESS_TYPE=server -p 8000:80 citeguild:dev
+docker run --env-file .env -e APP_PROCESS_TYPE=worker citeguild:dev
 ```
 
 The server role waits for the database, runs `collectstatic`, applies
@@ -995,16 +995,17 @@ Gunicorn. The worker role starts Django Q2.
 
 ### Production Docker Compose
 
-`docker-compose-prod.yml` runs Postgres, Redis, web, and workers:
+`docker-compose-prod.yml` runs Postgres, Redis, authenticated Qdrant, web, and workers:
 
 ```bash
 cp .env.example .env
-docker build -f deployment/Dockerfile -t citeguild:latest .
+docker build -f deployment/Dockerfile -t citeguild:dev .
+export APP_IMAGE=ghcr.io/lvtd-llc/citeguild:<40-character-git-sha>
 docker compose -f docker-compose-prod.yml -p "citeguild" up --detach --remove-orphans
 ```
 
-Set `APP_IMAGE=ghcr.io/<owner>/<repository>:latest` in `.env` when pulling an
-image built by GitHub Actions instead of using a local image.
+`APP_IMAGE` is required and must name an immutable git-SHA image built by GitHub
+Actions. Floating tags are intentionally rejected.
 
 Expose the backend container through your reverse proxy and point it at port
 `80` inside the container.
@@ -1039,12 +1040,13 @@ Before deploying:
 
 The Python package slug is `citeguild`. The CapRover app slug is separate and the generated deploy workflow sets `CAPROVER_APP_NAME=citeguild`.
 
-Create four CapRover apps:
+Create five CapRover apps:
 
 - `citeguild`
 - `citeguild-workers`
 - `citeguild-postgres`
 - `citeguild-redis`
+- `citeguild-qdrant`
 
 Runtime app settings:
 
@@ -1058,7 +1060,9 @@ GitHub Actions settings:
 - Repository secrets: `CAPROVER_SERVER`, `APP_TOKEN`, and `WORKERS_APP_TOKEN`.
 
 On push to `main`, `.github/workflows/deploy.yml` builds one GHCR image and
-deploys it to both CapRover apps.
+deploys its git-SHA tag to both CapRover apps. The complete topology, release,
+health, persistence, and rollback contract is in
+`docs/operations/caprover-topology.md`.
 
 ### Render
 
