@@ -17,13 +17,30 @@ from .test_article_ingestion import create_project, create_sync, extraction_for
 
 def create_article(profile, host, path, *, links=()):
     project = create_project(profile, host)
-    _sync, [work] = create_sync(project, f"sync-{host}-{path}", f"https://{host}/{path}")
-    extraction_for(work, links=links)
-    article = ArticleIngestionService.ingest(work=work, queue_embedding=False)
-    article.state = ArticleStates.ACTIVE
-    article.is_active = True
-    article.save(update_fields=["state", "is_active", "updated_at"])
-    return article
+    return create_article_for_project(project, path, links=links)
+
+
+def create_article_for_project(project, path, *, links=()):
+    return create_articles_for_project(project, (path, links))[0]
+
+
+def create_articles_for_project(project, *pages):
+    host = project.normalized_host
+    paths = [path for path, _links in pages]
+    _sync, works = create_sync(
+        project,
+        f"sync-{host}-{'-'.join(paths)}",
+        *(f"https://{host}/{path}" for path in paths),
+    )
+    articles = []
+    for work, (_path, links) in zip(works, pages, strict=True):
+        extraction_for(work, links=links)
+        article = ArticleIngestionService.ingest(work=work, queue_embedding=False)
+        article.state = ArticleStates.ACTIVE
+        article.is_active = True
+        article.save(update_fields=["state", "is_active", "updated_at"])
+        articles.append(article)
+    return articles
 
 
 def create_other_profile(name):
@@ -70,6 +87,62 @@ def test_resolver_builds_known_cross_site_edges_and_ignores_external_links(profi
     assert directions.count("given") == directions.count("received") == 2
     assert all(call[0][1] == "citeguild_citation_detected" for call in tracked)
     assert "source.example" not in repr(tracked)
+
+
+@pytest.mark.django_db
+def test_graph_keeps_external_and_same_site_links_out_of_network_counts(profile):
+    network_target = create_article(profile, "member-target.example", "guide")
+    source_project = create_project(profile, "source-with-self-links.example")
+    same_site_target, source = create_articles_for_project(
+        source_project,
+        ("about", ()),
+        (
+            "post",
+            (
+                {"url": network_target.normalized_canonical_url, "anchor_text": "Member"},
+                {"url": "https://source-with-self-links.example/about", "anchor_text": "Self"},
+                {"url": "https://external.example/reference", "anchor_text": "External"},
+            ),
+        ),
+    )
+
+    DetectedNetworkLinkService.reconcile_article(source)
+
+    assert OutboundLinkObservation.objects.filter(source_article=source).count() == 3
+    edge = DetectedNetworkLink.objects.get(source_article=source)
+    assert edge.target_project == network_target.project
+    assert DetectedNetworkLinkQueries.links_given(profile).count() == 1
+    assert DetectedNetworkLinkQueries.links_received(profile).count() == 1
+
+
+@pytest.mark.django_db
+def test_queries_exclude_legacy_same_site_edges(profile):
+    project = create_project(profile, "legacy-self-link.example")
+    target, source = create_articles_for_project(
+        project,
+        ("about", ()),
+        (
+            "post",
+            ({"url": "https://legacy-self-link.example/about", "anchor_text": "Self"},),
+        ),
+    )
+    observation = OutboundLinkObservation.objects.get(source_article=source)
+    DetectedNetworkLink.objects.create(
+        observation=observation,
+        source_article=source,
+        target_project=project,
+        target_article=target,
+        normalized_destination_url=target.normalized_canonical_url,
+        anchor_text="Self",
+        first_detected_at=observation.first_seen_at,
+        last_detected_at=observation.last_seen_at,
+        is_active=True,
+    )
+
+    assert DetectedNetworkLinkQueries.links_given(profile, active_only=False).count() == 0
+    assert DetectedNetworkLinkQueries.links_received(profile, active_only=False).count() == 0
+    assert not DetectedNetworkLinkQueries.most_cited_pages(profile).exists()
+    assert not DetectedNetworkLinkQueries.most_cited_sites(profile).exists()
 
 
 @pytest.mark.django_db

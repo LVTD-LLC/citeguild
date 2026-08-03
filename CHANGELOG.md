@@ -14,6 +14,14 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-08-03
+
+### Fixed
+
+- Detected links given/received and citation aggregates now count only
+  cross-site links inside the CiteGuild member network, excluding external and
+  same-site links while retaining the underlying crawl observations.
+
 ## 2026-08-02
 
 ### Fixed
