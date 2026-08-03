@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.utils import timezone
 
 from apps.core.choices import ProjectStates
@@ -126,6 +126,21 @@ class DetectedNetworkLinkService:
             return existing
 
         target_project, target_article = resolved
+        if target_project.pk == observation.source_article.project_id:
+            if existing is not None:
+                existing.target_article = target_article
+                existing.is_active = False
+                existing.inactive_at = existing.inactive_at or now
+                existing.save(
+                    update_fields=[
+                        "target_article",
+                        "is_active",
+                        "inactive_at",
+                        "updated_at",
+                    ]
+                )
+            return existing
+
         target_project = Project.objects.get(pk=target_project.pk)
         if target_article is not None:
             target_article = Article.objects.get(pk=target_article.pk)
@@ -201,22 +216,34 @@ class DetectedNetworkLinkService:
 
 class DetectedNetworkLinkQueries:
     @staticmethod
+    def _cross_project_links():
+        return DetectedNetworkLink.objects.exclude(
+            source_article__project_id=F("target_project_id")
+        )
+
+    @staticmethod
     def links_given(owner: Profile, *, active_only: bool = True):
-        links = DetectedNetworkLink.objects.filter(source_article__project__owner=owner)
+        links = DetectedNetworkLinkQueries._cross_project_links().filter(
+            source_article__project__owner=owner
+        )
         if active_only:
             links = links.filter(is_active=True)
         return links.select_related("source_article__project", "target_project", "target_article")
 
     @staticmethod
     def links_received(owner: Profile, *, active_only: bool = True):
-        links = DetectedNetworkLink.objects.filter(target_project__owner=owner)
+        links = DetectedNetworkLinkQueries._cross_project_links().filter(
+            target_project__owner=owner
+        )
         if active_only:
             links = links.filter(is_active=True)
         return links.select_related("source_article__project", "target_project", "target_article")
 
     @staticmethod
     def most_cited_pages(owner: Profile, *, active_only: bool = True):
-        link_filter = Q(detected_links_received__isnull=False)
+        link_filter = Q(detected_links_received__isnull=False) & ~Q(
+            detected_links_received__source_article__project_id=F("project_id")
+        )
         if active_only:
             link_filter &= Q(detected_links_received__is_active=True)
         return (
@@ -234,7 +261,9 @@ class DetectedNetworkLinkQueries:
 
     @staticmethod
     def most_cited_sites(owner: Profile, *, active_only: bool = True):
-        link_filter = Q(detected_links_received__isnull=False)
+        link_filter = Q(detected_links_received__isnull=False) & ~Q(
+            detected_links_received__source_article__project_id=F("id")
+        )
         if active_only:
             link_filter &= Q(detected_links_received__is_active=True)
         return (

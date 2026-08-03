@@ -55,9 +55,10 @@ useful sources; it does not buy, require, or guarantee a link.
 7. Approximately daily reconciliation discovers new URLs, refreshes changed or
    stale pages, and marks disappeared or confirmed unavailable pages inactive
    without deleting history.
-8. Crawling observes outbound links. Member-to-member relationships are stored
-   as detected citations with source, target, anchor, first/last seen, and
-   active state.
+8. Crawling observes outbound links. Cross-site member-to-member relationships
+   are stored as detected citations with source, target, anchor, first/last
+   seen, and active state. External and same-site links do not count as network
+   citations.
 
 ## Interface Contract
 
