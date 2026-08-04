@@ -69,6 +69,7 @@ tested, and aligned with the MVP contract below.
 - `apps/pages/content/docs/` - authenticated Markdown documentation content.
 - `apps/mcp_server/` - hosted MCP tools for agent integrations.
 - `apps/core/agents/` - PydanticAI model helpers and agent code.
+- `cli/` - dependency-free Go CLI for agent and shell access to the public API.
 - `citeguild/settings.py` - environment-driven Django
   settings.
 - `citeguild/test_settings.py` - pytest-only settings
@@ -205,6 +206,7 @@ make python-quality
 make frontend-check
 make migrations-check
 make django-check
+make cli-quality
 make coverage-high-risk -- -q
 make mutation-high-risk -- 'apps.core.utils.*'
 ```
@@ -234,6 +236,7 @@ make python-quality
 make frontend-check
 make migrations-check
 make django-check
+make cli-quality
 make coverage-high-risk COVERAGE_FAIL_UNDER=0 -- -q
 ```
 

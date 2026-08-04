@@ -30,6 +30,8 @@ dependency order from the live Rowset taskboard.
 - Stripe for the single subscription, PostHog for consented product analytics,
   and Sentry for content-safe operational telemetry.
 - Self-hosted Qdrant for semantic retrieval. PostgreSQL is authoritative.
+- Go 1.25-compatible, independently distributed CLI under `cli/`; tagged
+  release builds use the pinned Go 1.26 toolchain.
 - One shared production image with `APP_PROCESS_TYPE=server|worker`, deployed to
   CapRover alongside PostgreSQL, Redis, and Qdrant.
 

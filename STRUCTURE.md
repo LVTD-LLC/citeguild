@@ -16,6 +16,7 @@ already been implemented.
   documentation content, views, services, and tests.
 - `citeguild/`: project settings, root URLs, ASGI/WSGI entry points, storage,
   logging, Sentry, and cross-app configuration.
+- `cli/`: independently distributed Go CLI wrapping the public API contract.
 - `frontend/templates/`: Django templates. Put reusable fragments under
   `components/`; product screens under `pages/` unless an app-owned template
   directory is more appropriate.

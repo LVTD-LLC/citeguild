@@ -602,6 +602,29 @@ API keys are managed from the user settings page. They are shown only once when
 generated or rotated.
 
 
+## Go CLI
+
+The dependency-free Go CLI under `cli/` is the preferred CiteGuild interface
+for OpenClaw, Hermes, shell agents, and scripts. It wraps the authenticated v1
+API and provides human output, stable JSON, secret-safe local configuration
+status, remote authentication checks, bounded requests, and deterministic exit
+codes.
+
+```bash
+export CITEGUILD_API_KEY="<copy the key from CiteGuild settings>"
+cd cli
+go run ./cmd/citeguild config status
+go run ./cmd/citeguild auth status
+go run ./cmd/citeguild search --json --limit 5 \
+  "How do Django transaction commit hooks work?"
+```
+
+Run `make cli-quality` for formatting, vet, unit/race tests, build, and a clean
+install smoke. Versioned `cli/vX.Y.Z` tags on `main` publish checksum-backed
+Linux amd64 and macOS arm64 archives. See [`cli/README.md`](cli/README.md) for
+the install, output, exit-code, and release contracts.
+
+
 ## Hosted MCP Server
 
 This project includes a hosted MCP server at `/mcp/`, spec-compatible OAuth

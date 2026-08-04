@@ -20,14 +20,15 @@ make ci-local
 1. `make python-quality`
 2. `make type-check`
 3. `make frontend-check`
-4. `make security-check`
-5. `make migrations-check`
-6. `make django-check`
-7. `make coverage-high-risk -- -q`
+4. `make cli-quality`
+5. `make security-check`
+6. `make migrations-check`
+7. `make django-check`
+8. `make coverage-high-risk -- -q`
 
 This path expects the same host prerequisites as terminal development: uv,
-Node.js, a reachable PostgreSQL database, and Redis when runtime settings need
-it. Use `make test` when you want Docker Compose to manage the full local stack,
+Node.js, Go 1.25 or newer, a reachable PostgreSQL database, and Redis when
+runtime settings need it. Use `make test` when you want Docker Compose to manage the full local stack,
 or `make test-local-postgres` when an MCP-capable agent has created a disposable
 PGSandbox database.
 
@@ -41,6 +42,7 @@ PGSandbox database.
 | API schemas, auth, services, or routers | `make pytest-check -- apps/api -q` | Run `make api-fuzz` for the OpenAPI-derived contract test; read `.agents/skills/django-ninja/SKILL.md` before larger API changes |
 | Django Q2 tasks, schedules, workers, or broker behavior | `make pytest-check -- apps/core -q` | Read `.agents/skills/django-q2/SKILL.md`; run a worker locally when behavior depends on the queue |
 | HTMX, Alpine.js, templates, Tailwind, or browser modules | `make frontend-check` | Read the matching frontend skill; run targeted Django tests for changed views or forms |
+| Go CLI commands, API client, output, or release packaging | `make cli-quality` | Run a built binary against an isolated `httptest` fixture while iterating; tagged artifacts are smoke-tested natively by `.github/workflows/cli-release.yml` |
 | Shared services or high-risk behavior kernels | `make coverage-high-risk -- <affected pytest args>` | After tests pass, run `make mutation-high-risk -- '<module-or-function-pattern>'` when test strength matters |
 | Cross-component MVP acceptance | `make acceptance-test -- -q` with PostgreSQL, Redis, and Qdrant configured | See `docs/quality/mvp-acceptance.md` for the matrix and budgets |
 | Locked dependency security | `make security-check` | High-severity npm runtime findings or any known Python vulnerability fail the command |
@@ -78,6 +80,7 @@ rather than a plain `@pytest.mark.django_db` test.
 | --- | --- |
 | `make python-quality` | Runs pre-commit across the repo, then `make pyscn-check`. |
 | `make frontend-check` | Runs `npm run lint` and `npm run build`. |
+| `make cli-quality` | Runs Go formatting, vet, unit tests, race tests, build, and isolated install smoke for the CLI. |
 | `make migrations-check` | Runs `manage.py makemigrations --check --dry-run`. |
 | `make django-check` | Runs Django system checks. |
 | `make pytest-check -- <args>` | Runs pytest on the host with optional pytest args. |
@@ -187,6 +190,7 @@ same Makefile targets:
 make python-quality
 make type-check
 make frontend-check
+make cli-quality
 make security-check
 make migrations-check
 make django-check

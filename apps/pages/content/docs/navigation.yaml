@@ -17,6 +17,7 @@ navigation:
 
   features:
     - example-feature
+    - cli
     - mcp
 
   deployment:
