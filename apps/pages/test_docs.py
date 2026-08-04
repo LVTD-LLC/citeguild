@@ -64,3 +64,24 @@ def test_mcp_docs_cover_safe_agent_onboarding(client, django_user_model):
     assert "candidate ranking only" in content
     assert "never an API key" in content
     assert "?api_key=" not in content
+
+
+@pytest.mark.django_db
+def test_cli_docs_cover_agent_output_and_secret_safety(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username="clidocs",
+        email="clidocs@example.com",
+        password="password123",
+    )
+    client.force_login(user)
+
+    response = client.get(reverse("docs_page", kwargs={"category": "features", "page": "cli"}))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "citeguild search --json" in content
+    assert "CITEGUILD_API_KEY" in content
+    assert "never prints its value" in content
+    assert "candidate sources, not endorsements" in content
+    assert "Diagnostics use stderr" in content
+    assert "?api_key=" not in content

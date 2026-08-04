@@ -14,6 +14,15 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-08-04
+
+### Added
+
+- Added an installable, dependency-free Go CLI for agent and shell search with
+  secret-safe configuration and authentication checks, readable and stable v1
+  JSON output, bounded HTTP behavior, deterministic exit codes, native CI, and
+  checksum-backed Linux amd64 and macOS arm64 release automation.
+
 ## 2026-08-03
 
 ### Fixed

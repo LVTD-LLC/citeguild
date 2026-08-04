@@ -81,6 +81,23 @@ jobs:
       - name: Frontend check
         run: make frontend-check
 
+  cli:
+    name: Go CLI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26.5"
+          cache: false
+
+      - name: CLI quality
+        run: make cli-quality
+
   security:
     name: Dependency security
     runs-on: ubuntu-latest

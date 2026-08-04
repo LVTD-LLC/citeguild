@@ -3,6 +3,8 @@
 
 TARGET_ARGS = $(filter-out $@,$(MAKECMDGOALS))
 NPM ?= npm
+GO ?= go
+CLI_DIR ?= cli
 PYTHON_RUN ?= uv run python
 PYTEST_RUN ?= uv run pytest
 MUTMUT_RUN ?= uv run mutmut
@@ -54,6 +56,12 @@ DOCKER_COMPOSE = docker compose -f docker-compose-local.yml
 .PHONY: \
 	api-fuzz \
 	acceptance-test \
+	cli-build \
+	cli-format-check \
+	cli-install-smoke \
+	cli-quality \
+	cli-test \
+	cli-vet \
 	ci-local \
 	coverage \
 	coverage-high-risk \
@@ -162,6 +170,7 @@ ci-local:
 	$(MAKE) python-quality
 	$(MAKE) type-check
 	$(MAKE) frontend-check
+	$(MAKE) cli-quality
 	$(MAKE) security-check
 	$(MAKE) migrations-check
 	$(MAKE) django-check
@@ -177,6 +186,35 @@ frontend-install:
 frontend-check:
 	$(NPM) run lint
 	$(NPM) run build
+
+cli-format-check:
+	@unformatted="$$(cd $(CLI_DIR) && gofmt -l .)"; \
+	if [ -n "$$unformatted" ]; then \
+		echo "Go files require gofmt:"; \
+		echo "$$unformatted"; \
+		exit 1; \
+	fi
+
+cli-vet:
+	cd $(CLI_DIR) && $(GO) vet ./...
+
+cli-test:
+	cd $(CLI_DIR) && $(GO) test ./...
+	cd $(CLI_DIR) && $(GO) test -race ./...
+	cd $(CLI_DIR) && $(GO) test -shuffle=on ./...
+
+cli-build:
+	mkdir -p dist
+	cd $(CLI_DIR) && $(GO) build -trimpath -o ../dist/citeguild ./cmd/citeguild
+
+cli-install-smoke:
+	@install_dir="$$(mktemp -d)"; \
+	trap 'rm -rf "$$install_dir"' EXIT; \
+	cd $(CLI_DIR) && GOBIN="$$install_dir" $(GO) install ./cmd/citeguild; \
+	"$$install_dir/citeguild" --help >/dev/null; \
+	"$$install_dir/citeguild" version --json >/dev/null
+
+cli-quality: cli-format-check cli-vet cli-test cli-build cli-install-smoke
 
 lint-python:
 	uv run ruff check --force-exclude .

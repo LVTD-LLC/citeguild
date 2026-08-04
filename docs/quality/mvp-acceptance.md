@@ -1,7 +1,7 @@
 # MVP Acceptance Suite
 
-CG-030 defines the launch acceptance boundary for the API- and MCP-first MVP.
-CLI acceptance remains deferred with CG-022 by product decision.
+CG-030 defines the cross-component launch acceptance boundary. CG-022 adds the
+independently distributed CLI acceptance contract over the completed v1 API.
 
 ## CI lanes
 
@@ -9,6 +9,7 @@ CLI acceptance remains deferred with CG-022 by product decision.
 | --- | --- | --- |
 | Python quality | Ruff, formatting, templates, static complexity, and typed baseline | 10 minutes |
 | Frontend | Locked install, lint, and production asset build | 10 minutes |
+| Go CLI | Formatting, vet, unit/race tests, build, and clean install smoke | 10 minutes |
 | Dependency security | Locked Python runtime dependencies and npm runtime dependencies | 10 minutes; high findings fail CI |
 | PostgreSQL tests | Migrations, Django checks, full pytest suite, and high-risk coverage report | 15 minutes |
 | Real-service acceptance | PostgreSQL 18, Redis 8.6.3, Qdrant 1.18.3, and the paid-site scenario | 10 minutes |
@@ -30,6 +31,7 @@ calls Stripe, an embedding provider, a submitted website, or another live servic
 | Qdrant collection, lifecycle, authorization, and search | `apps/search/tests/test_qdrant.py`, `test_service.py` |
 | API auth, rate limits, schema, and stable errors | `apps/api/test_v1.py`, `test_schema.py` |
 | MCP auth, protocol, analytics, and shared search parity | `apps/mcp_server/tests/` |
+| CLI parsing, auth, bounded HTTP behavior, output, and exit codes | `cli/internal/api`, `cli/internal/command`, and native tagged-artifact smoke |
 | Link graph and dashboard privacy/ownership | `test_network_graph.py`, `test_dashboard.py` |
 | Cross-component paid account to detected citation | `test_mvp_acceptance.py` against real PostgreSQL, Redis, and Qdrant |
 
@@ -52,8 +54,9 @@ captured synthetic distribution and set p50/p95 budgets from production traces.
   latency are operational metrics, not ordinary-CI dependencies.
 - Browser design acceptance is deferred. Server-rendered dashboard ownership,
   pagination, and accessibility states remain covered by Django tests.
-- CLI is outside the current MVP scope. API and MCP are the supported agent
-  transports for this suite.
+- CLI API behavior uses deterministic local HTTP fixtures in ordinary CI.
+  Publishing and production-key smoke remain protected release/operations
+  actions rather than pull-request tests.
 
 ## Local commands
 

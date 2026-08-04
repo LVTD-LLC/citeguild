@@ -1,0 +1,146 @@
+name: Release CLI
+
+on:
+  push:
+    tags:
+      - "cli/v*"
+
+concurrency:
+  group: cli-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            goos: linux
+            goarch: amd64
+          - runner: macos-15
+            goos: darwin
+            goarch: arm64
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Require a tag on main
+        shell: bash
+        run: |
+          [[ "$GITHUB_REF_NAME" =~ ^cli/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?(\+[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]]
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: "1.26.5"
+          cache: false
+
+      - name: Test, build, and smoke the final binary
+        shell: bash
+        working-directory: cli
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          version="${GITHUB_REF_NAME#cli/v}"
+          build_date="$(git show -s --format=%cI "$GITHUB_SHA")"
+          go vet ./...
+          go test ./...
+          mkdir -p dist
+          go build -trimpath \
+            -ldflags="-s -w -X main.version=${version} -X main.commit=${GITHUB_SHA} -X main.date=${build_date}" \
+            -o "dist/citeguild_${GOOS}_${GOARCH}" ./cmd/citeguild
+          binary="dist/citeguild_${GOOS}_${GOARCH}"
+          "$binary" --help >/dev/null
+          "$binary" --version | grep -F "citeguild ${version}"
+          set +e
+          env -u CITEGUILD_API_KEY "$binary" search --json "smoke query" >smoke.stdout 2>smoke.stderr
+          smoke_status="$?"
+          set -e
+          test "$smoke_status" -eq 3
+          test ! -s smoke.stdout
+          grep -F "CITEGUILD_API_KEY is not set" smoke.stderr
+
+      - name: Upload final binary for packaging
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: citeguild-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: cli/dist/citeguild_${{ matrix.goos }}_${{ matrix.goarch }}
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub release
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out tagged release metadata
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Download built archives
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Package reproducible archives and verify checksums
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#cli/v}"
+          source_date_epoch="$(git show -s --format=%ct "$GITHUB_SHA")"
+          mkdir -p release stage
+
+          shopt -s nullglob
+          binaries=(dist/citeguild_*_*)
+          (( ${#binaries[@]} > 0 ))
+          for binary in "${binaries[@]}"; do
+            target="${binary#dist/citeguild_}"
+            [[ "$target" =~ ^[a-z0-9]+_[a-z0-9]+$ ]]
+            install -D -m 0755 "$binary" "stage/${target}/citeguild"
+            install -m 0644 cli/README.md "stage/${target}/README.md"
+            tar --sort=name \
+              --mtime="@${source_date_epoch}" \
+              --owner=0 --group=0 --numeric-owner \
+              -czf "release/citeguild_${version}_${target}.tar.gz" \
+              -C "stage/${target}" citeguild README.md
+            tar -tzf "release/citeguild_${version}_${target}.tar.gz"
+          done
+
+          cd release
+          sha256sum ./*.tar.gz > checksums.txt
+          sha256sum --check checksums.txt
+
+      - name: Publish once from the protected tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#cli/v}"
+          if release_json="$(gh release view "$GITHUB_REF_NAME" --json isDraft 2>/dev/null)"; then
+            if [[ "$release_json" == *'"isDraft":true'* ]]; then
+              gh release delete "$GITHUB_REF_NAME" --yes
+            else
+              echo "A published release already exists for $GITHUB_REF_NAME" >&2
+              exit 1
+            fi
+          fi
+          gh release create "$GITHUB_REF_NAME" release/* \
+            --verify-tag \
+            --generate-notes \
+            --title "CiteGuild CLI v${version}"

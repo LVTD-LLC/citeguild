@@ -1,15 +1,16 @@
 # Launch readiness and operator handoff
 
-This is the day-one operating contract for the API- and MCP-first CiteGuild MVP.
-The CLI remains deferred. A public announcement is a separate, explicit decision
-for Rasul; completing this checklist does not authorize one.
+This is the day-one operating contract for CiteGuild's agent interfaces. The
+CLI is tracked independently under CG-022 and does not change launch authority.
+A public announcement is a separate, explicit decision for Rasul; completing
+this checklist does not authorize one.
 
 ## Decision and ownership
 
 Current decision: **no-launch pending CG-034 completion**. The production service
 is healthy and paid API/MCP flows work, but the named Scribe editorial handoff and
-the final dogfood citation edge still need evidence. CG-022 is the approved CLI
-exception and does not block the API/MCP launch.
+the final dogfood citation edge still need evidence. CG-022 remains independent
+from that editorial launch decision.
 
 | Area | Primary | Backup or escalation |
 | --- | --- | --- |
@@ -34,7 +35,8 @@ or private provider responses into tickets or chat.
 - [x] Sitemap-only ingestion, SSRF boundary, extraction, lifecycle, indexing,
   API, MCP, reconciliation, and detected graph: PRs
   [#15](https://github.com/LVTD-LLC/citeguild/pull/15) through
-  [#30](https://github.com/LVTD-LLC/citeguild/pull/30), excluding deferred CLI.
+  [#30](https://github.com/LVTD-LLC/citeguild/pull/30); CG-022 separately owns
+  CLI distribution over the completed v1 API.
 - [x] Owner dashboard and activity: PR
   [#31](https://github.com/LVTD-LLC/citeguild/pull/31).
 - [x] Paid-to-citation and unit-cost event contract: PR
