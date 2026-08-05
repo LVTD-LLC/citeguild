@@ -1,0 +1,184 @@
+{% extends "base_app.html" %}
+{% block meta %}
+    <title>{{ project.name }} sitemap | CiteGuild</title>
+    <meta name="robots" content="noindex, nofollow" />
+{% endblock meta %}
+{% block content %}
+    <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-18" x-data>
+        <nav aria-label="Breadcrumb">
+            <a href="{% url 'home' %}"
+               class="text-sm font-semibold text-green-700 dark:text-green-300">← Dashboard</a>
+        </nav>
+        <header class="mt-6 flex flex-col gap-6 border-b border-gray-950/10 pb-10 sm:flex-row sm:items-end sm:justify-between dark:border-white/10">
+            <div class="min-w-0">
+                <p class="app-label-caps text-gray-500 dark:text-gray-400">Sitemap details</p>
+                <h1 class="mt-2 truncate text-4xl font-semibold tracking-tight">{{ project.name }}</h1>
+                <a href="{{ project.normalized_sitemap_url }}"
+                   class="mt-3 block max-w-3xl truncate text-base text-green-700 sm:text-sm dark:text-green-300"
+                   target="_blank"
+                   rel="noopener noreferrer">{{ project.normalized_sitemap_url }}</a>
+            </div>
+            <span class="inline-flex w-fit rounded-full px-3 py-1 text-sm font-semibold {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">
+                {{ project.get_state_display }}
+            </span>
+        </header>
+        <section class="mt-10" aria-labelledby="site-health-heading">
+            <h2 id="site-health-heading"
+                class="text-2xl font-semibold tracking-tight">Indexing overview</h2>
+            <dl class="mt-5 grid gap-px overflow-hidden rounded-xl bg-gray-950/10 sm:grid-cols-2 lg:grid-cols-4 dark:bg-white/10">
+                <div class="bg-gray-50 p-5 dark:bg-gray-900">
+                    <dt class="text-sm font-medium text-gray-600 dark:text-gray-300">Articles found</dt>
+                    <dd class="mt-2 text-3xl font-semibold tabular-nums">
+                        {{ details.article_counts.total }}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 p-5 dark:bg-gray-900">
+                    <dt class="text-sm font-medium text-gray-600 dark:text-gray-300">Searchable</dt>
+                    <dd class="mt-2 text-3xl font-semibold tabular-nums">
+                        {{ details.article_counts.searchable }}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 p-5 dark:bg-gray-900">
+                    <dt class="text-sm font-medium text-gray-600 dark:text-gray-300">Waiting</dt>
+                    <dd class="mt-2 text-3xl font-semibold tabular-nums">
+                        {{ details.article_counts.waiting }}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 p-5 dark:bg-gray-900">
+                    <dt class="text-sm font-medium text-gray-600 dark:text-gray-300">Inactive history</dt>
+                    <dd class="mt-2 text-3xl font-semibold tabular-nums">
+                        {{ details.article_counts.inactive }}
+                    </dd>
+                </div>
+            </dl>
+            <div class="mt-5 flex flex-col gap-3 border-y border-gray-950/10 py-5 text-sm sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+                <p class="app-text-muted">
+                    {% if project.latest_sync %}
+                        Latest sync: {{ project.latest_sync.get_state_display }}
+                        · {{ project.latest_sync.created_at|date:"Y-m-d H:i T" }}
+                        {% if project.latest_sync.error_code %}· {{ project.latest_sync.error_code }}{% endif %}
+                    {% elif project.last_sync_at %}
+                        Last sync: {{ project.last_sync_at|date:"Y-m-d H:i T" }}
+                    {% else %}
+                        Waiting for the first sync.
+                    {% endif %}
+                </p>
+                {% if project.state == 'active' and project.last_error_code %}
+                    <form method="post" action="{% url 'retry_site_sync' project.uuid %}">
+                        {% csrf_token %}
+                        <button type="submit" class="app-button-secondary">Retry sync</button>
+                    </form>
+                {% endif %}
+            </div>
+        </section>
+        <div class="mt-12 grid gap-12 xl:grid-cols-2">
+            <section aria-labelledby="links-given-heading">
+                <div class="flex items-baseline justify-between gap-4">
+                    <h2 id="links-given-heading"
+                        class="text-2xl font-semibold tracking-tight">Links given</h2>
+                    <span class="text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ details.links_given.paginator.count }}</span>
+                </div>
+                <p class="app-text-muted mt-2 text-sm">Cross-site member links detected on this site.</p>
+                {% if details.links_given %}
+                    <ul class="mt-5 divide-y divide-gray-950/10 border-y border-gray-950/10 dark:divide-white/10 dark:border-white/10"
+                        role="list">
+                        {% for link in details.links_given %}
+                            <li class="py-5">
+                                <div class="flex items-start justify-between gap-4">
+                                    <p class="min-w-0 truncate font-semibold">{{ link.anchor_text|default:"No anchor text" }}</p>
+                                    <span class="shrink-0 text-xs font-semibold {% if link.is_active %}text-green-700 dark:text-green-300{% else %}text-gray-500 dark:text-gray-400{% endif %}">{% if link.is_active %}Active{% else %}Historical{% endif %}</span>
+                                </div>
+                                <p class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300">To {{ link.target_project.normalized_host }}</p>
+                                <a href="{{ link.normalized_destination_url }}"
+                                   class="mt-1 block truncate text-sm text-green-700 dark:text-green-300"
+                                   target="_blank"
+                                   rel="noopener noreferrer">{{ link.normalized_destination_url }}</a>
+                                <p class="mt-2 truncate text-xs text-gray-500 dark:text-gray-400">From {{ link.source_article.normalized_canonical_url }} · last detected {{ link.last_detected_at|date:"Y-m-d" }}</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% include "components/link_pagination.html" with page=details.links_given parameter="given_page" other_parameter="received_page" other_page=details.links_received.number label="given links" %}
+                {% else %}
+                    <p class="app-panel mt-5 p-5 text-sm text-gray-600 dark:text-gray-300">No cross-site links given have been detected.</p>
+                {% endif %}
+            </section>
+            <section aria-labelledby="links-received-heading">
+                <div class="flex items-baseline justify-between gap-4">
+                    <h2 id="links-received-heading"
+                        class="text-2xl font-semibold tracking-tight">Links received</h2>
+                    <span class="text-sm tabular-nums text-gray-500 dark:text-gray-400">{{ details.links_received.paginator.count }}</span>
+                </div>
+                <p class="app-text-muted mt-2 text-sm">Cross-site member links detected from other sites.</p>
+                {% if details.links_received %}
+                    <ul class="mt-5 divide-y divide-gray-950/10 border-y border-gray-950/10 dark:divide-white/10 dark:border-white/10"
+                        role="list">
+                        {% for link in details.links_received %}
+                            <li class="py-5">
+                                <div class="flex items-start justify-between gap-4">
+                                    <p class="min-w-0 truncate font-semibold">{{ link.anchor_text|default:"No anchor text" }}</p>
+                                    <span class="shrink-0 text-xs font-semibold {% if link.is_active %}text-green-700 dark:text-green-300{% else %}text-gray-500 dark:text-gray-400{% endif %}">{% if link.is_active %}Active{% else %}Historical{% endif %}</span>
+                                </div>
+                                <p class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300">From {{ link.source_article.project.normalized_host }}</p>
+                                <a href="{{ link.source_article.normalized_canonical_url }}"
+                                   class="mt-1 block truncate text-sm text-green-700 dark:text-green-300"
+                                   target="_blank"
+                                   rel="noopener noreferrer">{{ link.source_article.normalized_canonical_url }}</a>
+                                <p class="mt-2 truncate text-xs text-gray-500 dark:text-gray-400">To {{ link.normalized_destination_url }} · last detected {{ link.last_detected_at|date:"Y-m-d" }}</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% include "components/link_pagination.html" with page=details.links_received parameter="received_page" other_parameter="given_page" other_page=details.links_given.number label="received links" %}
+                {% else %}
+                    <p class="app-panel mt-5 p-5 text-sm text-gray-600 dark:text-gray-300">No cross-site links received have been detected.</p>
+                {% endif %}
+            </section>
+        </div>
+        <section class="mt-14 border-t border-gray-950/10 pt-10 dark:border-white/10"
+                 aria-labelledby="manage-sitemap-heading">
+            <h2 id="manage-sitemap-heading"
+                class="text-2xl font-semibold tracking-tight">Manage sitemap</h2>
+            <div class="mt-6 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+                <form method="post"
+                      action="{% url 'update_sitemap' project.uuid %}"
+                      class="app-panel p-5 sm:p-6">
+                    {% csrf_token %}
+                    {{ update_form.non_field_errors }}
+                    <div>
+                        {{ update_form.name.errors }}
+                        <label for="{{ update_form.name.id_for_label }}" class="block font-semibold">{{ update_form.name.label }}</label>
+                        {{ update_form.name }}
+                    </div>
+                    <div class="mt-5">
+                        {{ update_form.sitemap_url.errors }}
+                        <label for="{{ update_form.sitemap_url.id_for_label }}"
+                               class="block font-semibold">{{ update_form.sitemap_url.label }}</label>
+                        {{ update_form.sitemap_url }}
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Changing this updates the sitemap used by future syncs.</p>
+                    </div>
+                    <button type="submit" class="app-button-primary mt-6">Save changes</button>
+                </form>
+                <div class="rounded-xl border border-red-600/20 p-5 sm:p-6">
+                    <h3 class="text-lg font-semibold text-red-800 dark:text-red-200">Delete sitemap</h3>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">This permanently removes the site, its indexed articles, sync history, and detected-link records.</p>
+                    <form method="post"
+                          action="{% url 'delete_sitemap' project.uuid %}"
+                          class="mt-5">
+                        {% csrf_token %}
+                        {{ delete_form.non_field_errors }}
+                        {{ delete_form.confirmation.errors }}
+                        <label for="{{ delete_form.confirmation.id_for_label }}"
+                               class="block text-sm font-semibold">Type “{{ project.name }}” to confirm</label>
+                        <input id="{{ delete_form.confirmation.id_for_label }}"
+                               type="text"
+                               name="confirmation"
+                               value="{{ delete_form.confirmation.value|default:'' }}"
+                               autocomplete="off"
+                               required
+                               class="app-input mt-1 block w-full" />
+                        <button type="submit" class="app-button-danger mt-5">Delete sitemap</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock content %}

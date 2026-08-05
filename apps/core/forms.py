@@ -59,3 +59,35 @@ class SiteCreateForm(forms.Form):
 
 class SiteRenameForm(forms.Form):
     name = forms.CharField(label="Site name", max_length=120, strip=True)
+
+
+class SitemapUpdateForm(forms.Form):
+    name = forms.CharField(
+        label="Site name",
+        max_length=120,
+        strip=True,
+        widget=forms.TextInput(
+            attrs={"autocomplete": "organization", "class": "app-input mt-1 block w-full"}
+        ),
+    )
+    sitemap_url = forms.URLField(
+        label="Sitemap URL",
+        max_length=2048,
+        widget=forms.URLInput(
+            attrs={"autocomplete": "url", "class": "app-input mt-1 block w-full"}
+        ),
+    )
+
+
+class SitemapDeleteForm(forms.Form):
+    confirmation = forms.CharField(label="Site name", max_length=120, strip=False)
+
+    def __init__(self, *args, project_name: str, **kwargs):
+        self.project_name = project_name
+        super().__init__(*args, **kwargs)
+
+    def clean_confirmation(self):
+        confirmation = self.cleaned_data["confirmation"]
+        if confirmation != self.project_name:
+            raise forms.ValidationError("Enter the site name exactly to confirm deletion.")
+        return confirmation

@@ -442,6 +442,37 @@ def queue_article_deactivation(article_uuid) -> str | None:
     )
 
 
+def delete_project_points(project_uuid: str, *, client: QdrantClient | None = None) -> str:
+    """Remove every vector carrying the deleted project's stable UUID."""
+    client = client or get_qdrant_client()
+    if client.collection_exists(settings.QDRANT_COLLECTION):
+        client.delete(
+            collection_name=settings.QDRANT_COLLECTION,
+            points_selector=models.FilterSelector(
+                filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="project_uuid",
+                            match=models.MatchValue(value=str(project_uuid)),
+                        )
+                    ]
+                )
+            ),
+            wait=True,
+        )
+    return str(project_uuid)
+
+
+def queue_project_deletion(project_uuid) -> str | None:
+    if not settings.CITEGUILD_INDEXING_ENABLED:
+        return None
+    return async_task(
+        "apps.search.qdrant.delete_project_points",
+        str(project_uuid),
+        group=f"project-delete:{project_uuid}",
+    )
+
+
 def rebuild_article_collection(
     *, client: QdrantClient | None = None, batch_size: int = 100
 ) -> RebuildResult:

@@ -9,6 +9,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Added an owner-scoped sitemap details page with indexing and sync status,
+  paginated cross-site links given and received, editable site metadata, safe
+  confirmed deletion, and dashboard navigation.
 - Added reusable product, organization, FAQ, breadcrumb, and article JSON-LD
   builders, homepage product schema, and stable feature anchors for future SEO
   page families.

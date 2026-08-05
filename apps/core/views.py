@@ -17,7 +17,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
 from django.db import transaction
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -32,10 +32,17 @@ from apps.core.analytics import (
 from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
 from apps.core.crawl_jobs import retry_project_sync
 from apps.core.dashboard import DashboardService
-from apps.core.forms import ProfileUpdateForm, SiteCreateForm, SiteRenameForm
+from apps.core.forms import (
+    ProfileUpdateForm,
+    SiteCreateForm,
+    SitemapDeleteForm,
+    SitemapUpdateForm,
+    SiteRenameForm,
+)
 from apps.core.funnel_analytics import AGENT_CREDENTIAL_CREATED, track_funnel_event
 from apps.core.models import Profile, Project, StripeWebhookEvent
 from apps.core.projects import ProjectHostConflict, ProjectService
+from apps.core.sitemap_details import SitemapDetailsService
 from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 
@@ -236,6 +243,78 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         context = self.get_context_data(site_form=form)
         return self.render_to_response(context, status=400)
+
+
+def _sitemap_details_context(request, profile, project_uuid, *, update_form=None, delete_form=None):
+    try:
+        details = SitemapDetailsService.for_owner(
+            profile,
+            project_uuid,
+            given_page=request.GET.get("given_page", 1),
+            received_page=request.GET.get("received_page", 1),
+        )
+    except Project.DoesNotExist as error:
+        raise Http404 from error
+    project = details.project
+    return {
+        "details": details,
+        "project": project,
+        "update_form": update_form
+        or SitemapUpdateForm(initial={"name": project.name, "sitemap_url": project.sitemap_url}),
+        "delete_form": delete_form or SitemapDeleteForm(project_name=project.name),
+    }
+
+
+@login_required
+def sitemap_details(request, project_uuid):
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    context = _sitemap_details_context(request, profile, project_uuid)
+    return render(request, "pages/sitemap_details.html", context)
+
+
+@login_required
+@require_POST
+def update_sitemap(request, project_uuid):
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    try:
+        ProjectService.get_for_owner(profile, project_uuid)
+    except Project.DoesNotExist as error:
+        raise Http404 from error
+    form = SitemapUpdateForm(request.POST)
+    if form.is_valid():
+        try:
+            ProjectService.update(owner=profile, project_uuid=project_uuid, **form.cleaned_data)
+        except ProjectHostConflict as error:
+            form.add_error("sitemap_url", error)
+        except (PermissionDenied, ValidationError) as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "Sitemap details updated.")
+            return redirect("sitemap_details", project_uuid=project_uuid)
+    context = _sitemap_details_context(request, profile, project_uuid, update_form=form)
+    return render(request, "pages/sitemap_details.html", context, status=400)
+
+
+@login_required
+@require_POST
+def delete_sitemap(request, project_uuid):
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    try:
+        project = ProjectService.get_for_owner(profile, project_uuid)
+    except Project.DoesNotExist as error:
+        raise Http404 from error
+    form = SitemapDeleteForm(request.POST, project_name=project.name)
+    if form.is_valid():
+        try:
+            ProjectService.delete(owner=profile, project_uuid=project_uuid)
+        except PermissionDenied as error:
+            form.add_error(None, error)
+            context = _sitemap_details_context(request, profile, project_uuid, delete_form=form)
+            return render(request, "pages/sitemap_details.html", context, status=403)
+        messages.success(request, f"{project.name} was deleted.")
+        return redirect("home")
+    context = _sitemap_details_context(request, profile, project_uuid, delete_form=form)
+    return render(request, "pages/sitemap_details.html", context, status=400)
 
 
 class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

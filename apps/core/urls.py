@@ -6,6 +6,17 @@ urlpatterns = [
     # App pages
     path("AGENTS.md", views.agent_instructions_markdown, name="agent_instructions_markdown"),
     path("home", views.HomeView.as_view(), name="home"),
+    path("sites/<uuid:project_uuid>/", views.sitemap_details, name="sitemap_details"),
+    path(
+        "sites/<uuid:project_uuid>/update/",
+        views.update_sitemap,
+        name="update_sitemap",
+    ),
+    path(
+        "sites/<uuid:project_uuid>/delete/",
+        views.delete_sitemap,
+        name="delete_sitemap",
+    ),
     path("settings", views.UserSettingsView.as_view(), name="settings"),
     path("admin-panel", views.AdminPanelView.as_view(), name="admin_panel"),
     # Utils
