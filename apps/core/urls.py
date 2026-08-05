@@ -15,6 +15,11 @@ urlpatterns = [
         views.retry_site_sync,
         name="retry_site_sync",
     ),
+    path(
+        "sites/<uuid:project_uuid>/rename/",
+        views.rename_site,
+        name="rename_site",
+    ),
     path("resend-confirmation/", views.resend_confirmation_email, name="resend_confirmation"),
     path("delete-account/", views.delete_account, name="delete_account"),
     # Payments

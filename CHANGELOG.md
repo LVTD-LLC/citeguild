@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
+## 2026-08-05
+
+### Changed
+
+- Adopted a plainspoken source-discovery and backlink-outcome direction across
+  shared public navigation, landing copy, and footer; retained the Guilded mark
+  and paid-only $10 monthly membership.
+- Carried the same sparse direction into the authenticated dashboard, settings,
+  and admin surfaces; removed Docs from app navigation and hid shortcut keycaps.
+- Reworked the unsubscribed dashboard into a compact onboarding empty state
+  without the previous double-divider gap.
+- Refocused the paid dashboard on a small site collection: one modal Add Site
+  action, hostname-derived names with later renaming, and indexing plus
+  detected-link data grouped by site instead of global KPI/activity sections.
+
 ## Types of changes
 
 **Added** for new features.

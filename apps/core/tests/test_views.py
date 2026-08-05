@@ -43,6 +43,16 @@ class TestHomeView:
         response = auth_client.get(url)
         assert "pages/home.html" in [t.name for t in response.templates]
 
+    def test_authenticated_shell_uses_plain_navigation_without_visual_shortcuts(self, auth_client):
+        content = auth_client.get(reverse("home")).content.decode()
+
+        assert 'aria-label="Homepage"' in content
+        assert ">dashboard</a>" in content
+        assert ">settings</a>" in content
+        assert ">docs</a>" not in content
+        assert "shortcut-kbd" not in content
+        assert 'data-shortcut-key="h"' in content
+
     def test_home_view_includes_copyable_agent_prompt(self, auth_client, profile):
         subscribe(profile)
         ProjectService.create(
@@ -125,6 +135,9 @@ class TestHomeView:
         response = auth_client.get(reverse("home"))
         content = response.content.decode()
 
+        assert "Add your first site" in content
+        assert "Unlimited legitimate sites" in content
+        assert "Your sites" not in content
         assert "Subscribe for $10/month" in content
         assert 'id="add-site"' not in content
 
@@ -142,30 +155,32 @@ class TestHomeView:
         content = response.content.decode()
 
         assert "No sites yet" in content
-        assert 'id="add-site"' in content
-        assert 'for="id_name"' in content
+        assert content.count("data-open-add-site") == 1
+        assert 'x-ref="addSiteDialog"' in content
+        assert 'id="id_name"' not in content
         assert 'for="id_sitemap_url"' in content
         assert ':aria-busy="submitting.toString()"' in content
-        assert "Manage billing" in content
+        assert "infer the site name" in content
 
     def test_subscribed_user_can_add_site_from_dashboard(self, auth_client, profile):
         subscribe(profile)
 
         response = auth_client.post(
             reverse("home"),
-            {"name": "Example", "sitemap_url": "https://EXAMPLE.com/sitemap.xml"},
+            {"sitemap_url": "https://EXAMPLE.com/sitemap.xml"},
             follow=True,
         )
 
         assert response.status_code == 200
-        assert "Example was validated and queued" in response.content.decode()
+        assert "example.com was validated and queued" in response.content.decode()
         project = Project.objects.get(owner=profile)
+        assert project.name == "example.com"
         assert project.normalized_host == "example.com"
 
     def test_unsubscribed_user_cannot_post_site(self, auth_client):
         response = auth_client.post(
             reverse("home"),
-            {"name": "Blocked", "sitemap_url": "https://blocked.example/sitemap.xml"},
+            {"sitemap_url": "https://blocked.example/sitemap.xml"},
         )
 
         assert response.status_code == 302
@@ -181,7 +196,7 @@ class TestHomeView:
         with caplog.at_level(logging.WARNING, logger="apps.core.views"):
             response = auth_client.post(
                 reverse("home"),
-                {"name": "Race", "sitemap_url": "https://race.example/sitemap.xml"},
+                {"sitemap_url": "https://race.example/sitemap.xml"},
                 follow=True,
             )
 
@@ -208,7 +223,7 @@ class TestHomeView:
 
         response = auth_client.post(
             reverse("home"),
-            {"name": "Temporary", "sitemap_url": "https://temporary.example/sitemap.xml"},
+            {"sitemap_url": "https://temporary.example/sitemap.xml"},
         )
 
         assert response.status_code == 503
@@ -233,6 +248,46 @@ class TestHomeView:
         assert "Mine" in content
         assert "Other private site" not in content
 
+    def test_subscribed_user_can_rename_own_site(self, auth_client, profile):
+        subscribe(profile)
+        project = ProjectService.create(
+            owner=profile,
+            name="example.com",
+            sitemap_url="https://example.com/sitemap.xml",
+        )
+
+        response = auth_client.post(
+            reverse("rename_site", args=[project.uuid]),
+            {"name": "Example Journal"},
+            follow=True,
+        )
+
+        assert response.status_code == 200
+        assert "Site name updated" in response.content.decode()
+        project.refresh_from_db()
+        assert project.name == "Example Journal"
+
+    def test_user_cannot_rename_another_accounts_site(
+        self, auth_client, profile, django_user_model
+    ):
+        subscribe(profile)
+        other = django_user_model.objects.create_user(username="other-site-owner", password="test")
+        subscribe(other.profile)
+        project = ProjectService.create(
+            owner=other.profile,
+            name="Private site",
+            sitemap_url="https://private-site.example/sitemap.xml",
+        )
+
+        response = auth_client.post(
+            reverse("rename_site", args=[project.uuid]),
+            {"name": "Changed"},
+        )
+
+        assert response.status_code == 404
+        project.refresh_from_db()
+        assert project.name == "Private site"
+
     def test_duplicate_site_error_is_clear_and_does_not_create_a_second_row(
         self, auth_client, profile
     ):
@@ -243,7 +298,7 @@ class TestHomeView:
 
         response = auth_client.post(
             reverse("home"),
-            {"name": "Duplicate", "sitemap_url": "https://EXAMPLE.com/other.xml"},
+            {"sitemap_url": "https://EXAMPLE.com/other.xml"},
         )
 
         assert response.status_code == 400

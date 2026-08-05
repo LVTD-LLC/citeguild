@@ -19,31 +19,17 @@ from django.db.models import (
 from django.db.models.functions import Coalesce, Greatest
 
 from apps.core.choices import ArticleStates
-from apps.core.models import Article, Profile, Project, ProjectSyncRequest
-from apps.core.network_graph import DetectedNetworkLinkQueries
-
-
-@dataclass(frozen=True, slots=True)
-class DashboardSummary:
-    site_count: int
-    indexed_article_count: int
-    pending_article_count: int
-    inactive_article_count: int
-    detected_links_given: int
-    detected_links_received: int
+from apps.core.models import Profile, Project, ProjectSyncRequest
 
 
 @dataclass(frozen=True, slots=True)
 class DashboardData:
-    summary: DashboardSummary
+    site_count: int
     projects: Page
-    links_given: Page
-    links_received: Page
 
 
 class DashboardService:
     SITE_PAGE_SIZE = 10
-    LINK_PAGE_SIZE = 10
 
     @staticmethod
     def _latest_sync_annotations():
@@ -85,22 +71,37 @@ class DashboardService:
             inactive_article_count=Count(
                 "articles",
                 filter=Q(articles__state=ArticleStates.INACTIVE),
+                distinct=True,
             ),
             missing_article_count=Count(
                 "articles",
                 filter=Q(articles__inactivity_reason="sitemap_removed"),
+                distinct=True,
             ),
             unavailable_article_count=Count(
                 "articles",
                 filter=Q(articles__inactivity_reason__in=("http_404", "http_410")),
+                distinct=True,
             ),
             excluded_article_count=Count(
                 "articles",
                 filter=Q(articles__inactivity_reason__in=("empty", "noindex")),
+                distinct=True,
             ),
             pending_article_count=Count(
                 "articles",
                 filter=Q(articles__state=ArticleStates.DISCOVERED),
+                distinct=True,
+            ),
+            detected_links_given_count=Count(
+                "articles__detected_links_given",
+                filter=Q(articles__detected_links_given__is_active=True),
+                distinct=True,
+            ),
+            detected_links_received_count=Count(
+                "detected_links_received",
+                filter=Q(detected_links_received__is_active=True),
+                distinct=True,
             ),
             **cls._latest_sync_annotations(),
         )
@@ -124,43 +125,13 @@ class DashboardService:
         owner: Profile,
         *,
         site_page=1,
-        given_page=1,
-        received_page=1,
     ) -> DashboardData:
         projects = cls._page(
             cls.projects_for_owner(owner),
             site_page,
             page_size=cls.SITE_PAGE_SIZE,
         )
-        links_given = cls._page(
-            DetectedNetworkLinkQueries.links_given(owner, active_only=False).order_by(
-                "-last_detected_at", "-id"
-            ),
-            given_page,
-            page_size=cls.LINK_PAGE_SIZE,
-        )
-        links_received = cls._page(
-            DetectedNetworkLinkQueries.links_received(owner, active_only=False).order_by(
-                "-last_detected_at", "-id"
-            ),
-            received_page,
-            page_size=cls.LINK_PAGE_SIZE,
-        )
-        article_counts = Article.objects.filter(project__owner=owner).aggregate(
-            indexed=Count("id", filter=Q(is_active=True)),
-            pending=Count("id", filter=Q(state=ArticleStates.DISCOVERED)),
-            inactive=Count("id", filter=Q(state=ArticleStates.INACTIVE)),
-        )
         return DashboardData(
-            summary=DashboardSummary(
-                site_count=projects.paginator.count,
-                indexed_article_count=article_counts["indexed"] or 0,
-                pending_article_count=article_counts["pending"] or 0,
-                inactive_article_count=article_counts["inactive"] or 0,
-                detected_links_given=links_given.paginator.count,
-                detected_links_received=links_received.paginator.count,
-            ),
+            site_count=projects.paginator.count,
             projects=projects,
-            links_given=links_given,
-            links_received=links_received,
         )

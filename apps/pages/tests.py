@@ -32,6 +32,34 @@ def mark_password_reauthenticated(client, username):
     session.save()
 
 
+def test_landing_page_explains_source_discovery_and_backlink_outcome(client):
+    response = client.get(reverse("landing"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Help writing agents find—and cite—your articles." in content
+    assert "earn backlinks without outreach or link swaps" in content
+    assert 'aria-label="Homepage"' in content
+    assert "citeguild-logo.svg" in content
+    assert "data-uidotsh-pick=" not in content
+    assert "https://ui.sh/ui-picker.js" not in content
+    assert "join · $10/mo" in content
+    assert "Start for Free" not in content
+    assert "Get Started" not in content
+    assert "The source desk for AI writing agents" not in content
+
+
+def test_public_pages_share_the_selected_navigation_without_picker(client):
+    response = client.get(reverse("pricing"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert 'aria-label="Homepage"' in content
+    assert "citeguild-logo.svg" in content
+    assert "join · $10/mo" in content
+    assert "https://ui.sh/ui-picker.js" not in content
+
+
 def test_login_page_shows_passkey_option(client):
     response = client.get(reverse("account_login"))
     assert response.status_code == 200
@@ -208,7 +236,8 @@ def test_dashboard_does_not_show_email_confirmation_reminder(client):
     assert response.status_code == 200
     content = response.content.decode()
     assert "Your email is not yet confirmed" not in content
-    assert "Your sites" in content
+    assert "Add your first site" in content
+    assert "$10 monthly · no trial" in content
 
 
 def test_settings_requires_email_confirmation_before_passkey_setup(client):

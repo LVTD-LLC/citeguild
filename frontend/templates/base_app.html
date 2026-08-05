@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="antialiased">
     <head>
         <!-- Required meta tags -->
         <meta charset="utf-8" />
@@ -56,219 +56,91 @@
             {% include 'components/messages.html' with messages=messages %}
         {% endblock default_messages %}
         {% include 'components/analytics_consent.html' %}
-        <div class="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-            <header class="sticky left-0 top-3 z-10">
-                <div class="mx-auto w-full max-w-[1376px] px-4">
-                    <div class="flex gap-2 items-center px-4 py-3.5 bg-white rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-800 sm:gap-4 md:px-6 lg:rounded-full">
-                        <!-- Logo and Navigation -->
-                        <div class="flex gap-6 items-center">
-                            <a href="{% url 'home' %}" class="flex gap-2 items-center">
-                                {% include 'components/brand_mark.html' %}
-                                <span class="text-base font-semibold text-gray-900 dark:text-gray-100">CiteGuild</span>
-                            </a>
-                            <!-- Desktop Navigation -->
-                            <nav class="hidden lg:block">
-                                <ul class="flex gap-4 items-center">
-                                    <li>
-                                        <a href="{% url 'home' %}"
-                                           class="inline-flex items-center rounded-full px-6 py-3 text-base font-semibold leading-[1.7] tracking-[-0.09px] text-gray-900 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
-                                           data-shortcut-key="h"
-                                           data-shortcut-label="Dashboard">
-                                            Dashboard
-                                            <kbd class="shortcut-kbd hidden xl:inline-flex" aria-hidden="true">H</kbd>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{% url 'docs_home' %}"
-                                           class="inline-flex items-center rounded-full px-6 py-3 text-base font-semibold leading-[1.7] tracking-[-0.09px] text-gray-900 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
-                                           data-shortcut-key="d"
-                                           data-shortcut-label="Docs">
-                                            Docs
-                                            <kbd class="shortcut-kbd hidden xl:inline-flex" aria-hidden="true">D</kbd>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{% url 'settings' %}"
-                                           class="inline-flex items-center rounded-full px-6 py-3 text-base font-semibold leading-[1.7] tracking-[-0.09px] text-gray-900 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
-                                           data-shortcut-key="s"
-                                           data-shortcut-label="Settings">
-                                            Settings
-                                            <kbd class="shortcut-kbd hidden xl:inline-flex" aria-hidden="true">S</kbd>
-                                        </a>
-                                    </li>
-                                    {% if user.is_superuser %}
-                                        <li>
-                                            <a href="{% url 'admin_panel' %}"
-                                               class="inline-flex items-center rounded-full px-6 py-3 text-base font-semibold leading-[1.7] tracking-[-0.09px] text-green-600 transition-colors hover:bg-green-50"
-                                               data-shortcut-key="a"
-                                               data-shortcut-label="Admin">
-                                                Admin
-                                                <kbd class="shortcut-kbd hidden xl:inline-flex" aria-hidden="true">A</kbd>
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                </ul>
-                            </nav>
-                        </div>
-                        <!-- Desktop Auth Buttons -->
-                        <div class="flex gap-2 items-center ml-auto">
-                            <button type="button"
-                                    data-theme-toggle
-                                    data-shortcut-key="t"
-                                    data-shortcut-label="Toggle theme"
-                                    class="hidden lg:inline-flex justify-center items-center w-11 h-11 rounded-full border border-gray-200 bg-white text-gray-900 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
-                                    aria-label="Toggle theme">
-                                <span class="sr-only" data-theme-label>Theme</span>
-                                <!-- Sun (light) -->
-                                <svg data-theme-icon="light"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     viewBox="0 0 24 24"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     stroke-width="2"
-                                     stroke-linecap="round"
-                                     stroke-linejoin="round"
-                                     class="w-5 h-5">
-                                    <circle cx="12" cy="12" r="4" />
-                                    <path d="M12 2v2" />
-                                    <path d="M12 20v2" />
-                                    <path d="M4.93 4.93l1.41 1.41" />
-                                    <path d="M17.66 17.66l1.41 1.41" />
-                                    <path d="M2 12h2" />
-                                    <path d="M20 12h2" />
-                                    <path d="M4.93 19.07l1.41-1.41" />
-                                    <path d="M17.66 6.34l1.41-1.41" />
-                                </svg>
-                                <!-- Moon (dark) -->
-                                <svg data-theme-icon="dark"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     viewBox="0 0 24 24"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     stroke-width="2"
-                                     stroke-linecap="round"
-                                     stroke-linejoin="round"
-                                     class="hidden w-5 h-5">
-                                    <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
-                                </svg>
-                            </button>
-                            {% if user.is_authenticated %}
-                                <form method="post"
-                                      action="{% url 'account_logout' %}"
-                                      class="hidden lg:block">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            class="rounded-full border-[1.5px] border-gray-300 px-5 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800">
-                                        Sign Out
-                                    </button>
-                                </form>
-                            {% else %}
-                                <div class="hidden gap-2 items-center lg:flex">
-                                    <a href="{% url 'account_login' %}"
-                                       class="inline-flex items-center rounded-full border-[1.5px] border-gray-300 px-5 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
-                                       data-shortcut-key="i"
-                                       data-shortcut-label="Sign in">
-                                        Sign In
-                                        <kbd class="shortcut-kbd hidden xl:inline-flex" aria-hidden="true">I</kbd>
-                                    </a>
-                                    <a href="{% url 'account_signup' %}"
-                                       class="inline-flex items-center px-5 py-3 text-sm font-semibold text-white bg-green-600 rounded-full transition-colors hover:bg-green-700"
-                                       data-shortcut-key="u"
-                                       data-shortcut-label="Sign up">
-                                        Start for Free
-                                        <kbd class="shortcut-kbd hidden xl:inline-flex border-green-300 bg-white/15 text-white dark:border-green-300 dark:bg-white/15 dark:text-white"
-                                             aria-hidden="true">U</kbd>
-                                    </a>
-                                </div>
+        <div class="min-h-dvh bg-white text-gray-950 dark:bg-gray-950 dark:text-gray-100">
+            <header class="sticky top-0 z-20 border-b border-gray-950/10 bg-white dark:border-white/10 dark:bg-gray-950">
+                <div class="mx-auto flex min-h-16 max-w-7xl items-center gap-8 px-6 font-mono lg:px-8">
+                    <a href="{% url 'home' %}"
+                       class="app-focus shrink-0"
+                       aria-label="Homepage">{% include 'components/brand_mark.html' %}</a>
+                    <nav class="hidden items-center gap-6 text-sm text-gray-500 dark:text-gray-400 lg:flex">
+                        <a href="{% url 'home' %}"
+                           class="app-focus hover:text-gray-950 dark:hover:text-white {% if request.resolver_match.url_name == 'home' %}text-gray-950 dark:text-white{% endif %}"
+                           data-shortcut-key="h"
+                           data-shortcut-label="Dashboard">dashboard</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'settings' %}"
+                               class="app-focus hover:text-gray-950 dark:hover:text-white {% if request.resolver_match.url_name == 'settings' %}text-gray-950 dark:text-white{% endif %}"
+                               data-shortcut-key="s"
+                               data-shortcut-label="Settings">settings</a>
+                            {% if user.is_superuser %}
+                                <a href="{% url 'admin_panel' %}"
+                                   class="app-focus hover:text-gray-950 dark:hover:text-white {% if request.resolver_match.url_name == 'admin_panel' %}text-gray-950 dark:text-white{% endif %}"
+                                   data-shortcut-key="a"
+                                   data-shortcut-label="Admin">admin</a>
                             {% endif %}
-                        </div>
-                        <!-- Mobile Menu Button -->
-                        <div class="lg:hidden"
-                             x-data="{ open: false }"
-                             @keydown.escape.window="open = false"
-                             @click.outside="open = false">
-                            <button class="flex relative justify-center items-center w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 dark:bg-gray-900"
-                                    aria-label="Toggle mobile menu"
-                                    :aria-expanded="open.toString()"
-                                    @click.stop="open = !open">
-                                <span class="absolute left-1/2 top-[13px] flex h-[2px] w-4 -translate-x-1/2 rounded-full bg-black dark:bg-gray-200 transition-transform"></span>
-                                <span class="absolute left-1/2 top-1/2 flex h-[2px] w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black dark:bg-gray-200 transition-transform"></span>
-                                <span class="absolute bottom-[13px] left-1/2 flex h-[2px] w-4 -translate-x-1/2 rounded-full bg-black dark:bg-gray-200 transition-transform"></span>
-                            </button>
-                            <!-- Mobile Menu Dropdown -->
-                            <div x-cloak
-                                 x-show="open"
-                                 x-transition
-                                 class="absolute right-4 left-4 top-full z-10 mt-2 bg-white rounded-2xl border border-gray-200 shadow-lg dark:bg-gray-900 dark:border-gray-800">
-                                <nav class="flex-1 justify-center items-center">
-                                    <ul class="flex flex-col px-4">
-                                        <li class="py-5 text-center border-b border-gray-200 dark:border-gray-800">
-                                            <a href="{% url 'home' %}"
-                                               class="text-sm font-semibold text-gray-900 hover:text-green-600 dark:text-gray-100 dark:hover:text-green-400">
-                                                Dashboard
-                                            </a>
-                                        </li>
-                                        {% if user.is_authenticated %}
-                                            <li class="py-5 text-center border-b border-gray-200 dark:border-gray-800">
-                                                <a href="{% url 'docs_home' %}"
-                                                   class="text-sm font-semibold text-gray-900 hover:text-green-600 dark:text-gray-100 dark:hover:text-green-400">
-                                                    Docs
-                                                </a>
-                                            </li>
-                                            <li class="py-5 text-center border-b border-gray-200 dark:border-gray-800">
-                                                <a href="{% url 'settings' %}"
-                                                   class="text-sm font-semibold text-gray-900 hover:text-green-600 dark:text-gray-100 dark:hover:text-green-400">
-                                                    Settings
-                                                </a>
-                                            </li>
-                                            {% if user.is_superuser %}
-                                                <li class="py-5 text-center border-b border-gray-200 dark:border-gray-800">
-                                                    <a href="{% url 'admin_panel' %}"
-                                                       class="text-sm font-semibold text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300">
-                                                        Admin Panel
-                                                    </a>
-                                                </li>
-                                            {% endif %}
-                                            <li class="py-5 text-center">
-                                                <form method="post" action="{% url 'account_logout' %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit"
-                                                            class="text-sm font-semibold text-gray-900 hover:text-green-600 dark:text-gray-100 dark:hover:text-green-400">
-                                                        Sign Out
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        {% else %}
-                                            <li class="py-5 text-center border-b border-gray-200 dark:border-gray-800">
-                                                <a href="{% url 'account_login' %}"
-                                                   class="text-sm font-semibold text-gray-900 hover:text-green-600 dark:text-gray-100 dark:hover:text-green-400">
-                                                    Sign In
-                                                </a>
-                                            </li>
-                                            <li class="py-5 text-center">
-                                                <a href="{% url 'account_signup' %}"
-                                                   class="text-sm font-semibold text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300">
-                                                    Start for Free
-                                                </a>
-                                            </li>
-                                        {% endif %}
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
+                        {% endif %}
+                    </nav>
+                    <div class="ml-auto hidden items-center gap-5 text-sm text-gray-500 dark:text-gray-400 lg:flex">
+                        <button type="button"
+                                data-theme-toggle
+                                data-shortcut-key="t"
+                                data-shortcut-label="Toggle theme"
+                                class="app-focus hover:text-gray-950 dark:hover:text-white"
+                                aria-label="Toggle theme"><span data-theme-label>Theme</span></button>
+                        {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'account_logout' %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="app-focus hover:text-gray-950 dark:hover:text-white">sign out</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'account_login' %}"
+                               class="app-focus hover:text-gray-950 dark:hover:text-white">sign in</a>
+                            <a href="{% url 'account_signup' %}"
+                               class="app-focus rounded-lg border border-gray-950/20 px-3 py-2 font-semibold text-gray-950 hover:border-gray-950/50 dark:border-white/20 dark:text-white dark:hover:border-white/50">join · $10/mo</a>
+                        {% endif %}
                     </div>
+                    <details class="relative ml-auto lg:hidden">
+                        <summary class="app-focus cursor-pointer list-none text-sm">menu</summary>
+                        <nav class="absolute right-0 top-9 z-30 w-56 rounded-xl bg-white p-5 shadow-lg ring-1 ring-gray-950/10 dark:bg-gray-900 dark:shadow-none dark:ring-white/10">
+                            <div class="flex flex-col gap-5 text-base text-gray-700 sm:text-sm dark:text-gray-200">
+                                <a class="app-focus" href="{% url 'home' %}">dashboard</a>
+                                {% if user.is_authenticated %}
+                                    <a class="app-focus" href="{% url 'settings' %}">settings</a>
+                                    {% if user.is_superuser %}<a class="app-focus" href="{% url 'admin_panel' %}">admin</a>{% endif %}
+                                    <form method="post" action="{% url 'account_logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="app-focus">sign out</button>
+                                    </form>
+                                {% else %}
+                                    <a class="app-focus" href="{% url 'account_login' %}">sign in</a>
+                                    <a class="app-focus font-semibold text-green-700 dark:text-green-400"
+                                       href="{% url 'account_signup' %}">join · $10/mo</a>
+                                {% endif %}
+                                <button type="button"
+                                        data-theme-toggle
+                                        class="app-focus text-left"
+                                        aria-label="Toggle theme"><span data-theme-label>Theme</span></button>
+                            </div>
+                        </nav>
+                    </details>
                 </div>
             </header>
-            <div class="px-2 sm:px-0">
+            <main class="isolate min-w-0">
                 {% block content %}
                 {% endblock content %}
-            </div>
-            <footer class="bg-white dark:bg-gray-950">
-                <div class="px-6 py-12 mx-auto max-w-7xl md:flex md:items-center md:justify-between lg:px-8">
-                    <div class="mt-8 md:mt-0">
-                        <p class="text-xs leading-5 text-center text-gray-500 dark:text-gray-400">
-                            &copy; {% now "Y" %} CiteGuild. All rights reserved.
-                        </p>
+            </main>
+            <footer class="border-t border-gray-950/10 bg-white dark:border-white/10 dark:bg-gray-950">
+                <div class="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 font-mono text-base text-gray-500 sm:flex-row sm:items-center sm:text-sm lg:px-8 dark:text-gray-400">
+                    <a href="{% url 'home' %}"
+                       class="app-focus inline-flex shrink-0"
+                       aria-label="Homepage">{% include 'components/brand_mark.html' %}</a>
+                    <span>&copy; {% now "Y" %} CiteGuild</span>
+                    <div class="flex gap-5 sm:ml-auto">
+                        <a class="app-focus hover:text-gray-950 dark:hover:text-white"
+                           href="{% url 'privacy_policy' %}">privacy</a>
+                        <a class="app-focus hover:text-gray-950 dark:hover:text-white"
+                           href="{% url 'terms_of_service' %}">terms</a>
                     </div>
                 </div>
             </footer>

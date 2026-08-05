@@ -101,7 +101,7 @@ components:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.text-inverse}"
     typography: "{typography.label-md}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.md}"
     padding: "{spacing.control}"
   button-primary-hover:
     backgroundColor: "{colors.primary-hover}"
@@ -110,13 +110,13 @@ components:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.secondary}"
     typography: "{typography.label-md}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.md}"
     padding: "{spacing.control}"
   button-danger:
     backgroundColor: "{colors.danger}"
     textColor: "{colors.text-inverse}"
     typography: "{typography.label-md}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.md}"
     padding: "{spacing.control}"
   card:
     backgroundColor: "{colors.surface}"
@@ -134,7 +134,7 @@ components:
   nav:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.none}"
   input:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
@@ -205,7 +205,9 @@ Use a system sans-serif stack for speed, reliability, and low setup friction. Ad
 - **Headlines:** Bold with restrained tight tracking for landing pages, docs intros, and major empty states. Keep display tracking at `-0.04em` or looser.
 - **Body:** 16px default with generous line height for readable forms, settings pages, docs, and dashboards.
 - **Labels:** Medium-weight labels for form controls and action buttons.
-- **Caps labels:** Use sparingly for badges and metadata. Do not put a tiny uppercase eyebrow above every section.
+- **Caps labels:** Reserve these for real metadata and status badges. Do not use
+  eyebrow text above marketing headings or section titles; headings must stand
+  on their own.
 - **Code:** Monospace for API examples, environment variables, commands, tokens, and identifiers.
 
 Product UI should use fixed type sizes rather than viewport-fluid typography. Reserve hero-scale type for true public heroes; inside app panels, settings pages, dashboards, modals, and cards, keep headings compact enough that controls and content remain scannable. Use `text-wrap: balance` on headings and `text-wrap: pretty` on prose where supported.
@@ -216,6 +218,10 @@ Use simple responsive layouts that work well for server-rendered Django pages.
 
 - Keep page content inside a centered max-width container (`1200px`) with `24px` mobile-safe horizontal padding.
 - Use generous vertical rhythm on marketing pages and tighter spacing in authenticated app screens.
+- Keep public heroes single-column by default: a concise promise, a short
+  description directly below it, and one action. Put product demonstrations,
+  diagrams, search results, and other evidence in the next section rather than
+  pairing a giant headline with a card or mock interface on its right.
 - Prefer boring, predictable structure: single column on mobile, 2-column feature areas, and 3-column card groups only when content is truly symmetrical.
 - Forms should be narrow enough to scan comfortably. Dashboards can use wider containers, but avoid dense data walls without hierarchy.
 - Design empty, loading, error, and success states as first-class UI, not afterthoughts.
@@ -223,7 +229,11 @@ Use simple responsive layouts that work well for server-rendered Django pages.
 - Make the dashboard sequence obvious: subscribe, add a sitemap-backed site,
   wait for indexing, connect an agent, then inspect detected network activity.
 - Prefer a scannable site list and status detail over a dense generic KPI wall.
-  Put recent actionable sync failures near the affected site.
+  Put indexing health, detected-link counts, and recent actionable sync failures
+  on the affected site instead of in account-wide summary sections.
+- Use one Add Site action that opens a focused sitemap-only dialog. Infer the
+  initial display name from the normalized hostname and let the owner rename it
+  later.
 
 ## Elevation & Depth
 
@@ -239,19 +249,27 @@ Depth should come from borders, spacing, and subtle shadows.
 
 The default shape language is friendly but restrained.
 
-- Use pill buttons for primary actions and navigation CTAs.
+- Use compact `10px`–`12px` radii for primary actions and navigation CTAs.
 - Use `10px`–`16px` radius for inputs, cards, panels, and modal containers.
 - Use full-radius badges for status labels.
 - Keep radius choices consistent within each screen; inconsistency makes generated products feel stitched together.
 
 ## Components
 
-- **Primary button:** Primary background, white text, pill radius, medium-bold label. Use for the single most important action in a section.
+- **Primary button:** Primary background, white text, compact radius, medium-bold label. Use for the single most important action in a section.
 - **Secondary button:** White or muted background, slate text, border when needed. Use for navigation, cancel, and lower-priority actions.
 - **Danger button:** Red background, white text. Use only for irreversible destructive actions and pair with confirmation UI.
 - **Cards:** White/muted surfaces with rounded corners and borders. Keep one clear purpose per card.
 - **Forms:** Visible labels, clear helper/error text, high-contrast focus rings, and full-width controls on mobile.
-- **Navigation:** Simple top nav with clear product name, primary links, auth/account actions, and accessible mobile behavior.
+- **Navigation:** Simple top nav with clear brand identity, primary links,
+  auth/account actions, and accessible mobile behavior.
+- **Public shell:** Use the standalone Guilded mark without a wordmark, a compact
+  monospaced navigation and footer, and light surfaces in light mode. Keep the
+  public shell visually spare so the direct product explanation does the work.
+- **Product shell:** Continue the logo-only mark and compact monospaced
+  navigation inside the app. Keep Dashboard and Settings as the primary
+  destinations, omit shortcut keycaps, and use whitespace or low-opacity
+  dividers before introducing cards.
 - **Tables/lists:** Prioritize scanability: sticky or repeated context where needed, muted metadata, and explicit empty states.
 - **Docs/code blocks:** Monospace code, copyable commands when possible, and examples that match the generated project structure.
 - **Site status:** Show sitemap URL/domain, last successful sync, indexed,
@@ -306,6 +324,8 @@ Before shipping generated-project UI changes:
   reciprocity status.
 - Don't describe inactive articles as deleted; their history is retained.
 - Don't introduce a new font, color, radius, or shadow style for a single screen without updating the design system.
+- Don't use marketing eyebrows or the stock split hero pattern with a large
+  statement on the left and a product card on the right.
 - Don't make AI-agent instructions vendor-specific; use plain project conventions and file paths.
 - Don't let generated pages depend on remote design assets unless the project explicitly adds them.
 - Don't use gradient text, colored side stripes, nested cards, repeated decorative card grids, over-rounded panels, or tiny uppercase section labels as default scaffolding.
