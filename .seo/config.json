@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "mode": "initialize",
+  "mode": "resume",
   "roadmap_path": "docs/seo-sprint.md",
   "domain": "citeguild.lvtd.dev",
   "site_url": "https://citeguild.lvtd.dev",
@@ -24,9 +24,17 @@
   "dataforseo_language": "English",
   "gsc_property": "sc-domain:lvtd.dev",
   "gsc_page_filter": "citeguild.lvtd.dev",
+  "gsc_sitemap": {
+    "url": "https://citeguild.lvtd.dev/sitemap.xml",
+    "submitted_at": "2026-08-05T16:40:58.906Z",
+    "status": "pending",
+    "errors": 0,
+    "warnings": 0
+  },
   "ahrefs_project_id": null,
   "plausible_site_id": null,
   "posthog_project_id": 538803,
+  "seo_conversion_source": "posthog",
   "research_sources": {
     "gsc": "connected",
     "ahrefs": "missing",

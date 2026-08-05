@@ -15,7 +15,7 @@
 
 | # | Phase | Pattern | Status | PR |
 |---:|---|---|---|---|
-| 0 | Technical foundations and measurement | Setup | pending | — |
+| 0 | Technical foundations and measurement | Setup | completed | [#54](https://github.com/LVTD-LLC/citeguild/pull/54) |
 | 1 | Featured alternative for former HARO users | Alternatives | pending | — |
 | 2 | Tavily alternative for editorial source retrieval | Alternatives | pending | — |
 | 3 | Backlinker AI alternative | Alternatives | pending | — |
@@ -47,7 +47,7 @@
 - **Owned search source:** GSC property `sc-domain:lvtd.dev`, filtered to pages containing `citeguild.lvtd.dev`.
 - **Authority baseline:** DataForSEO returned zero backlink-summary rows and zero ranked keywords. Treat effective authority as near-zero and target KD ≤10 initially.
 - **Owned search baseline:** GSC returned 0 query/page rows, 0 clicks, and 0 impressions for the prior 90 days.
-- **Product analytics:** PostHog project `538803`; early product usage exists, but no identifiable organic search attribution in the prior 90 days.
+- **Product analytics:** PostHog project `538803` is the sole SEO conversion source. Early product usage exists, but no identifiable organic search attribution in the prior 90 days.
 - **Stack:** Django 6 templates, controller-based routing, Tailwind CSS.
 - **Brand:** primary green `#15803D`, slate `#0F172A`, system sans-serif.
 - **Marketing root:** `apps/pages/`, `frontend/templates/pages/`, and `frontend/templates/base_landing.html`.
@@ -56,7 +56,7 @@
 
 | Source | Status | Credential/config evidence | API/tool evidence | Used for | Config saved | Reason |
 |---|---|---|---|---|---|---|
-| GSC | connected | Infisical service account; access to `sc-domain:lvtd.dev` | Sites, Search Analytics, and sitemaps APIs returned 200 | Owned queries, striking distance, sitemap state | `gsc_property`, page filter | Zero CiteGuild rows and no submitted CiteGuild sitemap yet; sparse success is still connected. |
+| GSC | connected | Infisical service account; access to `sc-domain:lvtd.dev` | Sites, Search Analytics, and sitemaps APIs returned 200; CiteGuild sitemap submitted 2026-08-05 | Owned queries, striking distance, sitemap state | `gsc_property`, page filter, sitemap record | Submission is pending processing with 0 errors and 0 warnings; zero owned-search rows remain a connected sparse result. |
 | Ahrefs | missing | Checked loaded tools, env, operator workspace routing notes (external to this repo), repo config, and Infisical `/services/ahrefs` | No usable tool or credential found | DR, keyword gaps, backlinks | None | DataForSEO supplies measured market data instead. |
 | DataForSEO | connected | Toolkit plus Infisical `/services/dataforseo` | Backlinks, ranked keywords, ideas, overviews, and SERP calls succeeded | Volume, KD, CPC, intent, SERP, baseline | Location/language | Domain rows are sparse; candidate metrics are measured. |
 | Plausible | attempted_failed | API key and custom host documented | V2 queries for both candidate site IDs returned 401 | Organic pages/goals | None | Credential exists, but CiteGuild site access/config is unavailable. |
@@ -74,7 +74,7 @@ Private evidence dataset: [CiteGuild SEO Tool Evidence](https://rowset.lvtd.dev/
 | Pricing | Public, indexable | $10 monthly, unlimited sites, no trial/free tier |
 | Journal | Public index, no posts yet | Blog index and schema infrastructure |
 | Authenticated docs | `noindex`, login required | MCP/CLI/API product documentation is not a public SEO surface |
-| `/uses` | Public generic technology-stack page | Audit whether to repurpose or remove from the sitemap in Phase 0 |
+| `/uses` | Public transparency page, `noindex` and excluded from sitemap | Do not target generic technology-stack intent or link from SEO page families |
 
 ### Critical files
 
@@ -115,6 +115,20 @@ Private opportunity dataset: [CiteGuild SEO Opportunities](https://rowset.lvtd.d
 | 6 | `/alternatives/linkswarm` | No measured row | — | — | derived | Closest strategic competitor; contrast retrieval with circular exchanges and credits. |
 | 7 | `/alternatives/qwoted` | `qwoted alternatives` 10 | — | $25.05 | measured | PR/source requests versus persistent agent retrieval. |
 | 8 | `/alternatives/sourcebottle` | `sourcebottle alternatives` 10 | — | — | measured | Source requests versus a sitemap-backed article index. |
+
+### Product-memo competitor watchlist
+
+Rasul supplied the product memo's 2026-07-31 competitive scan during Phase 0. Keep these candidates in research, but do not displace the measured tracker until current positioning and DataForSEO demand are re-verified.
+
+| Candidate | Category distinction | Promotion gate |
+|---|---|---|
+| Ranking Raccoon | Moderated human SEO community with site browsing, messaging, and placement verification | Verify current pricing and demand for `ranking raccoon alternatives`. |
+| RankChase | Niche/domain-metric matching plus human link-exchange requests | Verify current pricing and demand for `rankchase alternatives`. |
+| LinkRocket | Credit-based backlink exchange | Verify product status, indexed pages, and brand/modifier demand. |
+| RobotSpeed | Automated contextual placements and DR-growth promise | Verify live behavior, policy fit, and demand before considering an alternative page. |
+| LinkDR | AI-assisted prospecting, outreach, and managed placements | Verify pricing, current positioning, and whether search intent overlaps CiteGuild's source-discovery wedge. |
+
+The memo also strengthens four non-keyword inputs: use “AI-native editorial source network” as the category phrase; treat MCP, CLI, and API as first-class high-intent surfaces; address founders/publishers, content teams, agencies, and agent builders explicitly; and explain the relevance-first, non-guaranteed editorial guardrail wherever backlink-adjacent intent appears.
 
 ### Use-case and audience candidates
 
@@ -183,6 +197,15 @@ Third-party `exa vs tavily` has measured demand of 90, KD 0, but is out of scope
 6. Fix Plausible site provisioning/access or formally choose PostHog as the sole SEO conversion source.
 7. Define public internal-link destinations or section anchors for product features before Phase 1, because pattern pages need more than homepage/pricing links.
 
+**Phase 0 decisions and evidence:**
+
+- `/uses` remains available as a transparency page but is `noindex` and removed from the sitemap; generic technology-stack intent is not a product acquisition target.
+- Static marketing URLs intentionally omit `lastmod`. CiteGuild will not publish deployment dates as fake content-change dates; accurate modification dates remain attached to repository-backed articles.
+- PostHog project `538803` is the sole SEO conversion source. Its consented pageviews, sanitized first/latest-touch attribution, CTA events, signup, and Stripe-confirmed activation contract cover organic landing analysis; Plausible remains an unavailable optional source rather than a launch dependency.
+- The homepage exposes stable feature anchors for article indexing, agent retrieval, citation observation, and membership. Future page families should link to those anchors until dedicated public feature pages earn their own search intent.
+- `https://citeguild.lvtd.dev/sitemap.xml` was submitted to `sc-domain:lvtd.dev` on 2026-08-05 at 16:40:58 UTC. Search Console reported pending processing, 0 errors, and 0 warnings immediately after submission.
+- The production deterministic audit returned no findings before implementation. Re-run it after deployment and validate the new homepage schema separately.
+
 **Verification:** production sitemap and robots return 200; no duplicate titles/descriptions; every indexable page has one H1 and a self-canonical; homepage schema validates; GSC records the sitemap; organic landing attribution is measurable or explicitly assigned to PostHog.
 
 ### Phases 1–8 — Alternatives family
@@ -211,6 +234,6 @@ Verify that every generated page has at least two inbound links, no page is orph
 
 The private [CiteGuild SEO Backlink Targets](https://rowset.lvtd.dev/datasets/cd58d6fe-4e69-463b-8ce4-93a84393c314) dataset contains qualified listicles and directory candidates. Re-verify editorial policy before outreach. Reject undisclosed paid placement, circular exchanges, fake reviews, and guaranteed links. Track status in Rowset, not git.
 
-## Initialize handoff
+## Current handoff
 
-Initialization is complete. Review competitor categorization, page order, and the Phase 0 scope before executing the next phase. This run intentionally did not implement Phase 0.
+Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). The measured page order remains unchanged; the product-memo competitor watchlist requires live demand and product re-verification before promotion. The next pending phase is Phase 1, the Featured alternative for former HARO users.

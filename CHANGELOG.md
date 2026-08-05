@@ -9,6 +9,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Added reusable product, organization, FAQ, breadcrumb, and article JSON-LD
+  builders, homepage product schema, and stable feature anchors for future SEO
+  page families.
 - Added the measured CiteGuild SEO sprint roadmap, persistent brand and internal-link
   context, connected-tool evidence, and private Rowset research locators for phased
   organic-search execution.
@@ -25,6 +28,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Changed
 
+- Marked the generic technology-stack page `noindex` and removed it from the
+  public sitemap while retaining it as a transparency page.
 - Adopted a plainspoken source-discovery and backlink-outcome direction across
   shared public navigation, landing copy, and footer; retained the Guilded mark
   and paid-only $10 monthly membership.

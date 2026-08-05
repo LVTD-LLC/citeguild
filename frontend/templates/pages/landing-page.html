@@ -27,19 +27,23 @@
                 </div>
             </div>
         </section>
-        <section class="border-y border-gray-950/10 py-20 dark:border-white/10 lg:py-24">
+        <section id="how-it-works"
+                 class="border-y border-gray-950/10 py-20 dark:border-white/10 lg:py-24">
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
                 <h2 class="max-w-[30ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">What the membership does—and does not do.</h2>
                 <div class="mt-12 divide-y divide-gray-950/10 border-y border-gray-950/10 dark:divide-white/10 dark:border-white/10">
-                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                    <div id="article-indexing"
+                         class="scroll-mt-24 grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
                         <h3 class="text-xl font-semibold">It indexes</h3>
                         <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Eligible articles from every sitemap-backed site on your account.</p>
                     </div>
-                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                    <div id="agent-retrieval"
+                         class="scroll-mt-24 grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
                         <h3 class="text-xl font-semibold">It retrieves</h3>
                         <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Active member articles ranked by relevance to the agent’s draft.</p>
                     </div>
-                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                    <div id="citation-observation"
+                         class="scroll-mt-24 grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
                         <h3 class="text-xl font-semibold">It records</h3>
                         <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Member-to-member links later detected on published pages.</p>
                     </div>
@@ -50,7 +54,8 @@
                 </div>
             </div>
         </section>
-        <section class="bg-green-700 py-16 text-white dark:border-y dark:border-white/10 dark:bg-gray-950">
+        <section id="membership"
+                 class="bg-green-700 py-16 text-white dark:border-y dark:border-white/10 dark:bg-gray-950">
             <div class="mx-auto flex max-w-7xl flex-col gap-8 px-6 sm:flex-row sm:items-end sm:justify-between lg:px-8">
                 <div>
                     <h2 class="max-w-[30ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">One plan. No pricing puzzle.</h2>
@@ -65,14 +70,5 @@
     </main>
 {% endblock content %}
 {% block schema %}
-    <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "CiteGuild",
-    "description": "Make your articles searchable when AI writing agents need a relevant source",
-    "url": "{{ public_site_url }}/",
-    "author": {"@type": "Organization", "name": "LVTD LLC", "url": "https://lvtd.dev"}
-  }
-    </script>
+    <script type="application/ld+json">{{ schema_json|safe }}</script>
 {% endblock schema %}

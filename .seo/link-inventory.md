@@ -11,7 +11,6 @@
 | `/` | https://citeguild.lvtd.dev/ | Find and cite relevant member articles | All |
 | `/pricing` | https://citeguild.lvtd.dev/pricing | CiteGuild pricing — $10/month | Compare, playbooks |
 | `/blog/` | https://citeguild.lvtd.dev/blog/ | CiteGuild journal | Playbooks |
-| `/uses` | https://citeguild.lvtd.dev/uses | CiteGuild technology stack | Occasional technical context only |
 | `/privacy-policy` | https://citeguild.lvtd.dev/privacy-policy | Privacy policy | Trust/legal only |
 | `/terms-of-service` | https://citeguild.lvtd.dev/terms-of-service | Terms of service | Trust/legal only |
 
@@ -19,7 +18,14 @@ There is no public `/about` page. Do not invent one or link authenticated docs a
 
 ### Features
 
-No dedicated public feature pages exist yet. Phase 0 should decide whether the homepage can support section anchors or whether a small public feature spine is needed before pattern pages ship.
+| Slug | URL | Title / anchor candidate | Used by patterns |
+|---|---|---|---|
+| `/#article-indexing` | https://citeguild.lvtd.dev/#article-indexing | Sitemap-backed article indexing | Alternatives, use cases, playbooks |
+| `/#agent-retrieval` | https://citeguild.lvtd.dev/#agent-retrieval | Relevance-ranked retrieval for writing agents | Alternatives, compare, use cases |
+| `/#citation-observation` | https://citeguild.lvtd.dev/#citation-observation | Detected member-to-member citations | Compare, use cases, playbooks |
+| `/#membership` | https://citeguild.lvtd.dev/#membership | One $10 monthly membership | Alternatives, compare, use cases |
+
+`/uses` remains publicly accessible for transparency but is `noindex` and excluded from the sitemap because its generic technology-stack intent does not support the product's search strategy.
 
 ### Tools (free utilities)
 
