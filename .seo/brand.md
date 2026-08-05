@@ -35,6 +35,13 @@ These are direct and adjacent alternatives. Their category differences must rema
 | Exa | `exa` | https://exa.ai/ | adjacent | Broad neural web search and content retrieval; CiteGuild focuses on opted-in sitemap-backed publishers. |
 | Qwoted | `qwoted` | https://www.qwoted.com/ | adjacent | PR and journalist-source requests rather than agent-native article retrieval. |
 | SourceBottle | `sourcebottle` | https://www.sourcebottle.com/ | niche | Journalist/source request marketplace rather than a persistent editorial source network. |
+| Ranking Raccoon | `ranking-raccoon` | https://www.rankingraccoon.com/ | adjacent | Moderated community for human SEO operators to browse sites, message owners, and verify placements. |
+| RankChase | `rankchase` | https://www.rankchase.com/ | adjacent | Human-operated matching and link-exchange request workflow organized by niche and domain metrics. |
+| LinkRocket | `linkrocket` | https://linkrocket.ai/ | direct | Credit-based backlink exchange; CiteGuild does not require reciprocal links or balance credits. |
+| RobotSpeed | `robot-speed` | https://www.robot-speed.com/ | direct | Automated contextual placement and DR-growth positioning; CiteGuild returns sources for an agent's editorial decision. |
+| LinkDR | `linkdr` | https://linkdr.com/ | adjacent | AI-assisted prospecting, outreach, and managed placements rather than a member source corpus queried during writing. |
+
+The final five competitors came from the product memo's 2026-07-31 scan. Re-verify their live positioning, pricing, and indexable search demand before promoting them into a page phase.
 
 ## Brand voice
 

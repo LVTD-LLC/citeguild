@@ -13,7 +13,7 @@ from apps.pages.services import (
     list_blog_posts,
     publisher_schema,
 )
-from citeguild.sitemaps import BlogSitemap, sitemaps
+from citeguild.sitemaps import BlogSitemap, StaticViewSitemap, sitemaps
 
 pytestmark = pytest.mark.django_db
 
@@ -218,6 +218,12 @@ def test_blog_sitemap_uses_markdown_posts(blog_posts_dir):
 
     assert sitemap.location(post) == "/blog/sitemap-post"
     assert sitemap.lastmod(post).isoformat() == "2026-07-04T00:00:00+00:00"
+
+
+def test_static_sitemap_excludes_noindex_technology_stack():
+    sitemap = StaticViewSitemap()
+
+    assert "uses" not in sitemap.items()
 
 
 def test_blog_sitemap_uses_site_url_and_last_modified_header(rf, blog_posts_dir):

@@ -1,3 +1,5 @@
+import json
+import re
 import time
 
 import pytest
@@ -47,6 +49,41 @@ def test_landing_page_explains_source_discovery_and_backlink_outcome(client):
     assert "Start for Free" not in content
     assert "Get Started" not in content
     assert "The source desk for AI writing agents" not in content
+
+
+def test_landing_page_exposes_feature_anchors_and_product_schema(client):
+    response = client.get(reverse("landing"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    for anchor in (
+        "how-it-works",
+        "article-indexing",
+        "agent-retrieval",
+        "citation-observation",
+        "membership",
+    ):
+        assert f'id="{anchor}"' in content
+
+    match = re.search(r'<script type="application/ld\+json">(.*?)</script>', content, re.DOTALL)
+    assert match is not None
+    schema = json.loads(match.group(1))
+    graph = {item["@type"]: item for item in schema["@graph"]}
+    assert set(graph) == {"Organization", "SoftwareApplication"}
+    assert graph["SoftwareApplication"]["offers"] == {
+        "@type": "Offer",
+        "price": "10.00",
+        "priceCurrency": "USD",
+        "url": "https://testserver/pricing",
+        "availability": "https://schema.org/InStock",
+    }
+
+
+def test_uses_page_is_noindex(client):
+    response = client.get(reverse("uses"))
+
+    assert response.status_code == 200
+    assert '<meta name="robots" content="noindex, follow" />' in response.content.decode()
 
 
 def test_public_pages_share_the_selected_navigation_without_picker(client):

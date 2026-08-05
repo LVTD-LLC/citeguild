@@ -244,14 +244,103 @@ def author_schema(name: str, author_url: str = BLOG_DEFAULT_AUTHOR_URL) -> dict:
     return schema
 
 
-def publisher_schema() -> dict:
+def organization_schema() -> dict:
     return {
         "@type": "Organization",
+        "@id": f"{build_absolute_public_url('/')}#organization",
         "name": "CiteGuild",
+        "url": build_absolute_public_url("/"),
         "logo": {
             "@type": "ImageObject",
             "url": build_absolute_public_url(static("images/citeguild-logo.svg")),
         },
+    }
+
+
+def publisher_schema() -> dict:
+    return organization_schema()
+
+
+def software_application_schema() -> dict:
+    return {
+        "@type": "SoftwareApplication",
+        "@id": f"{build_absolute_public_url('/')}#software",
+        "name": "CiteGuild",
+        "url": build_absolute_public_url("/"),
+        "description": (
+            "CiteGuild makes member articles discoverable when AI writing agents "
+            "need a relevant source."
+        ),
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "publisher": {"@id": organization_schema()["@id"]},
+        "offers": {
+            "@type": "Offer",
+            "price": "10.00",
+            "priceCurrency": "USD",
+            "url": build_absolute_public_url(reverse("pricing")),
+            "availability": "https://schema.org/InStock",
+        },
+    }
+
+
+def homepage_schema() -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@graph": [organization_schema(), software_application_schema()],
+    }
+
+
+def faq_page_schema(questions_and_answers: list[tuple[str, str]]) -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": question,
+                "acceptedAnswer": {"@type": "Answer", "text": answer},
+            }
+            for question, answer in questions_and_answers
+        ],
+    }
+
+
+def breadcrumb_list_schema(items: list[tuple[str, str]]) -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": position,
+                "name": name,
+                "item": build_absolute_public_url(path),
+            }
+            for position, (name, path) in enumerate(items, start=1)
+        ],
+    }
+
+
+def article_schema(
+    *,
+    headline: str,
+    description: str,
+    path: str,
+    date_published: datetime,
+    date_modified: datetime,
+) -> dict:
+    url = build_absolute_public_url(path)
+    return {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": headline,
+        "description": description,
+        "url": url,
+        "datePublished": date_published.isoformat(),
+        "dateModified": date_modified.isoformat(),
+        "publisher": publisher_schema(),
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
     }
 
 

@@ -49,7 +49,6 @@ class StaticViewSitemap(ConfiguredSitemapMixin, sitemaps.Sitemap):
         """
         return [
             "landing",
-            "uses",
             "privacy_policy",
             "terms_of_service",
             "pricing",

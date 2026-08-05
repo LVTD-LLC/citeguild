@@ -28,6 +28,7 @@ from apps.pages.services import (
     blog_index_url,
     blog_post_schema,
     get_blog_post,
+    homepage_schema,
     json_ld,
     list_blog_posts,
 )
@@ -48,6 +49,7 @@ class LandingPageView(TemplateView):
             messages.success(self.request, "Thanks for subscribing, I hope you enjoy the app!")
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
+        context["schema_json"] = json_ld(homepage_schema())
         return context
 
 
