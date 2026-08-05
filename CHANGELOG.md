@@ -9,6 +9,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Added a source-verified guide to seven current HARO alternatives, including a
+  decision framework for journalist requests versus persistent agent retrieval,
+  enriched blog schema, and contextual homepage and pricing links.
 - Added an owner-scoped sitemap details page with indexing and sync status,
   paginated cross-site links given and received, editable site metadata, safe
   confirmed deletion, and dashboard navigation.

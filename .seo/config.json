@@ -60,9 +60,17 @@
       "backlink_targets": {
         "key": "cd58d6fe-4e69-463b-8ce4-93a84393c314",
         "url": "https://rowset.lvtd.dev/datasets/cd58d6fe-4e69-463b-8ce4-93a84393c314"
+      },
+      "content_ledger": {
+        "key": "2a5f31de-69dd-4e44-90d1-7caae43c2595",
+        "url": "https://rowset.lvtd.dev/datasets/2a5f31de-69dd-4e44-90d1-7caae43c2595"
+      },
+      "research_briefs": {
+        "key": "148cfe19-da70-43c8-9be9-355fe00126f7",
+        "url": "https://rowset.lvtd.dev/datasets/148cfe19-da70-43c8-9be9-355fe00126f7"
       }
     },
     "schema_version": "1.0",
-    "last_sync_at": "2026-08-05T15:20:49Z"
+    "last_sync_at": "2026-08-05T21:04:14Z"
   }
 }
