@@ -288,6 +288,14 @@ def test_pydantic_embedding_client_attributes_openrouter_usage_to_citeguild(sett
     assert headers["X-Title"] == "CiteGuild"
 
 
+def test_pydantic_embedding_client_defers_provider_without_api_key(settings):
+    settings.OPENROUTER_API_KEY = ""
+
+    client = PydanticEmbeddingClient("openrouter:openai/text-embedding-3-small")
+
+    assert client.embedder.model == "openrouter:openai/text-embedding-3-small"
+
+
 @pytest.mark.parametrize(
     ("retryable", "expected"),
     [(False, "failed:provider_error"), (True, None)],
