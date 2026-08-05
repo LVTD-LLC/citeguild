@@ -76,10 +76,8 @@
                                            rel="noopener noreferrer">{{ project.normalized_sitemap_url }}</a>
                                     </div>
                                     <div class="flex shrink-0 items-center gap-3">
-                                        <button type="button"
-                                                class="app-button-secondary"
-                                                data-open-rename-site
-                                                @click="$refs.editSiteDialog{{ forloop.counter }}.showModal()">Edit name</button>
+                                        <a href="{% url 'sitemap_details' project.uuid %}"
+                                           class="app-button-secondary">View details</a>
                                         <span class="inline-flex w-fit rounded-full px-3 py-1 text-base font-semibold sm:text-sm {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">
                                             {{ project.get_state_display }}
                                         </span>
@@ -156,38 +154,6 @@
                                         <button type="submit" class="app-button-secondary mt-3">Retry sync</button>
                                     </form>
                                 {% endif %}
-                                <dialog x-ref="editSiteDialog{{ forloop.counter }}"
-                                        @click.self="$refs.editSiteDialog{{ forloop.counter }}.close()"
-                                        class="app-dialog backdrop:bg-gray-950/50"
-                                        aria-labelledby="edit-site-heading-{{ project.uuid }}">
-                                    <div class="p-6 sm:p-7">
-                                        <div class="flex items-start justify-between gap-6">
-                                            <div class="min-w-0">
-                                                <h4 id="edit-site-heading-{{ project.uuid }}"
-                                                    class="text-2xl font-semibold tracking-tight text-balance">Edit site name</h4>
-                                                <p class="app-text-muted mt-2 text-base/7 text-pretty">This changes how the site appears in your dashboard.</p>
-                                            </div>
-                                            <button type="button"
-                                                    class="app-button-secondary shrink-0"
-                                                    @click="$refs.editSiteDialog{{ forloop.counter }}.close()">Close</button>
-                                        </div>
-                                        <form method="post"
-                                              action="{% url 'rename_site' project.uuid %}"
-                                              class="mt-6">
-                                            {% csrf_token %}
-                                            <label for="site-name-{{ project.uuid }}" class="block font-semibold">Site name</label>
-                                            <input id="site-name-{{ project.uuid }}"
-                                                   type="text"
-                                                   name="name"
-                                                   value="{{ project.name }}"
-                                                   maxlength="120"
-                                                   autocomplete="organization"
-                                                   required
-                                                   class="app-input mt-1 block w-full" />
-                                            <button type="submit" class="app-button-primary mt-6 w-full">Save name</button>
-                                        </form>
-                                    </div>
-                                </dialog>
                             </li>
                         {% endfor %}
                     </ul>

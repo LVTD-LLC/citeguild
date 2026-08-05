@@ -189,7 +189,11 @@ def test_collection_health_rejects_missing_or_incompatible_collection():
 
 
 def test_index_and_deactivation_queues_are_gated_and_pass_only_durable_ids(settings, monkeypatch):
-    from apps.search.qdrant import queue_article_deactivation, queue_article_index
+    from apps.search.qdrant import (
+        queue_article_deactivation,
+        queue_article_index,
+        queue_project_deletion,
+    )
 
     calls = []
     monkeypatch.setattr(
@@ -200,10 +204,12 @@ def test_index_and_deactivation_queues_are_gated_and_pass_only_durable_ids(setti
     settings.CITEGUILD_INDEXING_ENABLED = False
     assert queue_article_index(article_uuid) is None
     assert queue_article_deactivation(article_uuid) is None
+    assert queue_project_deletion(article_uuid) is None
 
     settings.CITEGUILD_INDEXING_ENABLED = True
     assert queue_article_index(article_uuid) == "task-id"
     assert queue_article_deactivation(article_uuid) == "task-id"
+    assert queue_project_deletion(article_uuid) == "task-id"
     assert calls == [
         (
             ("apps.search.qdrant.index_article", article_uuid),
@@ -213,7 +219,43 @@ def test_index_and_deactivation_queues_are_gated_and_pass_only_durable_ids(setti
             ("apps.search.qdrant.remove_article_point", article_uuid),
             {"group": f"article-deactivate:{article_uuid}"},
         ),
+        (
+            ("apps.search.qdrant.delete_project_points", article_uuid),
+            {"group": f"project-delete:{article_uuid}"},
+        ),
     ]
+
+
+@pytest.mark.django_db
+@override_settings(
+    QDRANT_COLLECTION="test-articles",
+    EMBEDDING_MODEL="test:embedding-v1",
+    EMBEDDING_DIMENSIONS=3,
+)
+def test_delete_project_points_removes_only_matching_project(profile):
+    from apps.core.article_ingestion import ArticleIngestionService
+    from apps.core.tests.test_article_ingestion import create_project, create_sync, extraction_for
+    from apps.search.qdrant import delete_project_points, upsert_article
+
+    first = create_article(profile)
+    second_project = create_project(profile, "keep-vector.example")
+    _sync, [work] = create_sync(
+        second_project,
+        "keep-vector",
+        "https://keep-vector.example/post",
+    )
+    extraction_for(work)
+    second = ArticleIngestionService.ingest(work=work, queue_embedding=False)
+    add_embedding(first)
+    add_embedding(second)
+    client = article_client()
+    upsert_article(article=first, client=client)
+    upsert_article(article=second, client=client)
+
+    assert delete_project_points(str(first.project.uuid), client=client) == str(first.project.uuid)
+
+    assert client.retrieve("test-articles", ids=[str(first.qdrant_point_id)]) == []
+    assert len(client.retrieve("test-articles", ids=[str(second.qdrant_point_id)])) == 1
 
 
 @pytest.mark.django_db
