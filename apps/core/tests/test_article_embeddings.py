@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
+from pydantic_ai.embeddings.openai import OpenAIEmbeddingModel
 from pydantic_ai.exceptions import ModelHTTPError
 
 from apps.core.article_embeddings import (
@@ -271,6 +272,20 @@ def test_provider_http_failure_is_retryable_without_leaking_response_body():
     assert raised.value.code == "provider_http_error"
     assert raised.value.retryable is True
     assert "private" not in str(raised.value)
+
+
+def test_pydantic_embedding_client_attributes_openrouter_usage_to_citeguild(settings):
+    settings.OPENROUTER_API_KEY = "openrouter-test-key"
+    settings.OPENROUTER_APP_URL = "https://citeguild.lvtd.dev"
+    settings.OPENROUTER_APP_TITLE = "CiteGuild"
+
+    client = PydanticEmbeddingClient("openrouter:openai/text-embedding-3-small")
+
+    model = client.embedder.model
+    assert isinstance(model, OpenAIEmbeddingModel)
+    headers = model._provider.client.default_headers
+    assert headers["HTTP-Referer"] == "https://citeguild.lvtd.dev"
+    assert headers["X-Title"] == "CiteGuild"
 
 
 @pytest.mark.parametrize(

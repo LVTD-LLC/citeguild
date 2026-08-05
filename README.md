@@ -548,7 +548,7 @@ Optional feature variables:
 | `APPRISE_API_URL`, `APPRISE_CONFIG_KEY`, `APPRISE_BASIC_AUTH_USER`, `APPRISE_BASIC_AUTH_PASSWORD`, `APPRISE_NOTIFICATION_FORMAT`, `APPRISE_REQUEST_TIMEOUT`, `ADMIN_NOTIFICATION_EMAIL_FALLBACK`, `ADMIN_NOTIFICATION_EMAIL_RECIPIENTS` | Admin/internal notifications through Apprise. |
 
 
-| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL_FAST`, `OPENROUTER_MODEL_SMART` | Product AI model routing through OpenRouter. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_APP_URL`, `OPENROUTER_APP_TITLE`, `OPENROUTER_MODEL_FAST`, `OPENROUTER_MODEL_SMART` | Product AI model routing and app attribution through OpenRouter. |
 
 
 | `HEALTHCHECKS_PING_BASE_URL` | Optional outbound Healthchecks ping URL prefix. Leave empty to disable pings. |

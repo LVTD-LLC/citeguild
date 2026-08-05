@@ -21,6 +21,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Fixed
 
+- OpenRouter agent and embedding requests now share explicit CiteGuild app
+  attribution instead of leaving deferred embedding requests unattributed.
 - Sentry releases now fall back to the immutable image commit when no explicit
   Sentry or service release is configured.
 - Production deploys now pin the CapRover CLI to the last known-good release,

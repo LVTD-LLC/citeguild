@@ -660,6 +660,8 @@ SHELL_PLUS_IMPORTS = [
 ]
 
 OPENROUTER_API_KEY = env("OPENROUTER_API_KEY", default="")
+OPENROUTER_APP_URL = env("OPENROUTER_APP_URL", default=SITE_URL).rstrip("/")
+OPENROUTER_APP_TITLE = env("OPENROUTER_APP_TITLE", default="CiteGuild")
 AI_MODELS = {
     "fast": env("OPENROUTER_MODEL_FAST", default="openai/gpt-5-nano"),
     "smart": env("OPENROUTER_MODEL_SMART", default="anthropic/claude-sonnet-4.5"),

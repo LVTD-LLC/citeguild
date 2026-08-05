@@ -489,6 +489,11 @@ Optional product AI features use Pydantic AI through OpenRouter by default, so o
 - API key from [OpenRouter](https://openrouter.ai/keys)
 - Required before calling `apps.core.agents.build_model`
 
+**OPENROUTER_APP_URL**, **OPENROUTER_APP_TITLE**
+- Attribution sent with every Pydantic AI model and embedding request
+- Default to `SITE_URL` and `CiteGuild`
+- OpenRouter uses the app URL as the attribution identifier and the title as its display name
+
 **OPENROUTER_MODEL_FAST**
 - OpenRouter model id for latency-sensitive work
 - Defaults to `openai/gpt-5-nano`

@@ -20,6 +20,7 @@ from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 from apps.core.choices import ArticleEmbeddingStates, ArticleStates, ExtractionStates
 from apps.core.funnel_analytics import EMBEDDING_COMPLETED, track_funnel_event
 from apps.core.models import Article, ArticleEmbedding, Profile, Project
+from apps.core.openrouter import build_openrouter_embedding_model
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class EmbeddingClient(Protocol):
 
 class PydanticEmbeddingClient:
     def __init__(self, model: str):
-        self.embedder = Embedder(model)
+        self.embedder = Embedder(build_openrouter_embedding_model(model))
 
     def embed(self, text: str, *, dimensions: int) -> EmbeddingResponse:
         try:
