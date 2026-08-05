@@ -16,7 +16,7 @@
 | # | Phase | Pattern | Status | PR |
 |---:|---|---|---|---|
 | 0 | Technical foundations and measurement | Setup | completed | [#54](https://github.com/LVTD-LLC/citeguild/pull/54) |
-| 1 | Featured alternative for former HARO users | Alternatives | pending | — |
+| 1 | Current HARO alternatives editorial guide | Editorial | completed | [#58](https://github.com/LVTD-LLC/citeguild/pull/58) |
 | 2 | Tavily alternative for editorial source retrieval | Alternatives | pending | — |
 | 3 | Backlinker AI alternative | Alternatives | pending | — |
 | 4 | Exa alternative for opted-in editorial sources | Alternatives | pending | — |
@@ -72,7 +72,7 @@ Private evidence dataset: [CiteGuild SEO Tool Evidence](https://rowset.lvtd.dev/
 |---|---|---|
 | Homepage | Public, indexable | Product promise and membership model |
 | Pricing | Public, indexable | $10 monthly, unlimited sites, no trial/free tier |
-| Journal | Public index, no posts yet | Blog index and schema infrastructure |
+| Journal | Public index with the HARO alternatives guide | Blog index, article, and schema infrastructure |
 | Authenticated docs | `noindex`, login required | MCP/CLI/API product documentation is not a public SEO surface |
 | `/uses` | Public transparency page, `noindex` and excluded from sitemap | Do not target generic technology-stack intent or link from SEO page families |
 
@@ -88,7 +88,7 @@ Private evidence dataset: [CiteGuild SEO Tool Evidence](https://rowset.lvtd.dev/
 | `citeguild/sitemaps.py` | Static and blog sitemap generation |
 | `frontend/templates/robots.txt` | Crawl rules and sitemap reference |
 | `apps/pages/services.py` | Blog metadata and JSON-LD helpers |
-| `apps/pages/posts/` | Repository-backed public posts; currently empty |
+| `apps/pages/posts/` | Repository-backed public posts, beginning with the HARO alternatives guide |
 | `apps/core/analytics.py` and `ANALYTICS.md` | Canonical product events and privacy contract |
 
 ## Keyword Research Appendix
@@ -107,7 +107,7 @@ Private opportunity dataset: [CiteGuild SEO Opportunities](https://rowset.lvtd.d
 
 | Phase | Target | Measured demand | KD | CPC | Confidence | Positioning constraint |
 |---:|---|---:|---:|---:|---|---|
-| 1 | `/alternatives/featured` | `haro alternatives` 90 | 0 | $36.15 | measured | Journalist requests are not the same as an always-on agent source index. |
+| 1 | `/blog/haro-alternatives` | `haro alternatives` 90 | 0 | $36.15 | measured | Plural listicle intent; compare active request services and distinguish persistent agent retrieval. |
 | 2 | `/alternatives/tavily` | `tavily alternatives` 70 | 0 | $14.27 | measured | Tavily searches the broad web; CiteGuild searches opted-in editorial sources. |
 | 3 | `/alternatives/backlinker-ai` | Competitor brand 50 | 2 | $16.02 | derived modifier | CiteGuild does not automate outreach or guarantee 3+ links. |
 | 4 | `/alternatives/exa` | `exa alternatives` 30 | — | $7.81 | measured | Exa is broad neural search; CiteGuild is a focused member corpus. |
@@ -208,9 +208,15 @@ Third-party `exa vs tavily` has measured demand of 90, KD 0, but is out of scope
 
 **Verification:** production sitemap and robots return 200; no duplicate titles/descriptions; every indexable page has one H1 and a self-canonical; homepage schema validates; GSC records the sitemap; organic landing attribution is measurable or explicitly assigned to PostHog.
 
-### Phases 1–8 — Alternatives family
+### Phase 1 — HARO alternatives editorial guide
 
-Build the eight pages in tracker order. Every page must contain at least 600 words, `SoftwareApplication`, `BreadcrumbList`, `FAQPage`, at least three honest tradeoffs where the competitor wins, and the required sibling/feature/tool links. If Phase 0 does not create enough public feature/tool destinations, do not fake the link minimum—build the spine first and update the tracker.
+Publish `/blog/haro-alternatives` as a current, balanced listicle because the measured query has plural comparison intent. Verify the HARO/Featured/Connectively relationship and every named service against current official sources. Compare options with consistent criteria, explain when request platforms win, and position CiteGuild as a different persistent source-discovery workflow rather than a direct journalist-request replacement. Emit `BlogPosting`, `ItemList`, `BreadcrumbList`, and `FAQPage`, add at least three in-body internal links and two inbound links, and keep the article above 1,500 words.
+
+The previously planned `/alternatives/featured` route is retired from this sprint to prevent intent mismatch and cannibalization.
+
+### Phases 2–8 — Alternatives family
+
+Build the seven remaining pages in tracker order. Every page must contain at least 600 words, `SoftwareApplication`, `BreadcrumbList`, `FAQPage`, at least three honest tradeoffs where the competitor wins, and the required sibling/feature/tool links. If Phase 0 does not create enough public feature/tool destinations, do not fake the link minimum—build the spine first and update the tracker.
 
 Refresh pricing and features from each competitor's official site immediately before writing. Target the keyword and constraints in the Alternatives table above.
 
@@ -236,4 +242,4 @@ The private [CiteGuild SEO Backlink Targets](https://rowset.lvtd.dev/datasets/cd
 
 ## Current handoff
 
-Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). The measured page order remains unchanged; the product-memo competitor watchlist requires live demand and product re-verification before promotion. The next pending phase is Phase 1, the Featured alternative for former HARO users.
+Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). Phase 1 is complete in [PR #58](https://github.com/LVTD-LLC/citeguild/pull/58) as an editorial guide matching the plural listicle SERP; `/alternatives/featured` has been retired. The next pending phase is the Tavily alternative. The product-memo competitor watchlist still requires live demand and product re-verification before promotion.

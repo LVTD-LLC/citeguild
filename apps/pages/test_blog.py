@@ -1,5 +1,6 @@
 import json
 from html import escape
+from pathlib import Path
 
 import pytest
 from django.contrib.auth.models import AnonymousUser
@@ -9,8 +10,10 @@ from django.urls import reverse
 
 from apps.pages.services import (
     BLOG_DEFAULT_IMAGE_URL,
+    blog_post_schema,
     get_blog_post,
     list_blog_posts,
+    load_blog_post,
     publisher_schema,
 )
 from citeguild.sitemaps import BlogSitemap, StaticViewSitemap, sitemaps
@@ -265,9 +268,59 @@ def test_blog_post_schema_uses_checked_in_markdown_content(blog_posts_dir):
     post = get_blog_post("schema-post")
     schema = json.loads(post_schema_json(post))
 
-    assert schema["headline"] == "Schema post"
-    assert schema["url"] == "https://canonical.example/blog/schema-post"
-    assert schema["articleBody"] == "The article body comes from markdown."
+    article = schema["@graph"][0]
+    breadcrumbs = schema["@graph"][1]
+
+    assert article["headline"] == "Schema post"
+    assert article["url"] == "https://canonical.example/blog/schema-post"
+    assert article["articleBody"] == "The article body comes from markdown."
+    assert breadcrumbs["@type"] == "BreadcrumbList"
+    assert breadcrumbs["itemListElement"][-1]["item"] == article["url"]
+
+
+def test_blog_post_schema_supports_item_lists_and_faqs(blog_posts_dir):
+    (blog_posts_dir / "alternatives-post.md").write_text(
+        "---\n"
+        "title: Alternatives post\n"
+        "description: Alternatives description.\n"
+        "published_at: 2026-08-05\n"
+        "item_list:\n"
+        "  - name: First tool\n"
+        "    url: https://first.example\n"
+        "faqs:\n"
+        "  - question: Which tool is first?\n"
+        "    answer: First tool is listed first.\n"
+        "---\n\n"
+        "Article body.\n",
+        encoding="utf-8",
+    )
+
+    schema = json.loads(post_schema_json(get_blog_post("alternatives-post")))
+    types = {item["@type"] for item in schema["@graph"]}
+    item_list = next(item for item in schema["@graph"] if item["@type"] == "ItemList")
+    faq = next(item for item in schema["@graph"] if item["@type"] == "FAQPage")
+
+    assert types == {"BlogPosting", "BreadcrumbList", "ItemList", "FAQPage"}
+    assert item_list["itemListElement"][0]["name"] == "First tool"
+    assert faq["mainEntity"][0]["name"] == "Which tool is first?"
+
+
+def test_checked_in_haro_alternatives_article_meets_content_contract(settings):
+    settings.SITE_URL = "https://citeguild.lvtd.dev"
+    path = Path(__file__).parent / "posts" / "haro-alternatives.md"
+    post = load_blog_post(path, content_dir=path.parent)
+    schema = blog_post_schema(post)
+
+    assert post.title == "7 Best HARO Alternatives for 2026"
+    assert len(post.description) <= 155
+    assert len(post.content.split()) >= 1500
+    assert post.content.count("https://citeguild.lvtd.dev/") >= 3
+    assert {item["@type"] for item in schema["@graph"]} == {
+        "BlogPosting",
+        "BreadcrumbList",
+        "ItemList",
+        "FAQPage",
+    }
 
 
 def post_schema_json(post):

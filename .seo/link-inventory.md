@@ -33,7 +33,9 @@ No public tools exist yet.
 
 ### Blog posts
 
-No public blog posts exist yet; `apps/pages/posts/` contains only `.gitkeep`.
+| Slug | URL | Title / anchor candidate | Inbound links from |
+|---|---|---|---|
+| `/blog/haro-alternatives` | https://citeguild.lvtd.dev/blog/haro-alternatives | HARO alternatives guide; current source-request platforms; journalist requests versus agent retrieval | Homepage, pricing, blog index |
 
 ## SEO-sprint-generated pages
 
@@ -41,7 +43,6 @@ No public blog posts exist yet; `apps/pages/posts/` contains only `.gitkeep`.
 
 | Slug | Ships in phase | URL | Inbound links from | Outbound links to |
 |---|---:|---|---|---|
-| `featured` | 1 | `/alternatives/featured` | Planned | Homepage, pricing, sibling alternatives |
 | `tavily` | 2 | `/alternatives/tavily` | Planned | Homepage, pricing, sibling alternatives |
 | `backlinker-ai` | 3 | `/alternatives/backlinker-ai` | Planned | Homepage, pricing, sibling alternatives |
 | `exa` | 4 | `/alternatives/exa` | Planned | Homepage, pricing, sibling alternatives |

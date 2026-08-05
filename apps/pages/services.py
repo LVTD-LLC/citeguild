@@ -59,6 +59,8 @@ class BlogPost:
     image_url: str
     image_alt: str
     robots: str
+    item_list: tuple[tuple[str, str], ...]
+    faqs: tuple[tuple[str, str], ...]
     source_path: Path
 
     def get_absolute_url(self) -> str:
@@ -107,6 +109,42 @@ def _coerce_string_list(value, field_name: str) -> tuple[str, ...]:
     else:
         raise BlogPostValidationError(f"{field_name} must be a string or list")
     return tuple(part for part in values if part)
+
+
+def _coerce_named_links(value, field_name: str) -> tuple[tuple[str, str], ...]:
+    if value in (None, ""):
+        return ()
+    if not isinstance(value, list):
+        raise BlogPostValidationError(f"{field_name} must be a list")
+
+    items = []
+    for item in value:
+        if not isinstance(item, dict):
+            raise BlogPostValidationError(f"{field_name} entries must be mappings")
+        name = _coerce_string(item.get("name"), f"{field_name}.name")
+        url = _coerce_string(item.get("url"), f"{field_name}.url")
+        if not name or not url:
+            raise BlogPostValidationError(f"{field_name} entries require name and url")
+        items.append((name, url))
+    return tuple(items)
+
+
+def _coerce_faqs(value) -> tuple[tuple[str, str], ...]:
+    if value in (None, ""):
+        return ()
+    if not isinstance(value, list):
+        raise BlogPostValidationError("faqs must be a list")
+
+    items = []
+    for item in value:
+        if not isinstance(item, dict):
+            raise BlogPostValidationError("faqs entries must be mappings")
+        question = _coerce_string(item.get("question"), "faqs.question")
+        answer = _coerce_string(item.get("answer"), "faqs.answer")
+        if not question or not answer:
+            raise BlogPostValidationError("faqs entries require question and answer")
+        items.append((question, answer))
+    return tuple(items)
 
 
 def _ensure_aware(value: datetime) -> datetime:
@@ -162,6 +200,8 @@ def load_blog_post(path: Path, *, content_dir: Path | None = None) -> BlogPost:
     image = _coerce_string(metadata.get("image"), "image")
     image_alt = _coerce_string(metadata.get("image_alt"), "image_alt")
     robots = _coerce_string(metadata.get("robots", "index, follow"), "robots")
+    item_list = _coerce_named_links(metadata.get("item_list"), "item_list")
+    faqs = _coerce_faqs(metadata.get("faqs"))
 
     content = post.content.strip()
     html = markdown.markdown(content, extensions=BLOG_MARKDOWN_EXTENSIONS)
@@ -182,6 +222,8 @@ def load_blog_post(path: Path, *, content_dir: Path | None = None) -> BlogPost:
         image_url=build_absolute_public_url(image) if image else BLOG_DEFAULT_IMAGE_URL,
         image_alt=image_alt,
         robots=robots,
+        item_list=item_list,
+        faqs=faqs,
         source_path=path,
     )
 
@@ -345,8 +387,7 @@ def article_schema(
 
 
 def blog_post_schema(post: BlogPost) -> dict:
-    schema = {
-        "@context": "https://schema.org",
+    article = {
         "@type": "BlogPosting",
         "headline": post.title,
         "description": post.description,
@@ -360,8 +401,55 @@ def blog_post_schema(post: BlogPost) -> dict:
         "mainEntityOfPage": {"@type": "WebPage", "@id": post.canonical_url},
     }
     if post.metadata_keywords:
-        schema["keywords"] = list(post.metadata_keywords)
-    return schema
+        article["keywords"] = list(post.metadata_keywords)
+
+    graph = [
+        article,
+        {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": build_absolute_public_url("/"),
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Blog",
+                    "item": blog_index_url(),
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": post.title,
+                    "item": post.canonical_url,
+                },
+            ],
+        },
+    ]
+    if post.item_list:
+        graph.append(
+            {
+                "@type": "ItemList",
+                "name": f"Options covered in {post.title}",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": position,
+                        "name": name,
+                        "url": url,
+                    }
+                    for position, (name, url) in enumerate(post.item_list, start=1)
+                ],
+            }
+        )
+    if post.faqs:
+        faq = faq_page_schema(list(post.faqs))
+        faq.pop("@context")
+        graph.append(faq)
+    return {"@context": "https://schema.org", "@graph": graph}
 
 
 def blog_index_schema(posts: list[BlogPost]) -> dict:
