@@ -7,6 +7,11 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-08-05
 
+### Fixed
+
+- Production deploys now pin the CapRover CLI to the last known-good release,
+  avoiding the conflicting deploy flags introduced in CapRover CLI 2.4.0.
+
 ### Changed
 
 - Adopted a plainspoken source-discovery and backlink-outcome direction across
