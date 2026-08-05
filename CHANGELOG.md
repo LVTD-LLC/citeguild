@@ -21,6 +21,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Fixed
 
+- Dashboard site pagination now counts the owner-scoped project list directly
+  and hydrates only the visible page with bounded aggregate queries, avoiding
+  the repeated multi-join count that dominated production page loads. Per-site
+  link totals also exclude preserved legacy same-site edges.
 - OpenRouter agent and embedding requests now share explicit CiteGuild app
   attribution instead of leaving deferred embedding requests unattributed.
 - Sentry releases now fall back to the immutable image commit when no explicit
