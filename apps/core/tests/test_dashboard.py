@@ -9,11 +9,11 @@ from django.utils import timezone
 
 from apps.core.choices import ProjectSyncStates
 from apps.core.dashboard import DashboardService
-from apps.core.models import DetectedNetworkLink, ProjectSyncRequest
+from apps.core.models import DetectedNetworkLink, OutboundLinkObservation, ProjectSyncRequest
 from apps.core.network_graph import DetectedNetworkLinkService
 from apps.core.projects import ProjectService
 
-from .test_network_graph import create_article
+from .test_network_graph import create_article, create_articles_for_project
 from .test_views import subscribe
 
 
@@ -67,6 +67,11 @@ def test_dashboard_service_is_owner_scoped_bounded_and_reconciles_counts(profile
         project_names = [project.name for project in dashboard.projects]
 
     assert len(queries) <= 7
+    count_queries = [
+        query["sql"] for query in queries if query["sql"].startswith("SELECT COUNT(*)")
+    ]
+    assert len(count_queries) == 1
+    assert "JOIN" not in count_queries[0]
     assert "private-other.example" not in project_names
     assert dashboard.site_count == 2
     source_card = next(project for project in dashboard.projects if project.pk == source.project_id)
@@ -81,6 +86,47 @@ def test_dashboard_service_is_owner_scoped_bounded_and_reconciles_counts(profile
     assert source_card.latest_sync_failed_count == 1
     assert source_card.latest_sync_pending_count == 2
     assert source_card.latest_sync_error_code == "page_failures"
+
+
+@pytest.mark.django_db
+def test_dashboard_excludes_legacy_same_site_links_from_counts(profile):
+    subscribe(profile)
+    project = ProjectService.create(
+        owner=profile,
+        name="Self link site",
+        sitemap_url="https://dashboard-self-link.example/sitemap.xml",
+    )
+    target, source = create_articles_for_project(
+        project,
+        ("guide", ()),
+        (
+            "post",
+            (
+                {
+                    "url": "https://dashboard-self-link.example/guide",
+                    "anchor_text": "Self link",
+                },
+            ),
+        ),
+    )
+    observation = OutboundLinkObservation.objects.get(source_article=source)
+    DetectedNetworkLink.objects.create(
+        observation=observation,
+        source_article=source,
+        target_project=target.project,
+        target_article=target,
+        normalized_destination_url=target.normalized_canonical_url,
+        anchor_text="Self link",
+        first_detected_at=observation.first_seen_at,
+        last_detected_at=observation.last_seen_at,
+        is_active=True,
+    )
+
+    dashboard = DashboardService.for_owner(profile)
+    project = dashboard.projects[0]
+
+    assert project.detected_links_given_count == 0
+    assert project.detected_links_received_count == 0
 
 
 @pytest.mark.django_db
