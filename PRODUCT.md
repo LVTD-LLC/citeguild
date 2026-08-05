@@ -41,7 +41,9 @@ useful sources; it does not buy, require, or guarantee a link.
 ## Core Loop
 
 1. A person signs up and starts the $10 monthly subscription.
-2. They add a site name and sitemap URL; sitemap support is mandatory for MVP.
+2. They submit a sitemap URL; CiteGuild infers the initial site name from the
+   normalized host and lets them rename it later. Sitemap support is mandatory
+   for MVP.
 3. CiteGuild parses the sitemap (and sitemap indexes), fetches each page,
    extracts the main article, canonicalizes it, and records basic metadata.
 4. CiteGuild creates one embedding for the whole article and stores the vector

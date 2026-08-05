@@ -1,113 +1,70 @@
 {% extends 'base_app.html' %}
-{% load static %}
 {% block meta %}
-    <title>Admin Panel | CiteGuild</title>
+    <title>Admin | CiteGuild</title>
     <meta name="robots" content="noindex, nofollow" />
 {% endblock meta %}
 {% block content %}
-    <div class="container px-4 py-8 mx-auto max-w-7xl bg-white lg:min-w-0 md:pt-10 lg:flex-1">
-        <div class="p-4 border-t border-b border-gray-200 sm:p-6 lg:p-8 xl:border-t-0">
-            <div class="flex flex-col gap-4 justify-between items-start sm:flex-row sm:items-center">
-                <h1 class="flex-1 pt-2 text-2xl font-bold text-gray-900">Admin Panel</h1>
-            </div>
+    <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-18">
+        <div class="border-b border-gray-950/10 pb-10 dark:border-white/10">
+            <h1 class="text-4xl font-semibold tracking-tight text-balance">Admin</h1>
+            <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">A compact view of account growth and recent signups.</p>
         </div>
-        <div class="px-6 py-8">
-            <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
-                <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Total Users</p>
-                            <p class="mt-2 text-3xl font-bold text-gray-900">{{ total_users }}</p>
-                        </div>
-                        <div class="p-3 bg-blue-100 rounded-lg">
-                            <svg class="w-6 h-6 text-blue-600"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                </path>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 mt-4 text-xs">
-                        <span class="text-gray-600">Week: <strong class="text-gray-900">{{ new_users_week }}</strong></span>
-                        <span class="text-gray-600">Month: <strong class="text-gray-900">{{ new_users_month }}</strong></span>
-                    </div>
+        <section class="@container py-10" aria-labelledby="account-totals-heading">
+            <h2 id="account-totals-heading" class="sr-only">Account totals</h2>
+            <dl class="grid gap-8 @3xl:grid-cols-2">
+                <div class="border-b border-gray-950/10 pb-8 @3xl:border-b-0 @3xl:border-r @3xl:pr-8 dark:border-white/10">
+                    <dt class="font-medium text-gray-700 dark:text-gray-200">Total users</dt>
+                    <dd class="mt-2 text-4xl font-semibold tabular-nums">
+                        {{ total_users }}
+                    </dd>
+                    <dd class="app-text-muted mt-3 text-base/7 sm:text-sm/6">
+                        {{ new_users_week }} this week · {{ new_users_month }} this month.
+                    </dd>
                 </div>
-                <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Total Profiles</p>
-                            <p class="mt-2 text-3xl font-bold text-gray-900">{{ total_profiles }}</p>
-                        </div>
-                        <div class="p-3 bg-green-100 rounded-lg">
-                            <svg class="w-6 h-6 text-green-600"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                </path>
-                            </svg>
-                        </div>
-                    </div>
+                <div class="@3xl:pl-8">
+                    <dt class="font-medium text-gray-700 dark:text-gray-200">Total profiles</dt>
+                    <dd class="mt-2 text-4xl font-semibold tabular-nums">
+                        {{ total_profiles }}
+                    </dd>
                     {% if total_users > 0 %}
-                        <p class="mt-4 text-xs text-gray-600">
-                            <strong class="text-gray-900">{{ total_profiles|floatformat:0 }}/{{ total_users }}</strong> users ({% widthratio total_profiles total_users 100 %}%)
-                        </p>
+                        <dd class="app-text-muted mt-3 text-base/7 sm:text-sm/6">{{ total_profiles|floatformat:0 }} of {{ total_users }} users · {% widthratio total_profiles total_users 100 %}%.</dd>
                     {% endif %}
                 </div>
+            </dl>
+        </section>
+        <section class="border-t border-gray-950/10 pt-8 dark:border-white/10"
+                 aria-labelledby="recent-users-heading">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <h2 id="recent-users-heading"
+                    class="text-2xl font-semibold tracking-tight">Recent users</h2>
+                <p class="app-text-muted text-base/7 sm:text-sm/6">{{ avg_users_per_day|floatformat:1 }} average signups per day over 30 days.</p>
             </div>
-            <div class="mb-8">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                    <div class="p-6 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Recent Users</h2>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+            <div class="-mx-6 -my-2 mt-6 overflow-x-auto whitespace-nowrap lg:-mx-8">
+                <div class="inline-block min-w-full px-6 py-2 align-middle lg:px-8">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-950/10 dark:border-white/10">
+                                <th class="whitespace-nowrap py-3 pr-6 text-left font-medium">Email</th>
+                                <th class="whitespace-nowrap px-6 py-3 text-left font-medium">Username</th>
+                                <th class="whitespace-nowrap py-3 pl-6 text-left font-medium">Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-950/10 dark:divide-white/10">
+                            {% for user in recent_users %}
                                 <tr>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Email</th>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Username</th>
-                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Joined</th>
+                                    <td class="py-4 pr-6">{{ user.email }}</td>
+                                    <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ user.username }}</td>
+                                    <td class="py-4 pl-6 text-gray-500 dark:text-gray-400">{{ user.date_joined|date:"M d, Y" }}</td>
                                 </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                {% for user in recent_users %}
-                                    <tr>
-                                        <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{{ user.email }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ user.username }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ user.date_joined|date:"M d, Y" }}</td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="px-6 py-4 text-sm text-center text-gray-500">No users yet</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="py-8 text-center text-gray-500 dark:text-gray-400">No users yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="p-6 bg-blue-50 rounded-lg border border-blue-200">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0">
-                        <svg class="w-6 h-6 text-blue-600"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                            </path>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800">Quick Stats</h3>
-                        <div class="mt-2 text-sm text-blue-700">
-                            <p>Average Users per Day (Last 30 days): <strong>{{ avg_users_per_day|floatformat:1 }}</strong></p>
-                            <p class="mt-1">Total Profiles: <strong>{{ total_profiles }}</strong></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
 {% endblock content %}

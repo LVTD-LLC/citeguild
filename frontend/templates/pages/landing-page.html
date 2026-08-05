@@ -1,105 +1,68 @@
 {% extends "base_landing.html" %}
+{% block meta %}
+    <title>CiteGuild — Get your articles cited by AI writing agents</title>
+    <meta name="description"
+          content="Make your articles searchable when AI writing agents need a relevant source. Useful matches can earn backlinks without outreach or link swaps." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="{{ public_site_url }}/" />
+{% endblock meta %}
 {% block content %}
-    <div class="isolate relative px-6 mt-16 sm:mt-24 lg:px-8">
-        {% if request.GET.account_deleted %}
-            <div class="mx-auto mb-10 max-w-3xl rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-900/40 dark:bg-green-950/30 dark:text-green-200">
+    {% if request.GET.account_deleted %}
+        <div class="mx-auto max-w-7xl px-6 pt-8 lg:px-8">
+            <div class="max-w-[48ch] rounded-xl bg-green-50 p-4 text-base/7 text-green-900 ring-1 ring-green-700/15 dark:bg-green-950 dark:text-green-100 dark:ring-green-300/15">
                 Your account has been deleted.
             </div>
-        {% endif %}
-        <div class="isolate relative px-6 mt-16 sm:mt-24 lg:px-8">
-            <div class="mx-auto text-center">
-                <h1 class="mx-auto mb-6 max-w-2xl text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                    AI-native editorial source network for relevant agent-discovered citations
-                </h1>
-                <div class="flex flex-col gap-x-6 justify-center items-center mt-10 md:flex-row md:items-end">
-                    <a class="block px-3 py-2 text-sm font-semibold text-white bg-green-600 rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-                       href="{% url 'account_signup' %}"
+        </div>
+    {% endif %}
+    <main class="isolate">
+        <section class="py-24 sm:py-32 lg:py-36">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h1 class="max-w-[20ch] text-5xl font-semibold tracking-tight text-balance sm:text-7xl">Help writing agents find—and cite—your articles.</h1>
+                <p class="mt-7 max-w-[48ch] text-lg/8 text-pretty text-gray-600 dark:text-gray-300">Add your sitemap once. CiteGuild makes eligible articles searchable when an agent needs a relevant source. Useful matches can earn backlinks without outreach or link swaps.</p>
+                <div class="mt-9 text-sm/6">
+                    <a href="{% url 'account_signup' %}"
                        data-posthog-cta="signup"
-                       data-posthog-cta-location="landing_hero">Get Started</a>
+                       data-posthog-cta-location="landing_hero"
+                       class="app-focus inline-flex min-h-12 items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800 dark:bg-green-500 dark:text-gray-950 dark:hover:bg-green-400">Add my articles</a>
                 </div>
             </div>
-        </div>
-    </div>
-    <!-- FAQ Section -->
-    <div class="bg-white dark:bg-gray-900">
-        <div class="px-6 py-24 mx-auto max-w-7xl sm:py-32 lg:px-8 lg:py-40">
-            <div class="mx-auto max-w-4xl">
-                <h2 class="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">Frequently asked questions</h2>
-                <dl class="mt-16 divide-y divide-gray-900/10 dark:divide-white/10">
-                    <div class="py-6 first:pt-0 last:pb-0">
-                        <dt>
-                            <button type="button"
-                                    command="--toggle"
-                                    commandfor="faq-0"
-                                    class="flex justify-between items-start w-full text-left text-gray-900 dark:text-white">
-                                <span class="font-semibold text-base/7">What features are included?</span>
-                                <span class="flex items-center ml-6 h-7">
-                                    <svg viewBox="0 0 24 24"
-                                         fill="none"
-                                         stroke="currentColor"
-                                         stroke-width="1.5"
-                                         data-slot="icon"
-                                         aria-hidden="true"
-                                         class="size-6 [[aria-expanded='true']_&]:hidden">
-                                        <path d="M12 6v12m6-6H6" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <svg viewBox="0 0 24 24"
-                                         fill="none"
-                                         stroke="currentColor"
-                                         stroke-width="1.5"
-                                         data-slot="icon"
-                                         aria-hidden="true"
-                                         class="size-6 [&:not([aria-expanded='true']_*)]:hidden">
-                                        <path d="M18 12H6" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </span>
-                            </button>
-                        </dt>
-                        <el-disclosure id="faq-0" class="[&:not([hidden])]:contents">
-                        <dd class="pr-12 mt-2">
-                            <p class="text-gray-600 text-base/7 dark:text-gray-400">Our platform includes the core workflows you need to get started quickly, with room to customize the experience for your own product.</p>
-                        </dd>
-                        </el-disclosure>
+        </section>
+        <section class="border-y border-gray-950/10 py-20 dark:border-white/10 lg:py-24">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h2 class="max-w-[30ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">What the membership does—and does not do.</h2>
+                <div class="mt-12 divide-y divide-gray-950/10 border-y border-gray-950/10 dark:divide-white/10 dark:border-white/10">
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">It indexes</h3>
+                        <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Eligible articles from every sitemap-backed site on your account.</p>
                     </div>
-                    <div class="py-6 first:pt-0 last:pb-0">
-                        <dt>
-                            <button type="button"
-                                    command="--toggle"
-                                    commandfor="faq-1"
-                                    class="flex justify-between items-start w-full text-left text-gray-900 dark:text-white">
-                                <span class="font-semibold text-base/7">How does pricing work?</span>
-                                <span class="flex items-center ml-6 h-7">
-                                    <svg viewBox="0 0 24 24"
-                                         fill="none"
-                                         stroke="currentColor"
-                                         stroke-width="1.5"
-                                         data-slot="icon"
-                                         aria-hidden="true"
-                                         class="size-6 [[aria-expanded='true']_&]:hidden">
-                                        <path d="M12 6v12m6-6H6" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <svg viewBox="0 0 24 24"
-                                         fill="none"
-                                         stroke="currentColor"
-                                         stroke-width="1.5"
-                                         data-slot="icon"
-                                         aria-hidden="true"
-                                         class="size-6 [&:not([aria-expanded='true']_*)]:hidden">
-                                        <path d="M18 12H6" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </span>
-                            </button>
-                        </dt>
-                        <el-disclosure id="faq-1" hidden class="[&:not([hidden])]:contents">
-                        <dd class="pr-12 mt-2">
-                            <p class="text-gray-600 text-base/7 dark:text-gray-400">CiteGuild has one $10 monthly subscription with unlimited sites. Cancel through Stripe's billing portal; access continues through the paid period.</p>
-                        </dd>
-                        </el-disclosure>
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">It retrieves</h3>
+                        <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Active member articles ranked by relevance to the agent’s draft.</p>
                     </div>
-                </dl>
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">It records</h3>
+                        <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Member-to-member links later detected on published pages.</p>
+                    </div>
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">It does not promise</h3>
+                        <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Backlinks, rankings, placements, reciprocity, anchor text, or automatic publishing.</p>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
+        <section class="bg-green-700 py-16 text-white dark:border-y dark:border-white/10 dark:bg-gray-950">
+            <div class="mx-auto flex max-w-7xl flex-col gap-8 px-6 sm:flex-row sm:items-end sm:justify-between lg:px-8">
+                <div>
+                    <h2 class="max-w-[30ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">One plan. No pricing puzzle.</h2>
+                    <p class="mt-4 max-w-[48ch] text-lg/8 text-pretty text-green-50 dark:text-gray-300">$10 monthly. Unlimited legitimate sitemap-backed sites. No trial.</p>
+                </div>
+                <div class="text-base/7 sm:text-sm/6">
+                    <a class="app-focus border-b border-white pb-1 font-semibold text-white dark:border-green-400 dark:text-green-300"
+                       href="{% url 'account_signup' %}">Join CiteGuild</a>
+                </div>
+            </div>
+        </section>
+    </main>
 {% endblock content %}
 {% block schema %}
     <script type="application/ld+json">
@@ -107,14 +70,9 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "CiteGuild",
-    "description": "AI-native editorial source network for relevant agent-discovered citations",
-    "thumbnailUrl": "https://osig.app/g?site=x&style=logo&font=markerfelt&title=CiteGuild&subtitle=AI-native%20editorial%20source%20network%20for%20relevant%20agent-discovered%20citations",
+    "description": "Make your articles searchable when AI writing agents need a relevant source",
     "url": "{{ public_site_url }}/",
-    "author": {
-      "@type": "Person",
-      "name": "LVTD LLC",
-      "url": "https://lvtd.dev"
-    }
+    "author": {"@type": "Organization", "name": "LVTD LLC", "url": "https://lvtd.dev"}
   }
     </script>
 {% endblock schema %}

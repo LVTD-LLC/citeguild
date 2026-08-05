@@ -189,18 +189,18 @@ class SitemapSubmissionService:
         cls,
         *,
         owner: Profile,
-        name: str,
         sitemap_url: str,
+        name: str | None = None,
         client: SafeFetchClient | None = None,
     ) -> SitemapSubmission:
         owner = Profile.objects.select_related("user").get(pk=owner.pk)
         if not owner.has_active_subscription:
             raise PermissionDenied("An active subscription is required to add a site.")
 
-        normalized_name = name.strip()
+        normalized_url, host = normalize_sitemap_url(sitemap_url)
+        normalized_name = name.strip() if name is not None else host.removeprefix("www.")[:120]
         if not normalized_name or len(normalized_name) > 120:
             raise ValidationError("Site name must contain 1 to 120 characters.")
-        normalized_url, _host = normalize_sitemap_url(sitemap_url)
         validation = validate_sitemap(normalized_url, client=client)
 
         with transaction.atomic():

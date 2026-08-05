@@ -138,13 +138,13 @@ def test_valid_submission_creates_project_and_one_idempotent_initial_sync(profil
 
     submission = SitemapSubmissionService.submit(
         owner=profile,
-        name="Example",
         sitemap_url="https://EXAMPLE.com/sitemap.xml",
         client=client,
     )
     duplicate = SitemapSubmissionService.enqueue_initial_sync(submission.project)
 
     assert submission.project.owner == profile
+    assert submission.project.name == "example.com"
     assert submission.project.normalized_host == "example.com"
     assert submission.sitemap_kind == SitemapDocumentKind.URL_SET
     assert duplicate.pk == submission.sync_request.pk

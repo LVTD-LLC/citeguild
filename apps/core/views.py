@@ -32,10 +32,10 @@ from apps.core.analytics import (
 from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
 from apps.core.crawl_jobs import retry_project_sync
 from apps.core.dashboard import DashboardService
-from apps.core.forms import ProfileUpdateForm, SiteCreateForm
+from apps.core.forms import ProfileUpdateForm, SiteCreateForm, SiteRenameForm
 from apps.core.funnel_analytics import AGENT_CREDENTIAL_CREATED, track_funnel_event
 from apps.core.models import Profile, Project, StripeWebhookEvent
-from apps.core.projects import ProjectHostConflict
+from apps.core.projects import ProjectHostConflict, ProjectService
 from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
 from apps.core.stripe_webhooks import EVENT_HANDLERS
 
@@ -184,8 +184,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
         dashboard = DashboardService.for_owner(
             profile,
             site_page=self.request.GET.get("site_page", 1),
-            given_page=self.request.GET.get("given_page", 1),
-            received_page=self.request.GET.get("received_page", 1),
         )
         context["dashboard"] = dashboard
         context["projects"] = dashboard.projects
@@ -306,6 +304,31 @@ def retry_site_sync(request, project_uuid):
         messages.error(request, str(error))
     else:
         messages.success(request, f"Site sync queued ({str(sync_request.uuid)[:8]}).")
+    return redirect("home")
+
+
+@login_required
+@require_POST
+def rename_site(request, project_uuid):
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    form = SiteRenameForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Enter a site name with 120 characters or fewer.")
+        return redirect("home")
+    try:
+        project = ProjectService.get_for_owner(profile, project_uuid)
+        ProjectService.update(
+            owner=profile,
+            project_uuid=project_uuid,
+            name=form.cleaned_data["name"],
+            sitemap_url=project.normalized_sitemap_url,
+        )
+    except Project.DoesNotExist as error:
+        raise Http404 from error
+    except (PermissionDenied, ValidationError) as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, "Site name updated.")
     return redirect("home")
 
 

@@ -55,9 +55,6 @@ def test_dashboard_service_is_owner_scoped_bounded_and_reconciles_counts(profile
         links=({"url": target.normalized_canonical_url, "anchor_text": "Guide"},),
     )
     DetectedNetworkLinkService.reconcile_article(source)
-    historical = DetectedNetworkLink.objects.get(source_article=source)
-    historical.is_active = False
-    historical.save(update_fields=["is_active", "updated_at"])
     create_failed_sync(source.project)
     outsider = other_profile()
     create_article(outsider, "private-other.example", "private")
@@ -66,22 +63,18 @@ def test_dashboard_service_is_owner_scoped_bounded_and_reconciles_counts(profile
         dashboard = DashboardService.for_owner(
             profile,
             site_page="invalid",
-            given_page=1,
-            received_page=1,
         )
         project_names = [project.name for project in dashboard.projects]
-        given = list(dashboard.links_given)
-        received = list(dashboard.links_received)
 
-    assert len(queries) <= 12
+    assert len(queries) <= 7
     assert "private-other.example" not in project_names
-    assert dashboard.summary.site_count == 2
-    assert dashboard.summary.indexed_article_count == 2
-    assert dashboard.summary.detected_links_given == len(given) == 1
-    assert dashboard.summary.detected_links_received == len(received) == 1
-    assert given[0].is_active is False
-    assert received[0].is_active is False
+    assert dashboard.site_count == 2
     source_card = next(project for project in dashboard.projects if project.pk == source.project_id)
+    target_card = next(project for project in dashboard.projects if project.pk == target.project_id)
+    assert source_card.detected_links_given_count == 1
+    assert source_card.detected_links_received_count == 0
+    assert target_card.detected_links_given_count == 0
+    assert target_card.detected_links_received_count == 1
     assert source_card.latest_sync_state == ProjectSyncStates.PARTIAL
     assert source_card.latest_sync_total_count == 5
     assert source_card.latest_sync_succeeded_count == 2
@@ -91,7 +84,7 @@ def test_dashboard_service_is_owner_scoped_bounded_and_reconciles_counts(profile
 
 
 @pytest.mark.django_db
-def test_dashboard_link_pagination_is_bounded_and_stable(profile):
+def test_dashboard_groups_detected_links_by_site(profile):
     subscribe(profile)
     target = create_article(profile, "page-target.example", "guide")
     for number in range(12):
@@ -109,13 +102,11 @@ def test_dashboard_link_pagination_is_bounded_and_stable(profile):
         )
         DetectedNetworkLinkService.reconcile_article(source)
 
-    first = DashboardService.for_owner(profile, received_page=1)
-    second = DashboardService.for_owner(profile, received_page=2)
+    dashboard = DashboardService.for_owner(profile)
+    target_card = next(project for project in dashboard.projects if project.pk == target.project_id)
 
-    assert first.links_received.paginator.count == 12
-    assert len(first.links_received.object_list) == DashboardService.LINK_PAGE_SIZE
-    assert len(second.links_received.object_list) == 2
-    assert set(first.links_received.object_list).isdisjoint(second.links_received.object_list)
+    assert target_card.detected_links_given_count == 0
+    assert target_card.detected_links_received_count == 12
 
 
 @pytest.mark.django_db
@@ -143,16 +134,13 @@ def test_dashboard_renders_safe_activity_progress_and_empty_states(auth_client, 
 
     assert response.status_code == 200
     assert source.project.normalized_sitemap_url in content
-    assert "2 succeeded" in content
-    assert "2 pending" in content
-    assert "1 failed" in content
-    assert "Detected links given" in content
-    assert "Detected links received" in content
-    assert "Detected, not attributed" in content
+    assert "Searchable" in content
+    assert "Needs attention" in content
+    assert "Links from site" in content
+    assert "Links to site" in content
+    assert "Detected citations" not in content
+    assert "Detected, not attributed" not in content
     assert '<script>alert("crawl")</script>' not in content
-    assert "&lt;script&gt;alert" in content
-    assert 'aria-label="Detected links given pagination"' in content
-    assert 'aria-label="Detected links received pagination"' in content
 
 
 @pytest.mark.django_db
@@ -173,8 +161,7 @@ def test_dashboard_does_not_render_other_account_private_site_name(auth_client, 
     content = auth_client.get(reverse("home")).content.decode()
 
     assert "PRIVATE ACCOUNT LABEL" not in content
-    assert source.project.normalized_host in content
-    assert source.normalized_canonical_url in content
+    assert target.project.normalized_host in content
 
 
 @pytest.mark.django_db
@@ -188,6 +175,6 @@ def test_dashboard_empty_activity_has_clear_non_marketplace_copy(auth_client, pr
 
     content = auth_client.get(reverse("home")).content.decode()
 
-    assert "No detected links given yet" in content
-    assert "No detected links received yet" in content
-    assert "CiteGuild does not guarantee placements" in content
+    assert "Links from site" in content
+    assert "Links to site" in content
+    assert "CiteGuild does not guarantee placements" not in content
