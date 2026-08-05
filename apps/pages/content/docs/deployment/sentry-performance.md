@@ -6,8 +6,9 @@ author: LVTD LLC
 ---
 
 Sentry is included because this project was generated with `use_sentry = y`.
-
-The starter configures backend Django observability. It cannot create a dashboard inside your Sentry organization because that needs your Sentry org slug, project slug, region, and an API token. Use the prompt below with an AI agent that has access to your Sentry account or Sentry API token.
+The integration covers Django and worker errors, structured logs, traces,
+trace-linked profiles, browser errors, browser navigation traces, and Web
+Vitals. Browser trace headers propagate to same-origin Django requests.
 
 ## What to use for slow pages
 
@@ -42,7 +43,9 @@ Create a dashboard for page loads with widgets like:
 - Slowest spans for the page you are optimizing, especially database and cache spans.
 - Release comparison for the transaction before and after an optimization deploy.
 
-For server-rendered Django pages, backend request duration is usually the most actionable first dashboard. If you need browser page-load timing, Web Vitals, replay, or frontend route changes, add the Sentry Browser SDK separately and connect it to the same release/environment.
+Compare server transaction duration with browser LCP, INP, CLS, and request
+waterfalls to separate backend latency from rendering or asset-loading delays.
+Session Replay remains disabled to avoid collecting user-owned page content.
 
 ## Prompt for an AI agent
 
@@ -51,7 +54,9 @@ Create or update a Sentry dashboard for CiteGuild page-load performance.
 
 Context:
 - This is a Django app using Sentry Python SDK.
-- Backend traces are enabled through SENTRY_DSN, traces_sampler, DjangoIntegration middleware/cache spans, RedisIntegration, profiling with profile_lifecycle="trace", and structured logs.
+- Backend traces use the Django and Redis integrations, route-aware sampling,
+  trace-linked profiling, and structured logs. The browser SDK captures errors,
+  navigation traces, and Web Vitals without default PII or session replay.
 - Healthcheck, static, media, favicon, and robots transactions should be ignored.
 - Use release and environment filters so we can compare before/after deploys.
 
@@ -61,7 +66,8 @@ What I need:
 3. Add widgets for p50, p75, and p95 transaction duration by transaction; slowest transactions; throughput by transaction; error count or error rate by transaction; and slowest DB/cache spans for the pages with the highest p95.
 4. Add a focused widget for the homepage or primary landing page transaction if it exists.
 5. Do not hardcode or commit Sentry API tokens. Use environment variables or the connected Sentry integration.
-6. If browser page-load metrics are required and the app does not have Sentry Browser SDK installed, propose the smallest follow-up change with masked replay defaults and trace propagation to the Django site URL.
+6. Keep session replay disabled unless a separate privacy review explicitly
+   approves it.
 7. Return the dashboard URL, the transaction names found, and the exact filters/time range used for the baseline.
 ```
 

@@ -5,6 +5,7 @@ from citeguild.sentry_utils import (
     before_send_log,
     build_traces_sampler,
     logging_level_from_env,
+    resolve_sentry_release,
 )
 
 
@@ -19,6 +20,12 @@ def test_logging_level_from_env_accepts_numeric_strings():
 
 def test_logging_level_from_env_falls_back_for_unknown_names():
     assert logging_level_from_env("not-a-level", logging.INFO) == logging.INFO
+
+
+def test_sentry_release_prefers_explicit_then_service_then_image_release():
+    assert resolve_sentry_release(" sentry-1 ", "service-1", "image-1") == "sentry-1"
+    assert resolve_sentry_release("", " service-1 ", "image-1") == "service-1"
+    assert resolve_sentry_release("", "", " image-1 ") == "image-1"
 
 
 def test_before_send_log_filters_sensitive_attributes_without_filtering_token_counts():

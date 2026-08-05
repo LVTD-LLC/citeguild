@@ -1,0 +1,5 @@
+{% load static %}
+{% if sentry_browser.enabled %}
+    {{ sentry_browser|json_script:"sentry-browser-config" }}
+    <script defer src="{% static 'js/sentry.js' %}"></script>
+{% endif %}

@@ -48,6 +48,21 @@ def public_site_url(request):
     return {"public_site_url": settings.SITE_URL.rstrip("/")}
 
 
+def sentry_browser_config(request):
+    if not settings.SENTRY_ACTIVE or not settings.SENTRY_BROWSER_ENABLED:
+        return {"sentry_browser": {"enabled": False}}
+
+    return {
+        "sentry_browser": {
+            "enabled": True,
+            "dsn": settings.SENTRY_DSN,
+            "environment": settings.ENVIRONMENT,
+            "release": settings.SENTRY_RELEASE,
+            "traces_sample_rate": settings.SENTRY_BROWSER_TRACES_SAMPLE_RATE,
+        }
+    }
+
+
 def pro_subscription_status(request):
     """
     Adds a 'has_pro_subscription' variable to the context.
