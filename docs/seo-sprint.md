@@ -16,7 +16,7 @@
 | # | Phase | Pattern | Status | PR |
 |---:|---|---|---|---|
 | 0 | Technical foundations and measurement | Setup | completed | [#54](https://github.com/LVTD-LLC/citeguild/pull/54) |
-| 1 | Current HARO alternatives editorial guide | Editorial | in_progress | `scribe/cg-039-haro-alternatives` |
+| 1 | Current HARO alternatives editorial guide | Editorial | completed | [#58](https://github.com/LVTD-LLC/citeguild/pull/58) |
 | 2 | Tavily alternative for editorial source retrieval | Alternatives | pending | — |
 | 3 | Backlinker AI alternative | Alternatives | pending | — |
 | 4 | Exa alternative for opted-in editorial sources | Alternatives | pending | — |
@@ -242,4 +242,4 @@ The private [CiteGuild SEO Backlink Targets](https://rowset.lvtd.dev/datasets/cd
 
 ## Current handoff
 
-Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). Phase 1 is in progress on `scribe/cg-039-haro-alternatives` as an editorial guide matching the plural listicle SERP; `/alternatives/featured` has been retired. The product-memo competitor watchlist still requires live demand and product re-verification before promotion.
+Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). Phase 1 is complete in [PR #58](https://github.com/LVTD-LLC/citeguild/pull/58) as an editorial guide matching the plural listicle SERP; `/alternatives/featured` has been retired. The next pending phase is the Tavily alternative. The product-memo competitor watchlist still requires live demand and product re-verification before promotion.
