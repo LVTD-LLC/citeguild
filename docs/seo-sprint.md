@@ -57,7 +57,7 @@
 | Source | Status | Credential/config evidence | API/tool evidence | Used for | Config saved | Reason |
 |---|---|---|---|---|---|---|
 | GSC | connected | Infisical service account; access to `sc-domain:lvtd.dev` | Sites, Search Analytics, and sitemaps APIs returned 200 | Owned queries, striking distance, sitemap state | `gsc_property`, page filter | Zero CiteGuild rows and no submitted CiteGuild sitemap yet; sparse success is still connected. |
-| Ahrefs | missing | Checked loaded tools, env, `TOOLS.md`, repo config, and Infisical `/services/ahrefs` | No usable tool or credential found | DR, keyword gaps, backlinks | None | DataForSEO supplies measured market data instead. |
+| Ahrefs | missing | Checked loaded tools, env, operator workspace routing notes (external to this repo), repo config, and Infisical `/services/ahrefs` | No usable tool or credential found | DR, keyword gaps, backlinks | None | DataForSEO supplies measured market data instead. |
 | DataForSEO | connected | Toolkit plus Infisical `/services/dataforseo` | Backlinks, ranked keywords, ideas, overviews, and SERP calls succeeded | Volume, KD, CPC, intent, SERP, baseline | Location/language | Domain rows are sparse; candidate metrics are measured. |
 | Plausible | attempted_failed | API key and custom host documented | V2 queries for both candidate site IDs returned 401 | Organic pages/goals | None | Credential exists, but CiteGuild site access/config is unavailable. |
 | PostHog | connected | Personal API key; project discovered through management API | Event and pageview HogQL queries succeeded | Conversion/event weighting | Project ID | Early events exist; no organic attribution yet. |
