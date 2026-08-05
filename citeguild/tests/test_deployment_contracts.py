@@ -60,7 +60,9 @@ def test_deploy_workflow_publishes_and_deploys_only_the_git_sha_tag():
     assert build["with"]["build-args"] == "CITEGUILD_RELEASE=${{ github.sha }}"
     assert install["run"] == "npm install --global caprover@2.3.1"
     assert len(deployments) == 2
-    assert all(step["env"]["IMAGE_NAME"] == "${{ steps.image.outputs.image_name }}" for step in deployments)
+    assert all(
+        step["env"]["IMAGE_NAME"] == "${{ steps.image.outputs.image_name }}" for step in deployments
+    )
     assert all("caprover deploy" in step["run"] for step in deployments)
     assert all('--imageName "${IMAGE_NAME}:${GITHUB_SHA}"' in step["run"] for step in deployments)
 
