@@ -164,6 +164,7 @@
                           action="{% url 'delete_sitemap' project.uuid %}"
                           class="mt-5">
                         {% csrf_token %}
+                        {{ delete_form.non_field_errors }}
                         {{ delete_form.confirmation.errors }}
                         <label for="{{ delete_form.confirmation.id_for_label }}"
                                class="block text-sm font-semibold">Type “{{ project.name }}” to confirm</label>

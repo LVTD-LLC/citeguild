@@ -151,6 +151,7 @@ class ProjectService:
     def delete(cls, *, owner: Profile, project_uuid) -> None:
         """Delete one owned site and queue cleanup of its external search points."""
         with transaction.atomic():
+            owner = cls._locked_active_owner(owner)
             project = cls.for_owner(owner).select_for_update().get(uuid=project_uuid)
             deleted_uuid = project.uuid
             project.delete()

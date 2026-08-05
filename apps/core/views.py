@@ -305,7 +305,12 @@ def delete_sitemap(request, project_uuid):
         raise Http404 from error
     form = SitemapDeleteForm(request.POST, project_name=project.name)
     if form.is_valid():
-        ProjectService.delete(owner=profile, project_uuid=project_uuid)
+        try:
+            ProjectService.delete(owner=profile, project_uuid=project_uuid)
+        except PermissionDenied as error:
+            form.add_error(None, error)
+            context = _sitemap_details_context(request, profile, project_uuid, delete_form=form)
+            return render(request, "pages/sitemap_details.html", context, status=403)
         messages.success(request, f"{project.name} was deleted.")
         return redirect("home")
     context = _sitemap_details_context(request, profile, project_uuid, delete_form=form)

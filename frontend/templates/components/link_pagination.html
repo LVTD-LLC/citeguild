@@ -2,14 +2,14 @@
     <nav class="mt-4 flex items-center justify-between gap-3 text-sm"
          aria-label="{{ label }} pagination">
         {% if page.has_previous %}
-            <a href="?{{ parameter }}={{ page.previous_page_number }}&amp;{{ other_parameter }}={{ other_page }}#{{ parameter }}"
+            <a href="?{{ parameter }}={{ page.previous_page_number }}&{{ other_parameter }}={{ other_page }}#{{ parameter }}"
                class="app-button-secondary">Previous</a>
         {% else %}
             <span></span>
         {% endif %}
         <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
         {% if page.has_next %}
-            <a href="?{{ parameter }}={{ page.next_page_number }}&amp;{{ other_parameter }}={{ other_page }}#{{ parameter }}"
+            <a href="?{{ parameter }}={{ page.next_page_number }}&{{ other_parameter }}={{ other_page }}#{{ parameter }}"
                class="app-button-secondary">Next</a>
         {% else %}
             <span></span>

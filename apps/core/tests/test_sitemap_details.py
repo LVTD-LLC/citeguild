@@ -201,6 +201,27 @@ def test_delete_sitemap_requires_exact_name_confirmation(auth_client, profile):
     assert Project.objects.filter(pk=project.pk).exists()
 
 
+@pytest.mark.django_db
+def test_delete_sitemap_requires_an_active_subscription(auth_client, profile):
+    subscribe(profile)
+    project = ProjectService.create(
+        owner=profile,
+        name="Keep after cancellation",
+        sitemap_url="https://keep-after-cancellation.example/sitemap.xml",
+    )
+    profile.stripe_subscription_status = "canceled"
+    profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+
+    response = auth_client.post(
+        reverse("delete_sitemap", args=[project.uuid]),
+        {"confirmation": project.name},
+    )
+
+    assert response.status_code == 403
+    assert "active subscription is required" in response.content.decode()
+    assert Project.objects.filter(pk=project.pk).exists()
+
+
 @pytest.mark.django_db(transaction=True)
 def test_owner_can_delete_sitemap_and_queue_vector_cleanup(auth_client, profile):
     subscribe(profile)
