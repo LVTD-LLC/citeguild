@@ -7,6 +7,12 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-08-05
 
+### Added
+
+- Added the measured CiteGuild SEO sprint roadmap, persistent brand and internal-link
+  context, connected-tool evidence, and private Rowset research locators for phased
+  organic-search execution.
+
 ### Fixed
 
 - Production deploys now pin the CapRover CLI to the last known-good release,

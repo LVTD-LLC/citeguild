@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "initialize",
+  "roadmap_path": "docs/seo-sprint.md",
+  "domain": "citeguild.lvtd.dev",
+  "site_url": "https://citeguild.lvtd.dev",
+  "future_domain": {
+    "domain": "citeguild.app",
+    "status": "dns_missing",
+    "checked_at": "2026-08-05T15:20:49Z"
+  },
+  "stack": "django-templates",
+  "language": "django-html",
+  "routing_convention": "controller-based",
+  "marketing_route_prefix": "apps/pages",
+  "marketing_layout": "frontend/templates/base_landing.html",
+  "components_dir": "frontend/templates/components",
+  "data_dir": "apps/pages",
+  "sitemap_path": "citeguild/sitemaps.py",
+  "robots_path": "frontend/templates/robots.txt",
+  "tailwind_config": "tailwind.config.js",
+  "keyword_data_source": "dataforseo",
+  "dataforseo_location": "United States",
+  "dataforseo_language": "English",
+  "gsc_property": "sc-domain:lvtd.dev",
+  "gsc_page_filter": "citeguild.lvtd.dev",
+  "ahrefs_project_id": null,
+  "plausible_site_id": null,
+  "posthog_project_id": 538803,
+  "research_sources": {
+    "gsc": "connected",
+    "ahrefs": "missing",
+    "dataforseo": "connected",
+    "plausible": "attempted_failed",
+    "posthog": "connected",
+    "exa": "connected",
+    "firecrawl": "connected",
+    "jina": "connected_not_used"
+  },
+  "rowset": {
+    "project_key": "b97868d4-36a2-4b51-a9ea-715447035b01",
+    "seo_section_key": "3b11ff0e-d52b-4da9-a9ab-8203b0db1bd4",
+    "datasets": {
+      "opportunities": {
+        "key": "0d4c2270-cc89-45ce-b15a-b30789cede3b",
+        "url": "https://rowset.lvtd.dev/datasets/0d4c2270-cc89-45ce-b15a-b30789cede3b"
+      },
+      "tool_evidence": {
+        "key": "45770624-6e51-4a64-be94-6dec3d514c0d",
+        "url": "https://rowset.lvtd.dev/datasets/45770624-6e51-4a64-be94-6dec3d514c0d"
+      },
+      "backlink_targets": {
+        "key": "cd58d6fe-4e69-463b-8ce4-93a84393c314",
+        "url": "https://rowset.lvtd.dev/datasets/cd58d6fe-4e69-463b-8ce4-93a84393c314"
+      }
+    },
+    "schema_version": "1.0",
+    "last_sync_at": "2026-08-05T15:20:49Z"
+  }
+}
