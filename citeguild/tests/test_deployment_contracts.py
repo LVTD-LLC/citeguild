@@ -48,16 +48,21 @@ def test_deploy_workflow_publishes_and_deploys_only_the_git_sha_tag():
     workflow = _yaml(".github/workflows/deploy.yml")
     steps = workflow["jobs"]["build-and-deploy"]["steps"]
     build = next(step for step in steps if step.get("name") == "Build and push")
+    install = next(step for step in steps if step.get("name") == "Install CapRover CLI")
     tags = build["with"]["tags"]
     deployments = [
-        step for step in steps if step.get("uses", "").startswith("caprover/deploy-from-github@")
+        step
+        for step in steps
+        if step.get("name") in {"Deploy server to CapRover", "Deploy workers to CapRover"}
     ]
 
     assert tags == "${{ steps.image.outputs.image_name }}:${{ github.sha }}"
     assert build["with"]["build-args"] == "CITEGUILD_RELEASE=${{ github.sha }}"
-    assert deployments
-    assert all(step["uses"] != "caprover/deploy-from-github@main" for step in deployments)
-    assert all(step["with"]["image"] == tags for step in deployments)
+    assert install["run"] == "npm install --global caprover@2.3.1"
+    assert len(deployments) == 2
+    assert all(step["env"]["IMAGE_NAME"] == "${{ steps.image.outputs.image_name }}" for step in deployments)
+    assert all("caprover deploy" in step["run"] for step in deployments)
+    assert all('--imageName "${IMAGE_NAME}:${GITHUB_SHA}"' in step["run"] for step in deployments)
 
 
 def test_deploy_workflow_gates_workers_on_aggregate_production_health():
