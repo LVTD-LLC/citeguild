@@ -1,6 +1,8 @@
 from unittest.mock import patch
 
 import pytest
+from django.core.paginator import Paginator
+from django.template.loader import render_to_string
 from django.urls import reverse
 
 from apps.core.models import DetectedNetworkLink, OutboundLinkObservation, Project
@@ -17,6 +19,24 @@ from .test_network_graph import (
 def subscribe(profile):
     profile.stripe_subscription_status = "active"
     profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+
+
+def test_link_pagination_renders_valid_multi_parameter_query_string():
+    page = Paginator(range(21), 20).get_page(1)
+
+    content = render_to_string(
+        "components/link_pagination.html",
+        {
+            "page": page,
+            "parameter": "given_page",
+            "other_parameter": "received_page",
+            "other_page": 3,
+            "label": "given links",
+        },
+    )
+
+    assert "?given_page=2&amp;received_page=3#given_page" in content
+    assert "&amp;amp;" not in content
 
 
 @pytest.mark.django_db
