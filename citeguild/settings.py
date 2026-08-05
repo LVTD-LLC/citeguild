@@ -27,6 +27,7 @@ from citeguild.sentry_utils import (
     before_send_log,
     build_traces_sampler,
     logging_level_from_env,
+    resolve_sentry_release,
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -51,8 +52,17 @@ SERVICE_VERSION = env("SERVICE_VERSION", default="")
 SENTRY_DSN = env("SENTRY_DSN", default="")
 SENTRY_ENABLED = env.bool("SENTRY_ENABLED", default=bool(SENTRY_DSN) and ENVIRONMENT == "prod")
 SENTRY_ACTIVE = SENTRY_ENABLED and bool(SENTRY_DSN)
-SENTRY_RELEASE = env("SENTRY_RELEASE", default=SERVICE_VERSION)
+SENTRY_RELEASE = resolve_sentry_release(
+    env("SENTRY_RELEASE", default=""),
+    SERVICE_VERSION,
+    env("CITEGUILD_RELEASE", default=""),
+)
 SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", default=1.0)
+SENTRY_BROWSER_ENABLED = env.bool("SENTRY_BROWSER_ENABLED", default=SENTRY_ACTIVE)
+SENTRY_BROWSER_TRACES_SAMPLE_RATE = env.float(
+    "SENTRY_BROWSER_TRACES_SAMPLE_RATE",
+    default=SENTRY_TRACES_SAMPLE_RATE,
+)
 SENTRY_BACKGROUND_TRACES_SAMPLE_RATE = env.float(
     "SENTRY_BACKGROUND_TRACES_SAMPLE_RATE",
     default=0.1,
@@ -209,6 +219,7 @@ TEMPLATES = [
                 "apps.core.context_processors.current_state",
                 "apps.core.context_processors.mfa_recovery_codes_settings",
                 "apps.core.context_processors.public_site_url",
+                "apps.core.context_processors.sentry_browser_config",
                 "apps.core.context_processors.posthog_api_key",
                 "apps.core.context_processors.chatwoot_config",
                 "apps.core.context_processors.mjml_url",

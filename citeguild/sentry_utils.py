@@ -87,6 +87,14 @@ def logging_level_from_env(value: str, default: int) -> int:
     return default
 
 
+def resolve_sentry_release(
+    explicit_release: str,
+    service_version: str,
+    image_release: str,
+) -> str:
+    return explicit_release.strip() or service_version.strip() or image_release.strip()
+
+
 def _transaction_path_from_sampling_context(sampling_context: dict[str, Any]) -> str:
     environ = sampling_context.get("wsgi_environ") or {}
     if environ.get("PATH_INFO"):

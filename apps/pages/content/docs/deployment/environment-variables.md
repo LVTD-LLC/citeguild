@@ -255,12 +255,21 @@ These variables enhance functionality but aren't required:
 
 **SENTRY_RELEASE**
 - Optional release identifier, usually your deployed commit SHA or app version
-- Defaults to `SERVICE_VERSION`
+- Defaults to `SERVICE_VERSION`, then the immutable `CITEGUILD_RELEASE` image value
 - Enables Sentry release/regression tracking and links issues to deploys
 
 **SENTRY_TRACES_SAMPLE_RATE**
 - HTTP/web transaction sample rate from `0.0` to `1.0`, after healthcheck/static/media filters
 - Defaults to `1.0` so low-volume projects can get complete page-load traces
+
+**SENTRY_BROWSER_ENABLED**
+- Set to `True` to capture browser errors, navigation traces, and Web Vitals
+- Defaults to the server-side Sentry enabled state
+
+**SENTRY_BROWSER_TRACES_SAMPLE_RATE**
+- Browser page-load and navigation trace sample rate from `0.0` to `1.0`
+- Defaults to `SENTRY_TRACES_SAMPLE_RATE`
+- Same-origin requests propagate trace headers to Django for end-to-end traces
 
 **SENTRY_BACKGROUND_TRACES_SAMPLE_RATE**
 - Background/task transaction sample rate from `0.0` to `1.0`

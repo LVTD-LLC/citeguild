@@ -12,9 +12,14 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 - Added the measured CiteGuild SEO sprint roadmap, persistent brand and internal-link
   context, connected-tool evidence, and private Rowset research locators for phased
   organic-search execution.
+- Added privacy-safe Sentry browser error capture, page-load and navigation
+  tracing, Web Vitals, and same-origin trace propagation to the existing Django
+  errors, logs, traces, and profiling integration.
 
 ### Fixed
 
+- Sentry releases now fall back to the immutable image commit when no explicit
+  Sentry or service release is configured.
 - Production deploys now pin the CapRover CLI to the last known-good release,
   avoiding the conflicting deploy flags introduced in CapRover CLI 2.4.0.
 
