@@ -87,15 +87,19 @@ def test_minio_policy_is_scoped_to_the_backup_bucket():
     assert "s3:*" not in serialized
 
 
-def test_backup_deploy_uses_an_immutable_image_and_pinned_action():
+def test_backup_deploy_uses_an_immutable_image_and_pinned_cli():
     workflow = yaml.safe_load((ROOT / ".github/workflows/deploy-backups.yml").read_text())
     steps = workflow["jobs"]["build-and-deploy"]["steps"]
     build = next(step for step in steps if step.get("name") == "Build and push")
+    install = next(step for step in steps if step.get("name") == "Install CapRover CLI")
     deploy = next(step for step in steps if step.get("name") == "Deploy backups to CapRover")
 
     expected = "${{ steps.image.outputs.image_name }}:${{ github.sha }}"
     assert build["with"]["tags"] == expected
     assert build["with"]["push"] == "${{ github.event_name != 'pull_request' }}"
-    assert deploy["with"]["image"] == expected
-    assert deploy["uses"] != "caprover/deploy-from-github@main"
+    assert install["run"] == "npm install --global caprover@2.3.1"
+    assert install["if"] == "github.event_name != 'pull_request'"
+    assert deploy["env"]["IMAGE_NAME"] == "${{ steps.image.outputs.image_name }}"
+    assert "caprover deploy" in deploy["run"]
+    assert '--imageName "${IMAGE_NAME}:${GITHUB_SHA}"' in deploy["run"]
     assert deploy["if"] == "github.event_name != 'pull_request'"

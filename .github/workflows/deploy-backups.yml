@@ -63,11 +63,20 @@ jobs:
           file: deployment/backup/Dockerfile
           tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
 
+      # CapRover CLI 2.4.0 has conflicting -t flags and cannot start.
+      - name: Install CapRover CLI
+        if: github.event_name != 'pull_request'
+        run: npm install --global caprover@2.3.1
+
       - name: Deploy backups to CapRover
         if: github.event_name != 'pull_request'
-        uses: caprover/deploy-from-github@cb179160479b998a553b61700fe390980bfe7fe8
-        with:
-          server: ${{ secrets.CAPROVER_SERVER }}
-          app: ${{ env.CAPROVER_APP_NAME }}
-          token: ${{ secrets.BACKUPS_APP_TOKEN }}
-          image: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
+        env:
+          CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
+          CAPROVER_APP_TOKEN: ${{ secrets.BACKUPS_APP_TOKEN }}
+          IMAGE_NAME: ${{ steps.image.outputs.image_name }}
+        run: >-
+          caprover deploy
+          --caproverUrl "$CAPROVER_SERVER"
+          --appToken "$CAPROVER_APP_TOKEN"
+          --appName "$CAPROVER_APP_NAME"
+          --imageName "${IMAGE_NAME}:${GITHUB_SHA}"
