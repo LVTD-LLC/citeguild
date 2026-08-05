@@ -1,5 +1,5 @@
-from django.test import RequestFactory, override_settings
 from django.template.loader import render_to_string
+from django.test import RequestFactory, override_settings
 
 from apps.core.context_processors import sentry_browser_config
 
