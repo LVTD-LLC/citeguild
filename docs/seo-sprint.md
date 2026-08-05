@@ -72,7 +72,7 @@ Private evidence dataset: [CiteGuild SEO Tool Evidence](https://rowset.lvtd.dev/
 |---|---|---|
 | Homepage | Public, indexable | Product promise and membership model |
 | Pricing | Public, indexable | $10 monthly, unlimited sites, no trial/free tier |
-| Journal | Public index, no posts yet | Blog index and schema infrastructure |
+| Journal | Public index with the HARO alternatives guide | Blog index, article, and schema infrastructure |
 | Authenticated docs | `noindex`, login required | MCP/CLI/API product documentation is not a public SEO surface |
 | `/uses` | Public transparency page, `noindex` and excluded from sitemap | Do not target generic technology-stack intent or link from SEO page families |
 
@@ -88,7 +88,7 @@ Private evidence dataset: [CiteGuild SEO Tool Evidence](https://rowset.lvtd.dev/
 | `citeguild/sitemaps.py` | Static and blog sitemap generation |
 | `frontend/templates/robots.txt` | Crawl rules and sitemap reference |
 | `apps/pages/services.py` | Blog metadata and JSON-LD helpers |
-| `apps/pages/posts/` | Repository-backed public posts; currently empty |
+| `apps/pages/posts/` | Repository-backed public posts, beginning with the HARO alternatives guide |
 | `apps/core/analytics.py` and `ANALYTICS.md` | Canonical product events and privacy contract |
 
 ## Keyword Research Appendix
