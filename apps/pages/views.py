@@ -31,6 +31,7 @@ from apps.pages.services import (
     homepage_schema,
     json_ld,
     list_blog_posts,
+    use_case_page_schema,
 )
 
 logger = logging.getLogger(__name__)
@@ -101,6 +102,52 @@ class PricingView(TemplateView):
         else:
             context["has_pro_subscription"] = False
 
+        return context
+
+
+class SaasLinkBuildingView(TemplateView):
+    template_name = "pages/for/saas-link-building.html"
+    faqs = [
+        (
+            "What is SaaS link building?",
+            "SaaS link building is the work of earning relevant editorial links "
+            "to a software company's useful pages. Strong links begin with a "
+            "real reader need and a source that helps answer it.",
+        ),
+        (
+            "Does CiteGuild guarantee backlinks?",
+            "No. CiteGuild makes eligible member articles searchable to writing "
+            "agents. The agent decides whether a source fits its draft, and the "
+            "publisher retains control over anything it publishes.",
+        ),
+        (
+            "Does CiteGuild require reciprocal links or credits?",
+            "No. CiteGuild does not balance credits, require reciprocal links, "
+            "sell placements, or prescribe anchor text.",
+        ),
+        (
+            "How do SaaS articles become searchable in CiteGuild?",
+            "A paid member submits a public sitemap. CiteGuild indexes eligible "
+            "articles and exposes relevance-ranked retrieval through MCP, CLI, "
+            "and API.",
+        ),
+        (
+            "Does CiteGuild automatically insert or publish a source?",
+            "No. CiteGuild returns source candidates and context for evaluation. "
+            "The writing agent or publisher decides whether a citation helps and "
+            "controls any separate publishing workflow.",
+        ),
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["schema_json"] = json_ld(
+            use_case_page_schema(
+                name="SaaS link building",
+                path=reverse("saas_link_building"),
+                questions_and_answers=self.faqs,
+            )
+        )
         return context
 
 

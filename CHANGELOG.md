@@ -11,6 +11,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 - Linked the official installable Claude Code and ChatGPT/Codex plugin repository
   from the authenticated MCP setup guide with copy-ready install commands.
+- Added a source-backed SaaS link-building page that explains CiteGuild's
+  publish, index, retrieve, editorial-decision, and citation-observation loop
+  without promising placements or requiring outreach, credits, or link swaps.
 
 ### Changed
 

@@ -333,6 +333,25 @@ def homepage_schema() -> dict:
     }
 
 
+def use_case_page_schema(
+    *,
+    name: str,
+    path: str,
+    questions_and_answers: list[tuple[str, str]],
+) -> dict:
+    software = software_application_schema()
+    software["url"] = build_absolute_public_url(path)
+
+    breadcrumbs = breadcrumb_list_schema([("Home", "/"), (name, path)])
+    breadcrumbs.pop("@context")
+    faq = faq_page_schema(questions_and_answers)
+    faq.pop("@context")
+    return {
+        "@context": "https://schema.org",
+        "@graph": [software, breadcrumbs, faq],
+    }
+
+
 def faq_page_schema(questions_and_answers: list[tuple[str, str]]) -> dict:
     return {
         "@context": "https://schema.org",

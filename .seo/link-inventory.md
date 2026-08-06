@@ -36,6 +36,7 @@ No public tools exist yet.
 | Slug | URL | Title / anchor candidate | Inbound links from |
 |---|---|---|---|
 | `/blog/haro-alternatives` | https://citeguild.lvtd.dev/blog/haro-alternatives | HARO alternatives guide; current source-request platforms; journalist requests versus agent retrieval | Homepage, pricing, blog index |
+| `/for/saas-link-building` | https://citeguild.lvtd.dev/for/saas-link-building | SaaS link building without forced swaps; relevance-first source discovery; source-readiness loop | Homepage, pricing |
 
 ## SEO-sprint-generated pages
 
@@ -43,35 +44,32 @@ No public tools exist yet.
 
 | Slug | Ships in phase | URL | Inbound links from | Outbound links to |
 |---|---:|---|---|---|
-| `tavily` | 2 | `/alternatives/tavily` | Planned | Homepage, pricing, sibling alternatives |
-| `backlinker-ai` | 3 | `/alternatives/backlinker-ai` | Planned | Homepage, pricing, sibling alternatives |
-| `exa` | 4 | `/alternatives/exa` | Planned | Homepage, pricing, sibling alternatives |
-| `backlinkgpt` | 5 | `/alternatives/backlinkgpt` | Planned | Homepage, pricing, sibling alternatives |
-| `linkswarm` | 6 | `/alternatives/linkswarm` | Planned | Homepage, pricing, sibling alternatives |
-| `qwoted` | 7 | `/alternatives/qwoted` | Planned | Homepage, pricing, sibling alternatives |
-| `sourcebottle` | 8 | `/alternatives/sourcebottle` | Planned | Homepage, pricing, sibling alternatives |
+| `linkswarm` | 5 | `/alternatives/linkswarm` | Planned | Homepage, pricing, sibling alternatives |
+| `ranking-raccoon` | 6 | `/alternatives/ranking-raccoon` | Planned after Phase 4 validation | Homepage, pricing, sibling alternatives |
+| `rankchase` | 7 | `/alternatives/rankchase` | Planned after Phase 4 validation | Homepage, pricing, sibling alternatives |
+| `linkrocket` | 8 | `/alternatives/linkrocket` | Planned after Phase 4 validation | Homepage, pricing, sibling alternatives |
 
 ### `/for/[slug]`
 
 | Slug | Ships in phase | URL | Inbound links from | Outbound links to |
 |---|---:|---|---|---|
-| `saas-link-building` | 9 | `/for/saas-link-building` | Planned | Homepage, pricing, relevant alternatives |
-| `bloggers` | 10 | `/for/bloggers` | Planned | Homepage, pricing, sibling use cases |
-| `ai-backlinks` | 11 | `/for/ai-backlinks` | Planned | Homepage, pricing, relevant alternatives |
+| `saas-link-building` | 2 | `/for/saas-link-building` | Homepage, pricing | Article indexing, agent retrieval, citation observation, pricing, HARO guide; add `/for/bloggers` when Phase 9 ships |
+| `bloggers` | 9 | `/for/bloggers` | Planned | Homepage, pricing, sibling use cases |
+| `ai-backlinks` | 10 | `/for/ai-backlinks` | Planned | Homepage, pricing, relevant alternatives |
 
 ### `/compare/[slug]`
 
 | Slug | Ships in phase | URL | Inbound links from | Outbound links to |
 |---|---:|---|---|---|
-| `citeguild-vs-linkswarm` | 12 | `/compare/citeguild-vs-linkswarm` | Planned | Both alternative pages, pricing, relevant use case |
+| `citeguild-vs-linkswarm` | 11 | `/compare/citeguild-vs-linkswarm` | Planned | Both alternative pages, pricing, relevant use case |
 
 ### `/playbooks/[slug]`
 
 | Slug | Ships in phase | URL | Inbound links from | Outbound links to |
 |---|---:|---|---|---|
-| `backlink-marketplaces` | 13 | `/playbooks/backlink-marketplaces` | Planned | Homepage, pricing, relevant alternatives and use cases |
-| `ethical-link-building` | 14 | `/playbooks/ethical-link-building` | Planned | Homepage, pricing, relevant alternatives and use cases |
-| `editorial-link-building` | 15 | `/playbooks/editorial-link-building` | Planned | Homepage, pricing, relevant alternatives and use cases |
+| `backlink-marketplaces` | 3 | `/playbooks/backlink-marketplaces` | Planned | Homepage, pricing, relevant alternatives and use cases |
+| `ethical-link-building` | 12 | `/playbooks/ethical-link-building` | Planned | Homepage, pricing, relevant alternatives and use cases |
+| `editorial-link-building` | 13 | `/playbooks/editorial-link-building` | Planned | Homepage, pricing, relevant alternatives and use cases |
 
 ## Anchor-text guidance
 

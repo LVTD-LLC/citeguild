@@ -1,0 +1,231 @@
+{% extends "base_landing.html" %}
+{% block meta %}
+    <title>SaaS Link Building Without Forced Swaps | CiteGuild</title>
+    <meta name="description"
+          content="SaaS link building starts with useful, source-worthy content. Make your articles discoverable to writing agents without outreach or forced swaps." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical"
+          href="{{ public_site_url }}{% url 'saas_link_building' %}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title"
+          content="SaaS Link Building Without Forced Swaps | CiteGuild" />
+    <meta property="og:description"
+          content="Make useful SaaS articles discoverable to writing agents without outreach, credits, or forced swaps." />
+    <meta property="og:url"
+          content="{{ public_site_url }}{% url 'saas_link_building' %}" />
+    <meta property="og:image"
+          content="https://osig.app/g?site=meta&amp;style=logo&amp;font=markerfelt&amp;title=SaaS%20link%20building&amp;subtitle=Useful%20sources%2C%20found%20by%20writing%20agents" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title"
+          content="SaaS Link Building Without Forced Swaps | CiteGuild" />
+    <meta name="twitter:description"
+          content="Make useful SaaS articles discoverable to writing agents without outreach, credits, or forced swaps." />
+    <meta name="twitter:image"
+          content="https://osig.app/g?site=x&amp;style=logo&amp;font=markerfelt&amp;title=SaaS%20link%20building&amp;subtitle=Useful%20sources%2C%20found%20by%20writing%20agents" />
+{% endblock meta %}
+{% block content %}
+    <main class="isolate">
+        <section class="py-20 sm:py-28 lg:py-32">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <p class="font-mono text-sm text-gray-500 dark:text-gray-400">for SaaS publishers</p>
+                <h1 class="mt-4 max-w-[20ch] text-5xl font-semibold tracking-tight text-balance sm:text-7xl">SaaS link building without forced swaps.</h1>
+                <p class="mt-7 max-w-[58ch] text-lg/8 text-pretty text-gray-600 dark:text-gray-300">A relevance-first SaaS link-building workflow starts when a useful article answers a real question in someone else’s draft. CiteGuild makes your sitemap-backed articles searchable to AI writing agents at that moment. It does not promise a placement, trade credits, or publish on anyone’s behalf.</p>
+                <div class="mt-9 flex flex-wrap items-center gap-5 text-sm/6">
+                    <a href="{% url 'account_signup' %}"
+                       data-posthog-cta="signup"
+                       data-posthog-cta-location="saas_link_building_hero"
+                       class="app-focus inline-flex min-h-12 items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800 dark:bg-green-500 dark:text-gray-950 dark:hover:bg-green-400">Make my articles searchable</a>
+                    <a href="#source-readiness"
+                       class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200">See the source-readiness loop</a>
+                </div>
+            </div>
+        </section>
+        <section class="border-y border-gray-950/10 py-20 dark:border-white/10 lg:py-24">
+            <div class="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[8fr_12fr] lg:px-8">
+                <div>
+                    <h2 class="max-w-[24ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">The hard part is being useful at the right moment.</h2>
+                    <p class="mt-5 max-w-[48ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">A SaaS team can publish excellent technical content and still be absent when another writer needs a source. One overlooked gap is retrieval: the article must be findable in the context of the draft.</p>
+                </div>
+                <div class="divide-y divide-gray-950/10 border-y border-gray-950/10 dark:divide-white/10 dark:border-white/10">
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">The best pages are buried</h3>
+                        <p class="max-w-[58ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">A product comparison, benchmark, migration note, or careful tutorial may sit several clicks deep in your site. A writer researching a related section cannot cite what they never find. Teams often respond by sending the same homepage or handful of campaign URLs, even when a narrower article would serve the reader better.</p>
+                    </div>
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">Outreach arrives out of context</h3>
+                        <p class="max-w-[58ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">A cold pitch asks a publisher to imagine a future need. Source retrieval begins after the need already exists: the agent has a topic, question, passage, or draft section to resolve. That timing makes relevance testable before anyone considers a citation.</p>
+                    </div>
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">Volume can outrun editorial fit</h3>
+                        <p class="max-w-[58ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">A large prospect list can look productive while creating weak matches. For SaaS content, the useful unit is not a sent email or promised link. It is a source that supports the exact claim a reader is trying to understand, on a site where that reference belongs.</p>
+                    </div>
+                    <div class="grid gap-3 py-6 md:grid-cols-[7fr_13fr]">
+                        <h3 class="text-xl font-semibold">Forced exchange creates the wrong incentive</h3>
+                        <p class="max-w-[58ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">If a link must be repaid, balanced with credits, or inserted automatically, the commercial mechanism can outrank the reader’s need. Google’s current <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://developers.google.com/search/docs/essentials/spam-policies">spam policies</a> identify excessive exchanges and automated link creation as link-spam examples. CiteGuild does not require either.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="source-readiness" class="scroll-mt-24 py-20 lg:py-24">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h2 class="max-w-[28ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">A source-readiness loop for SaaS link building.</h2>
+                <p class="mt-5 max-w-[66ch] text-lg/8 text-pretty text-gray-600 dark:text-gray-300">Many traditional workflows start with prospecting. CiteGuild starts one step earlier: make your strongest articles ready to be retrieved when a writing agent has a matching editorial need. The loop has five parts.</p>
+                <ol class="mt-12 divide-y divide-gray-950/10 border-y border-gray-950/10 dark:divide-white/10 dark:border-white/10">
+                    <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">
+                        <h3 class="text-2xl font-semibold">1. Publish something source-worthy</h3>
+                        <div class="max-w-[64ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            <p>A source needs a job. It might define a technical term, document an implementation, compare two approaches, publish original data, or explain a failure with enough detail to prevent it elsewhere. Google’s <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://developers.google.com/search/docs/fundamentals/creating-helpful-content">people-first content guidance</a> asks whether a page adds original information or analysis and leaves the reader able to achieve a goal. That is a useful editorial test before link building begins.</p>
+                        </div>
+                    </li>
+                    <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">
+                        <h3 class="text-2xl font-semibold">2. Submit the public sitemap</h3>
+                        <p class="max-w-[64ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Add the sitemap for each legitimate SaaS site on your account. CiteGuild indexes eligible public articles and keeps the corpus aligned as sitemaps change. The <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'landing' %}#article-indexing">sitemap-backed article index</a> is deliberately narrower than an open-web crawler: publishers opt in, and private pages stay out.</p>
+                    </li>
+                    <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">
+                        <h3 class="text-2xl font-semibold">3. Retrieve against the draft</h3>
+                        <p class="max-w-[64ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">A writing agent searches with the topic, question, passage, or section it is working on. CiteGuild returns active member articles ranked by relevance through the same <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'landing' %}#agent-retrieval">MCP, CLI, and API retrieval contract</a>. The result includes enough context for the caller to judge whether opening the source is worthwhile.</p>
+                    </li>
+                    <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">
+                        <h3 class="text-2xl font-semibold">4. Keep the editorial decision outside CiteGuild</h3>
+                        <p class="max-w-[64ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">The agent evaluates accuracy, topical fit, originality, and reader value. It can use a source, reject it, or keep researching. CiteGuild never inserts a link automatically, chooses anchor text, or publishes the draft. This relevance gate is the difference between source discovery and a placement system.</p>
+                    </li>
+                    <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">
+                        <h3 class="text-2xl font-semibold">5. Observe what was actually published</h3>
+                        <p class="max-w-[64ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">When CiteGuild later crawls member pages, it can record <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'landing' %}#citation-observation">detected member-to-member citations</a>. Observation is not attribution: the record shows that a link exists, not that CiteGuild caused it. That distinction keeps reporting factual.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+        <section class="bg-gray-50 py-20 dark:bg-gray-900/40 lg:py-24">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h2 class="max-w-[26ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">What CiteGuild changes—and what stays yours.</h2>
+                <div class="mt-12 grid gap-x-10 gap-y-12 md:grid-cols-2">
+                    <div>
+                        <h3 class="text-2xl font-semibold">Your eligible article library becomes queryable</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">You do not have to pick one campaign URL for every pitch. Eligible articles from unlimited sitemap-backed sites can participate, so the retrieval layer can surface the page that best fits the draft rather than the page your team happens to be promoting that week.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold">The agent searches when context exists</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">A query can carry the wording and surrounding subject of the draft. That does not make every match good, but it gives the agent a concrete basis for reviewing the source instead of matching only on domain metrics or a broad category label.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold">You keep publishing control</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">CiteGuild is not a site editor, guest-post marketplace, or outreach inbox. Your team decides what to publish. The other publisher or its agent decides what to cite. If money or another commercial arrangement is involved elsewhere, Google documents when publishers should <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://developers.google.com/search/docs/crawling-indexing/qualify-outbound-links">qualify outbound links</a>.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold">The membership stays simple</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">CiteGuild has one <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'pricing' %}">$10 monthly membership</a> for unlimited legitimate sites. There is no trial, credit balance, placement purchase, agency tier, or per-site price.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="py-20 lg:py-24">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h2 class="max-w-[27ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Where this fits in a SaaS link-building program.</h2>
+                <div class="mt-10 max-w-[70ch] space-y-5 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                    <p>CiteGuild handles source discoverability for opted-in articles. It does not replace the work of making those articles worth citing. A complete program can still include product-led research, documentation, partner education, digital PR, journalist requests, and direct relationship building.</p>
+                    <p>Use CiteGuild when you already publish useful material and want writing agents to find it during research. Use direct outreach when you have a specific person, story, or partnership in mind. Use a source-request platform when a journalist or writer is actively collecting expert responses; our <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'blog_post' slug='haro-alternatives' %}">current HARO alternatives guide</a> compares that separate workflow.</p>
+                    <p>The boundary matters. A relevant source can earn an editorial citation, but no retrieval system can promise that outcome. The article still has to support the claim, the publisher still has to trust it, and the finished piece still has to serve its reader.</p>
+                </div>
+            </div>
+        </section>
+        <section class="bg-gray-50 py-20 dark:bg-gray-900/40 lg:py-24">
+            <div class="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[9fr_11fr] lg:px-8">
+                <div>
+                    <h2 class="max-w-[22ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">What retrieval looks like inside a draft.</h2>
+                    <p class="mt-5 max-w-[50ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">The query should carry the editorial problem, not a request for any available backlink. A useful agent prompt might ask for evidence, an implementation detail, or a source that challenges the draft.</p>
+                </div>
+                <div class="border-y border-gray-950/10 py-7 dark:border-white/10">
+                    <p class="font-mono text-sm/6 text-gray-500 dark:text-gray-400">Example search context</p>
+                    <p class="mt-4 text-lg/8 text-pretty text-gray-900 dark:text-gray-100">“I’m explaining why webhook handlers need idempotency. Find a current technical source with a concrete retry or duplicate-event example. Exclude our own domain.”</p>
+                    <p class="mt-6 text-base/7 text-pretty text-gray-600 dark:text-gray-300">CiteGuild may return a member article that matches the topic. The agent still opens it, checks the example, verifies that the source supports the sentence, and decides whether to cite it. If the result is vague, stale, promotional, or off-topic, the correct action is to reject it.</p>
+                </div>
+            </div>
+        </section>
+        <section class="py-20 lg:py-24">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h2 class="max-w-[28ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Measure source usefulness, not promised link volume.</h2>
+                <p class="mt-5 max-w-[68ch] text-lg/8 text-pretty text-gray-600 dark:text-gray-300">A source network should be judged by whether agents repeatedly find material worth evaluating. Link totals alone miss the quality of the match and can reward the wrong behavior.</p>
+                <div class="mt-12 grid gap-x-10 gap-y-12 md:grid-cols-2">
+                    <div>
+                        <h3 class="text-2xl font-semibold">Retrieval signals</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Track active articles, searches per connected account, result selections when that signal exists, and repeat searches over time. These show whether the corpus is available and whether agents see enough potential value to inspect results.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold">Published evidence</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Track detected citations, the number of sites participating, and whether those links remain active. Label them as observations. Without an explicit attribution signal, do not report that CiteGuild created a backlink.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold">Reader and business outcomes</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Use your own analytics to inspect qualified referral visits, assisted signups, and whether cited pages help readers continue their research. A relevant nofollow mention or referral can be useful even when it does not pass ranking credit.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold">When to choose something else</h3>
+                        <p class="mt-4 max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Choose an agency or direct outreach when you need managed prospecting, relationship building, digital PR, or placement negotiation. Choose CiteGuild when you want an opted-in article corpus that writing agents can search during content production.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="border-y border-gray-950/10 py-20 dark:border-white/10 lg:py-24">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h2 class="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">SaaS link-building questions</h2>
+                <dl class="mt-10 max-w-4xl divide-y divide-gray-950/10 border-y border-gray-950/10 dark:divide-white/10 dark:border-white/10">
+                    <div class="py-6">
+                        <dt class="text-lg font-semibold">What is SaaS link building?</dt>
+                        <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            SaaS link building is the work of earning relevant editorial links to a software company’s useful pages. Strong links begin with a real reader need and a source that helps answer it.
+                        </dd>
+                    </div>
+                    <div class="py-6">
+                        <dt class="text-lg font-semibold">Does CiteGuild guarantee backlinks?</dt>
+                        <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            No. CiteGuild makes eligible member articles searchable to writing agents. The agent decides whether a source fits its draft, and the publisher retains control over anything it publishes.
+                        </dd>
+                    </div>
+                    <div class="py-6">
+                        <dt class="text-lg font-semibold">Does CiteGuild require reciprocal links or credits?</dt>
+                        <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            No. CiteGuild does not balance credits, require reciprocal links, sell placements, or prescribe anchor text.
+                        </dd>
+                    </div>
+                    <div class="py-6">
+                        <dt class="text-lg font-semibold">How do SaaS articles become searchable in CiteGuild?</dt>
+                        <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            A paid member submits a public sitemap. CiteGuild indexes eligible articles and exposes relevance-ranked retrieval through MCP, CLI, and API.
+                        </dd>
+                    </div>
+                    <div class="py-6">
+                        <dt class="text-lg font-semibold">Does CiteGuild automatically insert or publish a source?</dt>
+                        <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            No. CiteGuild returns source candidates and context for evaluation. The writing agent or publisher decides whether a citation helps and controls any separate publishing workflow.
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+        <section class="bg-green-700 py-16 text-white dark:border-y dark:border-white/10 dark:bg-gray-950">
+            <div class="mx-auto flex max-w-7xl flex-col gap-8 px-6 sm:flex-row sm:items-end sm:justify-between lg:px-8">
+                <div>
+                    <h2 class="max-w-[24ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Make the useful article findable.</h2>
+                    <p class="mt-4 max-w-[52ch] text-lg/8 text-pretty text-green-50 dark:text-gray-300">Add your sitemap-backed SaaS sites for $10 monthly. Writing agents can search the member corpus; every citation remains an editorial decision.</p>
+                </div>
+                <a class="app-focus border-b border-white pb-1 font-semibold text-white dark:border-green-400 dark:text-green-300"
+                   href="{% url 'account_signup' %}"
+                   data-posthog-cta="signup"
+                   data-posthog-cta-location="saas_link_building_footer">Join CiteGuild</a>
+            </div>
+        </section>
+    </main>
+{% endblock content %}
+{% block schema %}
+    <script type="application/ld+json">{{ schema_json|safe }}</script>
+{% endblock schema %}

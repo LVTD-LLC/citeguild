@@ -1,6 +1,7 @@
 import json
 import re
 import time
+from html import unescape
 
 import pytest
 from allauth.account.models import EmailAddress
@@ -77,6 +78,49 @@ def test_landing_page_exposes_feature_anchors_and_product_schema(client):
         "url": "https://testserver/pricing",
         "availability": "https://schema.org/InStock",
     }
+
+
+def test_saas_link_building_page_meets_use_case_contract(client, settings):
+    settings.SITE_URL = "https://citeguild.lvtd.dev"
+
+    response = client.get(reverse("saas_link_building"))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    visible_text = unescape(re.sub(r"<[^>]+>", " ", content))
+    visible_words = re.findall(r"\b[\w’'-]+\b", visible_text)
+    assert len(visible_words) >= 800
+    assert content.count("<h1") == 1
+    assert "SaaS link building without forced swaps." in content
+    assert re.search(
+        r'<link rel="canonical"\s+href="https://citeguild\.lvtd\.dev/for/saas-link-building"\s*/>',
+        content,
+    )
+    description = re.search(r'<meta name="description"\s+content="([^"]+)"', content)
+    assert description is not None
+    assert 100 <= len(description.group(1)) <= 155
+    assert content.count("https://citeguild.lvtd.dev/") >= 4
+    assert "developers.google.com/search/docs/essentials/spam-policies" in content
+    assert "developers.google.com/search/docs/fundamentals/creating-helpful-content" in content
+    assert "developers.google.com/search/docs/crawling-indexing/qualify-outbound-links" in content
+
+    match = re.search(r'<script type="application/ld\+json">(.*?)</script>', content, re.DOTALL)
+    assert match is not None
+    schema = json.loads(match.group(1))
+    graph = {item["@type"]: item for item in schema["@graph"]}
+    assert set(graph) == {"SoftwareApplication", "BreadcrumbList", "FAQPage"}
+    assert graph["SoftwareApplication"]["url"].endswith("/for/saas-link-building")
+    assert len(graph["FAQPage"]["mainEntity"]) == 5
+
+
+def test_saas_link_building_page_has_two_public_inbound_links(client):
+    target = reverse("saas_link_building")
+
+    landing = client.get(reverse("landing")).content.decode()
+    pricing = client.get(reverse("pricing")).content.decode()
+
+    assert f'href="{target}"' in landing
+    assert f'href="{target}"' in pricing
 
 
 def test_uses_page_is_noindex(client):
