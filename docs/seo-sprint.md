@@ -17,7 +17,7 @@
 |---:|---|---|---|---|
 | 0 | Technical foundations and measurement | Setup | completed | [#54](https://github.com/LVTD-LLC/citeguild/pull/54) |
 | 1 | Current HARO alternatives editorial guide | Editorial | completed | [#58](https://github.com/LVTD-LLC/citeguild/pull/58) |
-| 2 | CiteGuild for SaaS link building | Use case | in_progress | `scribe/cg-040-saas-link-building` |
+| 2 | CiteGuild for SaaS link building | Use case | completed | [#61](https://github.com/LVTD-LLC/citeguild/pull/61) |
 | 3 | Backlink marketplaces: risks and alternatives | Playbook | pending | — |
 | 4 | Backlink-exchange competitor validation and prioritization | Research | pending | — |
 | 5 | LinkSwarm alternative | Alternatives | pending | — |
@@ -255,4 +255,4 @@ The private [CiteGuild SEO Backlink Targets](https://rowset.lvtd.dev/datasets/cd
 
 ## Current handoff
 
-Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). Phase 1 is complete in [PR #58](https://github.com/LVTD-LLC/citeguild/pull/58) as an editorial guide matching the plural listicle SERP; `/alternatives/featured` has been retired. Rasul approved promoting `/for/saas-link-building` to Phase 2 on 2026-08-06. Phase 3 is the backlink-marketplaces playbook, followed by direct-competitor validation and the LinkSwarm alternative. Tavily and Exa remain skipped comparison candidates because CiteGuild is not a general programmatic web-search product.
+Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). Phase 1 is complete in [PR #58](https://github.com/LVTD-LLC/citeguild/pull/58) as an editorial guide matching the plural listicle SERP; `/alternatives/featured` has been retired. Rasul approved promoting `/for/saas-link-building` to Phase 2, completed in [PR #61](https://github.com/LVTD-LLC/citeguild/pull/61). The next pending phase is the backlink-marketplaces playbook, followed by direct-competitor validation and the LinkSwarm alternative. Tavily and Exa remain skipped comparison candidates because CiteGuild is not a general programmatic web-search product.
