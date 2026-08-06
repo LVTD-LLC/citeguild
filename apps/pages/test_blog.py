@@ -227,6 +227,7 @@ def test_static_sitemap_excludes_noindex_technology_stack():
     sitemap = StaticViewSitemap()
 
     assert "uses" not in sitemap.items()
+    assert "saas_link_building" in sitemap.items()
 
 
 def test_blog_sitemap_uses_site_url_and_last_modified_header(rf, blog_posts_dir):

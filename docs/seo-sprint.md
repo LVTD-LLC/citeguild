@@ -17,16 +17,16 @@
 |---:|---|---|---|---|
 | 0 | Technical foundations and measurement | Setup | completed | [#54](https://github.com/LVTD-LLC/citeguild/pull/54) |
 | 1 | Current HARO alternatives editorial guide | Editorial | completed | [#58](https://github.com/LVTD-LLC/citeguild/pull/58) |
-| 2 | Backlink-exchange competitor validation and prioritization | Research | pending | — |
-| 3 | LinkSwarm alternative | Alternatives | pending | — |
-| 4 | Ranking Raccoon alternative | Alternatives | pending | — |
-| 5 | RankChase alternative | Alternatives | pending | — |
-| 6 | LinkRocket alternative | Alternatives | pending | — |
-| 7 | CiteGuild for SaaS link building | Use case | pending | — |
-| 8 | CiteGuild for bloggers | Audience | pending | — |
-| 9 | CiteGuild for AI-assisted backlinks | Use case | pending | — |
-| 10 | CiteGuild vs LinkSwarm | Comparison | pending | — |
-| 11 | Backlink marketplaces: risks and alternatives | Playbook | pending | — |
+| 2 | CiteGuild for SaaS link building | Use case | in_progress | `scribe/cg-040-saas-link-building` |
+| 3 | Backlink marketplaces: risks and alternatives | Playbook | pending | — |
+| 4 | Backlink-exchange competitor validation and prioritization | Research | pending | — |
+| 5 | LinkSwarm alternative | Alternatives | pending | — |
+| 6 | Ranking Raccoon alternative | Alternatives | pending | — |
+| 7 | RankChase alternative | Alternatives | pending | — |
+| 8 | LinkRocket alternative | Alternatives | pending | — |
+| 9 | CiteGuild for bloggers | Audience | pending | — |
+| 10 | CiteGuild for AI-assisted backlinks | Use case | pending | — |
+| 11 | CiteGuild vs LinkSwarm | Comparison | pending | — |
 | 12 | Ethical link building playbook | Playbook | pending | — |
 | 13 | Editorial link building playbook | Playbook | pending | — |
 | 14 | Internal-link spine audit | Internal links | pending | — |
@@ -110,14 +110,14 @@ Treat backlink-exchange products as the direct competitive set. Tavily and Exa a
 | Phase | Target | Measured demand | KD | CPC | Confidence | Positioning constraint |
 |---:|---|---:|---:|---:|---|---|
 | 1 | `/blog/haro-alternatives` | `haro alternatives` 90 | 0 | $36.15 | measured | Plural listicle intent; compare active request services and distinguish persistent agent retrieval. |
-| 3 | `/alternatives/linkswarm` | No measured row | — | — | derived | Direct exchange competitor; compare membership, matching, credits, placement control, and editorial safeguards. |
-| 4 | `/alternatives/ranking-raccoon` | Revalidate in Phase 2 | — | — | unverified | Direct exchange/community candidate; verify current product, pricing, and query demand before publishing. |
-| 5 | `/alternatives/rankchase` | Revalidate in Phase 2 | — | — | unverified | Direct exchange candidate; verify matching, request, and placement workflows before publishing. |
-| 6 | `/alternatives/linkrocket` | Revalidate in Phase 2 | — | — | unverified | Direct credit-based exchange candidate; verify product status and indexed demand before publishing. |
+| 5 | `/alternatives/linkswarm` | No measured row | — | — | derived | Direct exchange competitor; compare membership, matching, credits, placement control, and editorial safeguards. |
+| 6 | `/alternatives/ranking-raccoon` | Revalidate in Phase 4 | — | — | unverified | Direct exchange/community candidate; verify current product, pricing, and query demand before publishing. |
+| 7 | `/alternatives/rankchase` | Revalidate in Phase 4 | — | — | unverified | Direct exchange candidate; verify matching, request, and placement workflows before publishing. |
+| 8 | `/alternatives/linkrocket` | Revalidate in Phase 4 | — | — | unverified | Direct credit-based exchange candidate; verify product status and indexed demand before publishing. |
 
 ### Product-memo competitor watchlist
 
-Rasul supplied the product memo's 2026-07-31 competitive scan during Phase 0. Phase 2 promotes the backlink-exchange candidates below into the primary research set, subject to current product and DataForSEO re-verification. Adjacent outreach products remain research context rather than direct-comparison targets.
+Rasul supplied the product memo's 2026-07-31 competitive scan during Phase 0. Phase 4 promotes the backlink-exchange candidates below into the primary research set, subject to current product and DataForSEO re-verification. Adjacent outreach products remain research context rather than direct-comparison targets.
 
 | Candidate | Category distinction | Promotion gate |
 |---|---|---|
@@ -133,9 +133,9 @@ The memo also strengthens four non-keyword inputs: retain “AI-native editorial
 
 | Phase | Target | Keyword | Volume | KD | CPC | Intent |
 |---:|---|---|---:|---:|---:|---|
-| 7 | `/for/saas-link-building` | `saas link building` | 260 | 0 | — | commercial |
-| 8 | `/for/bloggers` | `blogger backlinks` | 90 | 0 | — | informational |
-| 9 | `/for/ai-backlinks` | `ai backlinks` | 50 | 8 | $29.82 | commercial |
+| 2 | `/for/saas-link-building` | `saas link building` | 260 | 0 | — | commercial |
+| 9 | `/for/bloggers` | `blogger backlinks` | 90 | 0 | — | informational |
+| 10 | `/for/ai-backlinks` | `ai backlinks` | 50 | 8 | $29.82 | commercial |
 
 ### Comparison candidates
 
@@ -213,27 +213,37 @@ Publish `/blog/haro-alternatives` as a current, balanced listicle because the me
 
 The previously planned `/alternatives/featured` route is retired from this sprint to prevent intent mismatch and cannibalization.
 
-### Phase 2 — Backlink-exchange competitor validation
+### Phase 2 — CiteGuild for SaaS link building
 
-Re-verify the live product, pricing, workflow, indexed demand, and search intent for LinkSwarm, Ranking Raccoon, RankChase, and LinkRocket. Confirm that each product actually facilitates backlink exchange before retaining its page in the tracker. Record adjacent search APIs, outreach automation, and journalist-request platforms separately; do not create Tavily or Exa alternative pages for CiteGuild.
+Publish `/for/saas-link-building` against the measured commercial query (`260` US monthly searches, KD `0`). The current SERP mixes agency landing pages, provider lists, and broad tactic guides. CiteGuild's page should own the missing source-discovery layer: publish a source-worthy article, index the sitemap, retrieve against a live draft, preserve the editorial decision, and observe only what is later published.
 
-### Phases 3–6 — Backlink-exchange alternatives family
+Use at least 800 words, `SoftwareApplication`, `BreadcrumbList`, and `FAQPage`. Link to the article-indexing, agent-retrieval, and citation-observation anchors; pricing; the HARO alternatives guide; and current official Google resources on people-first content, link spam, and outbound-link qualification. Add inbound links from the homepage and pricing. Do not claim customer results, ranking gains, AI visibility, placements, or causation. A sibling `/for/` link becomes a required inbound/outbound update when Phase 9 ships; do not invent a route before then.
 
-Build only the direct-competitor pages that pass Phase 2. Every page must contain at least 600 words, `SoftwareApplication`, `BreadcrumbList`, `FAQPage`, at least three honest tradeoffs where the competitor wins, and the required sibling/feature/tool links. If Phase 0 does not create enough public feature/tool destinations, do not fake the link minimum—build the spine first and update the tracker.
+### Phase 3 — Backlink marketplaces: risks and alternatives
+
+Ship the commercial-intent playbook next because it lets CiteGuild explain paid placement, credit systems, forced exchange, and relevance-first source discovery before individual competitor pages. Use current primary sources and the playbook quality bar; avoid becoming a marketplace directory.
+
+### Phase 4 — Backlink-exchange competitor validation
+
+Re-verify the live product, pricing, workflow, indexed demand, and search intent for LinkSwarm, Ranking Raccoon, RankChase, and LinkRocket. Confirm that each product actually facilitates backlink exchange before retaining its page in the tracker. Record adjacent search APIs, outreach automation, and journalist-request platforms separately. Tavily and Exa are skipped comparison candidates because CiteGuild is not a general programmatic web-search product.
+
+### Phases 5–8 — Backlink-exchange alternatives family
+
+Build only the direct-competitor pages that pass Phase 4. Every page must contain at least 600 words, `SoftwareApplication`, `BreadcrumbList`, `FAQPage`, at least three honest tradeoffs where the competitor wins, and the required sibling/feature/tool links. If the public site does not expose enough real feature/tool destinations, do not fake the link minimum—build the spine first and update the tracker.
 
 Refresh pricing and features from each competitor's official site immediately before writing. Target the keyword and constraints in the Alternatives table above.
 
-### Phases 7–9 — Use-case and audience family
+### Phases 9–10 — Remaining use-case and audience family
 
 Each page needs at least 800 words, `SoftwareApplication`, `BreadcrumbList`, `FAQPage`, two feature links, two useful public resource/tool links, and one sibling `/for/` link. Lead with relevance and source usefulness rather than backlink guarantees.
 
-### Phase 10 — CiteGuild vs LinkSwarm
+### Phase 11 — CiteGuild vs LinkSwarm
 
 Ship only after both products' current behavior has been re-verified and `/alternatives/linkswarm` exists. Use at least 700 words, `BreadcrumbList`, `FAQPage`, both relevant alternative pages, a `/for/` page, and pricing. Compare facts, not motives; explain CiteGuild's rejection of credits, circular exchanges, and automatic placement.
 
-### Phases 11–13 — Playbooks family
+### Phases 12–13 — Remaining playbooks family
 
-Each playbook needs at least 2,500 words, `Article` and `BreadcrumbList` schema, primary-source support, practical steps, and the full internal-link minimum. Keep claims sourceable. The backlink-marketplace page should explain categories, disclosure, risk, and relevance-first alternatives rather than becoming a marketplace directory.
+Each playbook needs at least 2,500 words, `Article` and `BreadcrumbList` schema, primary-source support, practical steps, and the full internal-link minimum. Keep claims sourceable. Phase 3's backlink-marketplace page should explain categories, disclosure, risk, and relevance-first alternatives rather than becoming a marketplace directory.
 
 ### Phase 14 — Internal-link spine audit
 
@@ -245,4 +255,4 @@ The private [CiteGuild SEO Backlink Targets](https://rowset.lvtd.dev/datasets/cd
 
 ## Current handoff
 
-Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). Phase 1 is complete in [PR #58](https://github.com/LVTD-LLC/citeguild/pull/58) as an editorial guide matching the plural listicle SERP; `/alternatives/featured` has been retired. The next pending phase is backlink-exchange competitor validation. Tavily and Exa are explicitly excluded from the alternatives roadmap because CiteGuild is not a general programmatic web-search product.
+Initialization and Phase 0 are complete in [PR #54](https://github.com/LVTD-LLC/citeguild/pull/54). Phase 1 is complete in [PR #58](https://github.com/LVTD-LLC/citeguild/pull/58) as an editorial guide matching the plural listicle SERP; `/alternatives/featured` has been retired. Rasul approved promoting `/for/saas-link-building` to Phase 2 on 2026-08-06. Phase 3 is the backlink-marketplaces playbook, followed by direct-competitor validation and the LinkSwarm alternative. Tavily and Exa remain skipped comparison candidates because CiteGuild is not a general programmatic web-search product.

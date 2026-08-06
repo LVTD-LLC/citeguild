@@ -52,6 +52,7 @@ class StaticViewSitemap(ConfiguredSitemapMixin, sitemaps.Sitemap):
             "privacy_policy",
             "terms_of_service",
             "pricing",
+            "saas_link_building",
             "blog_posts",
         ]
 
