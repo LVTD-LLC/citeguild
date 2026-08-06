@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
+## 2026-08-06
+
+### Changed
+
+- Refocused the SEO competitor roadmap on backlink-exchange workflows, moved
+  direct exchange products into validation, and removed Tavily and Exa from
+  planned comparison pages because CiteGuild is not a general programmatic
+  web-search product.
+
 ## 2026-08-05
 
 ### Added
