@@ -7,6 +7,11 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-08-06
 
+### Added
+
+- Linked the official installable Claude Code and ChatGPT/Codex plugin repository
+  from the authenticated MCP setup guide with copy-ready install commands.
+
 ### Changed
 
 - Refocused the SEO competitor roadmap on backlink-exchange workflows, moved
