@@ -19,6 +19,8 @@ from apps.core.choices import (
     ProjectSyncStates,
 )
 from apps.core.model_utils import (
+    decrypt_api_key,
+    encrypt_api_key,
     generate_api_key,
     get_api_key_prefix,
     hash_api_key,
@@ -36,6 +38,7 @@ class Profile(BaseModel):
         default=None,
     )
     api_key_hash = models.CharField(max_length=128, blank=True, default="")
+    api_key_ciphertext = models.TextField(blank=True, default="")
     stripe_subscription_id = models.CharField(
         max_length=255,
         blank=True,
@@ -91,11 +94,25 @@ class Profile(BaseModel):
 
         self.api_key_prefix = api_key_prefix
         self.api_key_hash = hash_api_key(api_key)
+        self.api_key_ciphertext = encrypt_api_key(api_key)
         return api_key
 
     def rotate_api_key(self):
         api_key = self.set_api_key()
-        self.save(update_fields=["api_key_prefix", "api_key_hash", "updated_at"])
+        self.save(
+            update_fields=[
+                "api_key_prefix",
+                "api_key_hash",
+                "api_key_ciphertext",
+                "updated_at",
+            ]
+        )
+        return api_key
+
+    def get_api_key(self):
+        api_key = decrypt_api_key(self.api_key_ciphertext)
+        if api_key is None or not self.check_api_key(api_key):
+            return None
         return api_key
 
     def check_api_key(self, api_key):

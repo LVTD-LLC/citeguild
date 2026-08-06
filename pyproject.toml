@@ -45,6 +45,7 @@ dependencies = [
     "pygments>=2.20.0",
     "qdrant-client>=1.18.0,<2",
     "defusedxml>=0.7.1",
+    "cryptography>=50.0.0",
     "trafilatura>=2.1,<3",
 ]
 

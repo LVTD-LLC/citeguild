@@ -87,13 +87,13 @@
                  aria-labelledby="api-key-settings-heading">
             <div>
                 <h2 id="api-key-settings-heading" class="text-xl font-semibold">API access</h2>
-                <p class="app-text-muted mt-2 text-base/7 text-pretty sm:text-sm/6">Use one private key across the API, CLI, and MCP.</p>
+                <p class="app-text-muted mt-2 text-base/7 text-pretty sm:text-sm/6">Every account receives one private key for the API, CLI, and MCP.</p>
             </div>
             <div class="min-w-0">
                 <p class="app-text-muted text-base/7 text-pretty sm:text-sm/6">Send the key with an <code class="font-mono text-gray-950 dark:text-white">Authorization: Bearer</code> or <code class="font-mono text-gray-950 dark:text-white">X-API-Key</code> header.</p>
                 {% if new_api_key %}
                     <div class="app-panel mt-4 p-4">
-                        <p class="font-medium text-amber-900 dark:text-amber-100">Copy this key now. It will not be shown again.</p>
+                        <p class="font-medium text-amber-900 dark:text-amber-100">Copy this key now. It will not be shown again on this page.</p>
                         <code class="mt-3 block overflow-x-auto rounded-lg bg-white p-3 font-mono text-base sm:text-sm dark:bg-gray-950">{{ new_api_key }}</code>
                     </div>
                 {% elif has_api_key %}

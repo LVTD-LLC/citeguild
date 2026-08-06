@@ -107,6 +107,9 @@ content to analytics/observability. Never auto-edit or publish customer content.
 - Store secrets only in environment-backed configuration. Keep credentials,
   raw user content, connection strings, and private dataset data out of logs,
   analytics, errors, fixtures, screenshots, and committed files.
+- User API keys retain a salted verification hash and an encrypted copy for the
+  authenticated, non-cacheable agent-prompt copy flow. Encryption is derived
+  from the deployment `SECRET_KEY`, which must remain stable across releases.
 - Preserve idempotency for Stripe, sync jobs, vector upserts, and citation
   observations. Use transactions/outbox-style coordination where cross-system
   state can diverge.

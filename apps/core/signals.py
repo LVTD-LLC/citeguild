@@ -10,7 +10,9 @@ from apps.core.models import Profile, ProfileStates
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        profile = Profile.objects.create(user=instance)
+        profile = Profile(user=instance)
+        profile.set_api_key()
+        profile.save()
         profile.track_state_change(
             to_state=ProfileStates.SIGNED_UP,
             source_function="create_user_profile signal",

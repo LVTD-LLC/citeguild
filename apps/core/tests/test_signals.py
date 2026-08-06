@@ -30,6 +30,25 @@ def test_user_save_does_not_revert_profile_state(sync_state_transitions):
     assert profile.state == ProfileStates.SIGNED_UP
 
 
+@pytest.mark.django_db
+def test_new_account_is_created_with_copyable_api_key(sync_state_transitions):
+    user_model = get_user_model()
+
+    user = user_model.objects.create_user(
+        username="new-api-key-user",
+        email="new-api-key-user@example.com",
+        password="password123",
+    )
+
+    profile = user.profile
+    api_key = profile.get_api_key()
+    assert api_key is not None
+    assert profile.has_api_key
+    assert profile.check_api_key(api_key)
+    assert api_key not in profile.api_key_hash
+    assert api_key not in profile.api_key_ciphertext
+
+
 @pytest.mark.parametrize(
     ("profile_state", "expected_state"),
     [

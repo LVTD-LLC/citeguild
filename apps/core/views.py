@@ -16,10 +16,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
 from django.db import transaction
-from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.cache import patch_vary_headers
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.debug import sensitive_variables
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, UpdateView
 
@@ -52,6 +54,7 @@ logger = logging.getLogger(__name__)
 NEW_API_KEY_SESSION_KEY = "new_api_key"
 CITEGUILD_SKILLS_REPOSITORY_URL = "https://github.com/LVTD-LLC/citeguild-skills"
 CITEGUILD_CODEX_INSTALL_URL = f"{CITEGUILD_SKILLS_REPOSITORY_URL}#install-for-chatgpt-and-codex"
+REDACTED_API_KEY = "Hidden — copied securely"
 
 
 def build_absolute_public_url(path: str) -> str:
@@ -70,7 +73,7 @@ def build_absolute_public_url(path: str) -> str:
     return f"{base_url}/{path.lstrip('/')}"
 
 
-def build_agent_setup_prompt():
+def build_agent_setup_prompt(api_key: str):
     """Build the dashboard copy/paste prompt for connecting a coding agent."""
     mcp_url = build_absolute_public_url("/mcp/")
     search_api_url = build_absolute_public_url("/api/v1/search")
@@ -100,10 +103,20 @@ again. Do not claim connection verification succeeded before calling the tool.
 Use MCP URL: {mcp_url}
 Use REST search fallback: {search_api_url}
 
-Once the plugin tools are available, call `get_user_info`. Complete the browser
-OAuth flow when prompted, then retry `get_user_info` to verify access. Use
-CITEGUILD_API_KEY as an Authorization Bearer fallback only when OAuth is
-unsupported or fails. Never hardcode, print, log, or commit any credential.
+Use this API key for MCP authentication (secret): {api_key}
+
+Store that exact key as `CITEGUILD_API_KEY` in `~/.codex/.env`, replacing only
+an existing `CITEGUILD_API_KEY` entry if present. Keep the file readable only by
+the current user when the operating system supports file permissions. Never
+echo, print, log, or commit the key. The official Codex plugin reads this
+environment variable and sends it as an Authorization bearer token.
+
+Restart Codex and start a new session after saving the key or installing the
+plugin. Then call `get_user_info` to verify access. Do not start OAuth for
+CiteGuild in Codex. If a browser authentication prompt appears, stop and verify
+that the marketplace is current, the plugin is enabled, and
+`CITEGUILD_API_KEY` is available from `~/.codex/.env` before retrying. Do not
+claim connection verification succeeded before calling the tool.
 
 During research, call `search_member_articles` with the question or draft passage.
 Use optional language and excluded_domains only when relevant.
@@ -157,9 +170,14 @@ standalone MCP server when the plugin is available.
 
 ## Authentication
 
-Use MCP OAuth when the client supports it. Add the MCP URL to the client; it should
-discover the OAuth metadata, register itself, open a browser sign-in flow, and send
-an access token as `Authorization: Bearer <access_token>`.
+For Codex, use the authenticated dashboard's **Copy prompt** action. It includes
+the account API key and directs Codex to store it in `~/.codex/.env` as
+`{env_var}`. The official plugin reads that variable as a bearer token after
+Codex restarts.
+
+For Claude Code and ChatGPT, use MCP OAuth. Add the MCP URL to the client; it
+should discover the OAuth metadata, register itself, open a browser sign-in
+flow, and send an access token as `Authorization: Bearer <access_token>`.
 
 Legacy MCP clients can still use the user's API key from the app settings page.
 Do not commit or print the key.
@@ -172,9 +190,11 @@ API keys are intentionally not accepted in query strings.
 
 ## Workflow
 
-1. Use the MCP client's OAuth flow when available.
-2. If OAuth is unavailable, read the API key from `{env_var}` and send it as
-   `X-API-Key` or `Authorization: Bearer <api_key>`.
+1. In Codex, use the protected dashboard prompt to install the plugin and save
+   `{env_var}` in `~/.codex/.env`, then restart Codex.
+2. In Claude Code or ChatGPT, use the MCP client's OAuth flow. Other local
+   clients may read `{env_var}` and send it as `X-API-Key` or
+   `Authorization: Bearer <api_key>`.
 3. Verify authentication by calling `get_user_info` through MCP or `GET {api_url}`.
 4. During research, call `search_member_articles` with a question or draft
    passage. The optional inputs are `limit`, `language`, and `excluded_domains`.
@@ -200,9 +220,9 @@ Install the official plugin from {CITEGUILD_SKILLS_REPOSITORY_URL}.
 Follow the Codex instructions at {CITEGUILD_CODEX_INSTALL_URL} when using Codex.
 Use MCP URL: {mcp_url}
 Use REST search fallback: {search_api_url}
-Use the MCP client's OAuth flow first. If OAuth is unavailable, use the user's
-{project_name} API key from environment variable {env_var} and send it as
-Authorization: Bearer. Do not hardcode, print, log, or commit any credential.
+For Codex, copy the protected prompt from the {project_name} dashboard so the
+official plugin can store and use {env_var} as a bearer token. For Claude Code
+or ChatGPT, use OAuth. Do not print, log, or commit any credential.
 First call get_user_info, then use search_member_articles during research.
 Open and evaluate every result. Cite only sources that genuinely support the
 work; never force a link or treat relevance as endorsement or factual proof.
@@ -237,7 +257,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["dashboard"] = dashboard
         context["projects"] = dashboard.projects
         context["site_form"] = kwargs.get("site_form") or SiteCreateForm()
-        context["agent_setup_prompt"] = build_agent_setup_prompt()
+        context["agent_setup_prompt"] = build_agent_setup_prompt(REDACTED_API_KEY)
+        context["agent_setup_prompt_url"] = reverse("agent_setup_prompt")
         context["agent_instructions_url"] = build_absolute_public_url("/AGENTS.md")
         context["agent_docs_url"] = build_absolute_public_url("/docs/features/mcp/")
         return context
@@ -285,6 +306,35 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         context = self.get_context_data(site_form=form)
         return self.render_to_response(context, status=400)
+
+
+@sensitive_variables("api_key")
+def _copyable_api_key(profile: Profile) -> str:
+    api_key = profile.get_api_key()
+    if api_key is not None:
+        return api_key
+
+    with transaction.atomic():
+        locked_profile = Profile.objects.select_for_update().get(pk=profile.pk)
+        api_key = locked_profile.get_api_key()
+        if api_key is None:
+            api_key = locked_profile.rotate_api_key()
+        return api_key
+
+
+@login_required
+@require_POST
+@sensitive_variables("api_key", "response")
+def agent_setup_prompt(request):
+    """Return the full secret-bearing prompt without placing it in page HTML."""
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    api_key = _copyable_api_key(profile)
+    response = JsonResponse({"prompt": build_agent_setup_prompt(api_key)})
+    response["Cache-Control"] = "no-store, private"
+    response["Pragma"] = "no-cache"
+    response["Referrer-Policy"] = "no-referrer"
+    patch_vary_headers(response, ("Cookie",))
+    return response
 
 
 def _sitemap_details_context(request, profile, project_uuid, *, update_form=None, delete_form=None):
