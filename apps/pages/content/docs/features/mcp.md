@@ -13,6 +13,26 @@ The server exposes two focused tools:
 
 Search relevance identifies candidate sources; it is not an endorsement or a requirement to link. Read and verify a result before citing it.
 
+## Install the official plugin
+
+The [CiteGuild Skills repository](https://github.com/LVTD-LLC/citeguild-skills) packages the hosted MCP connection and the `find-editorial-citations` workflow for Claude Code, ChatGPT, and Codex.
+
+For Claude Code:
+
+```text
+/plugin marketplace add LVTD-LLC/citeguild-skills
+/plugin install citeguild@citeguild-skills
+```
+
+For ChatGPT and Codex plugin surfaces:
+
+```text
+codex plugin marketplace add LVTD-LLC/citeguild-skills
+codex plugin add citeguild@citeguild-skills
+```
+
+Start a new conversation after installation, then complete the CiteGuild OAuth flow on the first tool call. The plugin searches opted-in member articles; it does not turn CiteGuild into broad web search or promise reciprocal placement.
+
 The dashboard reveals the **Connect an AI agent** prompt after the first site is
 submitted. Copy that prompt into a clean agent session; it contains public URLs
 and safe workflow instructions, never an API key.
