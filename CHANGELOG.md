@@ -17,6 +17,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Changed
 
+- Expanded the dashboard's copyable AI-agent prompt with the official CiteGuild
+  plugin repository, Codex install and enabled-state verification commands,
+  OAuth-first connection checks, and an explicit new-session handoff when newly
+  installed plugin tools cannot be loaded in place.
 - Refocused the SEO competitor roadmap on backlink-exchange workflows, moved
   direct exchange products into validation, and removed Tavily and Exa from
   planned comparison pages because CiteGuild is not a general programmatic
