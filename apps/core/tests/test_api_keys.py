@@ -67,5 +67,15 @@ def test_profile_api_key_is_hashed_and_verifiable(profile):
 
     assert profile.api_key_prefix == get_api_key_prefix(api_key)
     assert api_key not in profile.api_key_hash
+    assert api_key not in profile.api_key_ciphertext
+    assert profile.get_api_key() == api_key
     assert profile.check_api_key(api_key)
     assert not profile.check_api_key("ak_missing.secret")
+
+
+@pytest.mark.django_db
+def test_profile_api_key_ciphertext_cannot_be_decrypted_after_tampering(profile):
+    profile.rotate_api_key()
+    profile.api_key_ciphertext = f"{profile.api_key_ciphertext}tampered"
+
+    assert profile.get_api_key() is None

@@ -31,11 +31,13 @@ codex plugin marketplace add LVTD-LLC/citeguild-skills
 codex plugin add citeguild@citeguild-skills
 ```
 
-Start a new conversation after installation, then complete the CiteGuild OAuth flow on the first tool call. The plugin searches opted-in member articles; it does not turn CiteGuild into broad web search or promise reciprocal placement.
+For Codex, copy the protected dashboard prompt so the plugin receives the account API key from `CITEGUILD_API_KEY`. For Claude Code and ChatGPT, start a new conversation after installation and complete the CiteGuild OAuth flow on the first tool call. The plugin searches opted-in member articles; it does not turn CiteGuild into broad web search or promise reciprocal placement.
 
-The dashboard reveals the **Connect an AI agent** prompt after the first site is
-submitted. Copy that prompt into a clean agent session; it contains public URLs
-and safe workflow instructions, never an API key.
+New accounts receive an API key automatically. The dashboard reveals the
+**Connect an AI agent** prompt after the first site is submitted, but redacts the
+key from the page and its HTML. The authenticated **Copy prompt** action fetches
+the full prompt, including the key, from a private non-cacheable endpoint. Share
+that copied prompt only with an agent you trust.
 
 ## URLs
 
@@ -56,26 +58,30 @@ OAuth discovery endpoints:
 - `/.well-known/oauth-authorization-server`
 - `/.well-known/openid-configuration`
 
-Legacy clients can still authenticate with the API key shown on the user settings page. Never hardcode it into source control.
+Codex uses the API key embedded in the protected copied prompt. The prompt stores
+it as `CITEGUILD_API_KEY` in `~/.codex/.env`; the official plugin reads that
+environment variable as a bearer token after Codex restarts. Other clients can
+still use an API key when configured explicitly. Never hardcode it into source
+control or paste the copied prompt into an untrusted agent.
 
 - `X-API-Key: <api_key>`
 - `Authorization: Bearer <api_key>`
 
 API keys are intentionally not accepted in query strings.
 
-Create an API key from **Settings** only when a client cannot complete OAuth.
-The key is shown once. Store it in `CITEGUILD_API_KEY`, then close the page.
-Rotating the key immediately revokes the previous value, so update every client
-that still needs access. Never paste a key into a prompt, config file, URL,
+Use **Settings** to rotate the API key if it may have been exposed. Rotation
+immediately revokes the previous value, so copy the updated agent prompt into
+every client that still needs access. Never put a key in source control, a URL,
 support message, screenshot, or log.
 
 ### Provider-neutral setup
 
-1. Start a clean agent session and paste the dashboard prompt.
-2. Configure `{{ mcp_url }}` using the client's OAuth flow when supported.
-3. Otherwise export `CITEGUILD_API_KEY` and configure an
+1. Copy the protected dashboard prompt and paste it into a trusted clean agent session.
+2. In Codex, let the prompt install the plugin and store `CITEGUILD_API_KEY` in
+   `~/.codex/.env`; restart before verification.
+3. In another local client, export `CITEGUILD_API_KEY` and configure an
    `Authorization: Bearer` header through the client's environment-variable
-   mechanism.
+   mechanism, or use OAuth when it is reliable.
 4. Call `get_user_info`, then call `search_member_articles` with a real research
    question or draft passage.
 5. Open and evaluate promising results. Cite only sources that genuinely support
@@ -89,16 +95,13 @@ for candidate ranking only.
 
 ### Codex bearer configuration
 
-Export the key in the shell that starts Codex, then add this to `~/.codex/config.toml`:
+The official Codex plugin already declares `CITEGUILD_API_KEY` as its bearer
+token source. The protected copied prompt writes the key to `~/.codex/.env`,
+which desktop and IDE clients can load after restart. No duplicate standalone
+MCP entry is needed.
 
 ```text
-export CITEGUILD_API_KEY="<copy the key from CiteGuild settings>"
-```
-
-```toml
-[mcp_servers.citeguild]
-url = "{{ mcp_url }}"
-bearer_token_env_var = "CITEGUILD_API_KEY"
+CITEGUILD_API_KEY=<copied securely from the CiteGuild dashboard prompt>
 ```
 
 Restart Codex, confirm the `citeguild` server is enabled, and call `get_user_info` before `search_member_articles`. Keep the key out of the TOML file.
@@ -121,7 +124,7 @@ Claude Code expands environment variables in project `.mcp.json` files:
 }
 ```
 
-Export `CITEGUILD_API_KEY` before starting Claude Code, approve the project MCP server, and use `/mcp` to verify the connection. OAuth remains preferred when the client supports it reliably.
+Export `CITEGUILD_API_KEY` before starting Claude Code, approve the project MCP server, and use `/mcp` to verify the connection. The official Claude Code plugin continues to use OAuth by default.
 
 ## Give this prompt to a coding agent
 

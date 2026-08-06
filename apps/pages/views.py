@@ -17,7 +17,7 @@ from django.views.generic import TemplateView
 from apps.core.analytics import SIGNUP_COMPLETED, has_analytics_consent, track_event
 from apps.core.choices import ProfileStates
 from apps.core.models import Profile
-from apps.core.views import build_absolute_public_url, build_agent_setup_prompt
+from apps.core.views import REDACTED_API_KEY, build_absolute_public_url, build_agent_setup_prompt
 from apps.pages.services import (
     BLOG_DEFAULT_IMAGE_URL,
     BLOG_DESCRIPTION,
@@ -360,7 +360,7 @@ def docs_page_view(request, category, page):
             "api_base_url": build_absolute_public_url("/api/").rstrip("/"),
             "api_key_env_var": "CITEGUILD_API_KEY",
             "api_docs_url": build_absolute_public_url("/api/docs"),
-            "agent_setup_prompt": build_agent_setup_prompt(),
+            "agent_setup_prompt": build_agent_setup_prompt(REDACTED_API_KEY),
             "mcp_url": build_absolute_public_url("/mcp/"),
             "agent_instructions_url": build_absolute_public_url("/AGENTS.md"),
             "site_url": build_absolute_public_url("/").rstrip("/"),

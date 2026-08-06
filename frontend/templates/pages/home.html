@@ -225,7 +225,7 @@
             <details class="app-panel mt-10 p-5">
                 <summary class="cursor-pointer font-semibold">Connect an AI agent</summary>
                 <div class="mt-5">
-                    <label for="agent-setup-prompt" class="mb-2 block text-sm font-medium">Copy/paste prompt</label>
+                    <label for="agent-setup-prompt" class="mb-2 block text-sm font-medium">Prompt preview (API key hidden)</label>
                     <textarea id="agent-setup-prompt"
                               readonly
                               rows="12"
@@ -237,11 +237,14 @@
                             <a href="{{ agent_docs_url }}"
                                class="text-sm font-semibold text-green-700 dark:text-green-300">MCP and API setup</a>
                             <a href="{% url 'settings' %}#api-key-settings-heading"
-                               class="text-sm font-semibold text-green-700 dark:text-green-300">Create or rotate API key</a>
+                               class="text-sm font-semibold text-green-700 dark:text-green-300">Manage API key</a>
                         </div>
                         <button type="button"
                                 data-copy-button
-                                data-copy-source="#agent-setup-prompt"
+                                data-copy-url="{{ agent_setup_prompt_url }}"
+                                data-copy-response-key="prompt"
+                                data-copy-method="POST"
+                                data-copy-csrf-token="{{ csrf_token }}"
                                 class="app-button-secondary">
                             <span data-copy-label>Copy prompt</span>
                         </button>

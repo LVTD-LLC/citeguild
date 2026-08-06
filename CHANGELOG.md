@@ -9,6 +9,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Added
 
+- Created an encrypted, hashed API key for every new account and added a
+  protected non-cacheable endpoint that copies the full key-bearing agent prompt
+  while dashboard HTML contains only a redacted preview.
 - Linked the official installable Claude Code and ChatGPT/Codex plugin repository
   from the authenticated MCP setup guide with copy-ready install commands.
 - Added a source-backed SaaS link-building page that explains CiteGuild's
@@ -17,6 +20,10 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ### Changed
 
+- Made the Codex setup prompt store `CITEGUILD_API_KEY` in `~/.codex/.env`, use
+  API-key MCP authentication, restart, and verify with `get_user_info` instead
+  of starting OAuth. Existing hash-only accounts receive a newly rotated key
+  only when they explicitly copy the protected prompt.
 - Expanded the dashboard's copyable AI-agent prompt with the official CiteGuild
   plugin repository, Codex install and enabled-state verification commands,
   OAuth-first connection checks, and an explicit new-session handoff when newly

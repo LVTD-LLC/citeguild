@@ -1,6 +1,10 @@
+import base64
 import hashlib
 import hmac
 import secrets
+
+from cryptography.fernet import Fernet, InvalidToken
+from django.conf import settings
 
 API_KEY_PREFIX = "ak"
 API_KEY_ID_BYTES = 12
@@ -8,6 +12,7 @@ API_KEY_SECRET_BYTES = 32
 API_KEY_SALT_BYTES = 16
 API_KEY_HASH_VERSION = "v1"
 API_KEY_HASH_CONTEXT = "django-saas-starter-api-key-v1"
+API_KEY_ENCRYPTION_CONTEXT = "citeguild-api-key-encryption-v1"
 
 
 def generate_api_key() -> str:
@@ -49,5 +54,27 @@ def verify_api_key(api_key: str, api_key_hash: str) -> bool:
     return hmac.compare_digest(_hash_api_key_with_salt(api_key, salt), digest)
 
 
+def encrypt_api_key(api_key: str) -> str:
+    """Encrypt an API key for the authenticated protected copy flow."""
+    return _api_key_fernet().encrypt(api_key.encode()).decode()
+
+
+def decrypt_api_key(ciphertext: str) -> str | None:
+    """Decrypt an API key, failing closed when ciphertext is missing or invalid."""
+    if not ciphertext:
+        return None
+    try:
+        return _api_key_fernet().decrypt(ciphertext.encode()).decode()
+    except (InvalidToken, UnicodeDecodeError):
+        return None
+
+
 def _hash_api_key_with_salt(api_key: str, salt: str) -> str:
     return hashlib.sha256(f"{API_KEY_HASH_CONTEXT}:{salt}:{api_key}".encode()).hexdigest()
+
+
+def _api_key_fernet() -> Fernet:
+    key_material = hashlib.sha256(
+        f"{API_KEY_ENCRYPTION_CONTEXT}:{settings.SECRET_KEY}".encode()
+    ).digest()
+    return Fernet(base64.urlsafe_b64encode(key_material))

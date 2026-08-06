@@ -62,7 +62,9 @@ def test_mcp_docs_cover_safe_agent_onboarding(client, django_user_model):
     assert "CITEGUILD_API_KEY" in content
     assert "immediately revokes the previous value" in content
     assert "candidate ranking only" in content
-    assert "never an API key" in content
+    assert "redacts the" in content
+    assert "key from the page and its HTML" in content
+    assert "Hidden — copied securely" in content
     assert "https://github.com/LVTD-LLC/citeguild-skills" in content
     assert "/plugin install citeguild@citeguild-skills" in content
     assert "codex plugin add citeguild@citeguild-skills" in content
