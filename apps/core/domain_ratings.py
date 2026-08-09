@@ -17,7 +17,6 @@ from django_q.tasks import async_task
 from apps.core.models import Project
 
 logger = logging.getLogger(__name__)
-PROJECT_OBJECTS = Project.objects  # ty: ignore[unresolved-attribute]
 
 AHREFS_DOMAIN_RATING_URL = "https://api.ahrefs.com/v3/public/domain-rating-free"
 DOMAIN_RATING_REFRESH_TASK = "apps.core.domain_ratings.refresh_project_domain_rating"
@@ -114,7 +113,13 @@ def refresh_project_domain_rating(
     *,
     fetcher: DomainRatingFetcher | None = None,
 ) -> str:
-    project = PROJECT_OBJECTS.filter(pk=project_id).only("id", "normalized_host").first()
+    project = (
+        Project.objects.filter(  # ty: ignore[unresolved-attribute]
+            pk=project_id
+        )
+        .only("id", "normalized_host")
+        .first()
+    )
     if project is None:
         return "missing"
 
@@ -136,7 +141,7 @@ def refresh_project_domain_rating(
             raise
         return f"failed:{error.code}"
 
-    updated = PROJECT_OBJECTS.filter(
+    updated = Project.objects.filter(  # ty: ignore[unresolved-attribute]
         pk=project.pk,
         normalized_host=project.normalized_host,
     ).update(
@@ -190,7 +195,7 @@ def refresh_due_project_domain_ratings(
     now = now or timezone.now()
     limit = max(1, min(limit, 100))
     due_ids = list(
-        PROJECT_OBJECTS.filter(
+        Project.objects.filter(  # ty: ignore[unresolved-attribute]
             Q(ahrefs_domain_rating_updated_at__isnull=True)
             | Q(ahrefs_domain_rating_updated_at__lte=(now - DOMAIN_RATING_REFRESH_INTERVAL))
         )
