@@ -38,3 +38,17 @@ Run the same check used by container startup with:
 ```bash
 uv run python manage.py config_fingerprint
 ```
+
+## Domain Rating Backfill
+
+After deploying the Domain Rating fields and setting `AHREFS_API_KEY`, run the
+backfill synchronously inside the web container:
+
+```bash
+uv run python manage.py backfill_domain_ratings
+```
+
+The command snapshots sites that still have no successful rating, spaces Ahrefs
+requests at one per second, and prints secret-safe progress counts. It is safe to
+rerun: sites updated successfully are skipped, while failures remain eligible for
+the next run. Use `--limit 100` for a bounded first pass.
