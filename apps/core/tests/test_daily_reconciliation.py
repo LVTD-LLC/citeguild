@@ -20,6 +20,7 @@ from apps.core.crawl_jobs import (
     run_sitemap_sync,
     schedule_due_sitemap_reconciliations,
 )
+from apps.core.domain_ratings import DOMAIN_RATING_REFRESH_SWEEP_TASK
 from apps.core.models import Article, ArticleSourceURL, PageCrawlWork, Project, ProjectSyncRequest
 from apps.core.projects import ProjectService
 from apps.core.sitemap_parser import (
@@ -349,6 +350,10 @@ def test_terminal_daily_sitemap_failure_remains_visible_on_project(profile, monk
 @pytest.mark.django_db
 def test_daily_sync_only_crawls_new_and_lastmod_changed_candidates(profile, monkeypatch, settings):
     settings.CRAWL_MAX_ATTEMPTS = 3
+    monkeypatch.setattr(
+        "apps.core.crawl_jobs.timezone.now",
+        lambda: datetime(2026, 8, 2, tzinfo=UTC),
+    )
     project = create_project(profile)
     completed_inventory(
         project,
@@ -524,3 +529,7 @@ def test_reconciliation_schedule_is_named_and_idempotent(monkeypatch):
     assert schedule.schedule_type == Schedule.MINUTES
     assert schedule.minutes == 15
     assert Schedule.objects.filter(name="citeguild-daily-reconciliation").count() == 1
+    domain_rating_schedule = Schedule.objects.get(name="citeguild-domain-rating-refresh")
+    assert domain_rating_schedule.func == DOMAIN_RATING_REFRESH_SWEEP_TASK
+    assert domain_rating_schedule.schedule_type == Schedule.DAILY
+    assert Schedule.objects.filter(name="citeguild-domain-rating-refresh").count() == 1

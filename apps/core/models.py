@@ -159,6 +159,17 @@ class Project(BaseModel):
     article_count = models.PositiveIntegerField(default=0)
     active_article_count = models.PositiveIntegerField(default=0)
     last_error_code = models.CharField(max_length=64, blank=True, default="")
+    ahrefs_domain_rating = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        null=True,
+        blank=True,
+    )
+    ahrefs_domain_rating_updated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+    )
     active_sitemap_inventory = models.ForeignKey(
         "SitemapInventory",
         null=True,
@@ -175,6 +186,11 @@ class Project(BaseModel):
         ]
         constraints = [
             models.UniqueConstraint(fields=["uuid"], name="core_project_uuid_unique"),
+            models.CheckConstraint(
+                condition=models.Q(ahrefs_domain_rating__isnull=True)
+                | (models.Q(ahrefs_domain_rating__gte=0) & models.Q(ahrefs_domain_rating__lte=100)),
+                name="core_project_ahrefs_dr_range",
+            ),
         ]
 
     @property

@@ -118,6 +118,12 @@ class ProjectService:
         from apps.core.network_graph import DetectedNetworkLinkService
 
         DetectedNetworkLinkService.reconcile_project(project)
+        from apps.core.domain_ratings import queue_project_domain_rating_refresh
+
+        transaction.on_commit(
+            lambda: queue_project_domain_rating_refresh(project.pk),
+            robust=True,
+        )
         return project
 
     @classmethod
@@ -131,10 +137,14 @@ class ProjectService:
         if len(name) > 120:
             raise ValidationError("Site name must be 120 characters or fewer.")
         normalized_url, host = normalize_sitemap_url(sitemap_url)
+        previous_host = project.normalized_host
         project.name = name
         project.sitemap_url = sitemap_url.strip()
         project.normalized_sitemap_url = normalized_url
         project.normalized_host = host
+        if host != previous_host:
+            project.ahrefs_domain_rating = None
+            project.ahrefs_domain_rating_updated_at = None
         try:
             project.save()
         except IntegrityError as error:
@@ -145,6 +155,13 @@ class ProjectService:
         from apps.core.network_graph import DetectedNetworkLinkService
 
         DetectedNetworkLinkService.reconcile_project(project)
+        if host != previous_host:
+            from apps.core.domain_ratings import queue_project_domain_rating_refresh
+
+            transaction.on_commit(
+                lambda: queue_project_domain_rating_refresh(project.pk),
+                robust=True,
+            )
         return project
 
     @classmethod

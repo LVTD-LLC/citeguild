@@ -1,9 +1,12 @@
+import re
+from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
 from django.core.paginator import Paginator
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.core.models import DetectedNetworkLink, OutboundLinkObservation, Project
 from apps.core.network_graph import DetectedNetworkLinkService
@@ -55,6 +58,9 @@ def test_sitemap_details_shows_owned_site_and_cross_site_link_details(auth_clien
         ),
     )
     DetectedNetworkLinkService.reconcile_article(other_source)
+    owned_target.project.ahrefs_domain_rating = Decimal("44.0")
+    owned_target.project.ahrefs_domain_rating_updated_at = timezone.now()
+    owned_target.project.save()
 
     other_target = create_article(other_profile, "other-target.example", "reference")
     owned_source = create_article(
@@ -81,6 +87,8 @@ def test_sitemap_details_shows_owned_site_and_cross_site_link_details(auth_clien
     assert "A useful target" in content
     assert other_source.normalized_canonical_url in content
     assert "other-source.example" in content
+    assert "Domain Rating by Ahrefs" in content
+    assert re.search(r">\s*44\s*<", content)
     assert response.context["details"].links_received.paginator.per_page == 20
 
     response = auth_client.get(reverse("sitemap_details", args=[owned_source.project.uuid]))

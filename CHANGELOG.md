@@ -90,6 +90,14 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-08-09
+
+### Added
+
+- Added free Ahrefs Domain Rating enrichment for newly submitted sites, monthly
+  background refreshes, durable last-successful values, and attributed
+  dashboard and sitemap-detail display.
+
 ## 2026-08-04
 
 ### Added

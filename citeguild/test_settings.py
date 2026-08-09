@@ -27,6 +27,9 @@ POSTHOG_LOGS_ENABLED = False
 POSTHOG_LOGS_ACTIVE = False
 POSTHOG_AI_OBSERVABILITY_ENABLED = False
 
+# Tests must never inherit a developer or agent's live Ahrefs credential.
+AHREFS_API_KEY = ""
+
 STORAGES = {
     **base_settings.STORAGES,
     "default": {

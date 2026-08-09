@@ -83,12 +83,26 @@
                                         </span>
                                     </div>
                                 </div>
-                                <dl class="mt-6 grid grid-cols-2 gap-x-8 gap-y-5 border-t border-gray-950/10 pt-5 @4xl:grid-cols-5 dark:border-white/10">
+                                <dl class="mt-6 grid grid-cols-2 gap-x-8 gap-y-5 border-t border-gray-950/10 pt-5 @4xl:grid-cols-6 dark:border-white/10">
                                     <div>
                                         <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Searchable</dt>
                                         <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
                                             {{ project.active_article_count }}
                                         </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Domain Rating</dt>
+                                        <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
+                                            {% if project.ahrefs_domain_rating_updated_at %}{{ project.ahrefs_domain_rating|floatformat:"-1" }}{% else %}—{% endif %}
+                                        </dd>
+                                        {% if project.ahrefs_domain_rating_updated_at %}
+                                            <a href="https://ahrefs.com/"
+                                               class="mt-1 block text-xs text-green-700 dark:text-green-300"
+                                               target="_blank"
+                                               rel="noopener noreferrer">Domain Rating by Ahrefs</a>
+                                        {% else %}
+                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                        {% endif %}
                                     </div>
                                     <div>
                                         <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Waiting</dt>
