@@ -25,7 +25,7 @@
         <section class="mt-10" aria-labelledby="site-health-heading">
             <h2 id="site-health-heading"
                 class="text-2xl font-semibold tracking-tight">Indexing overview</h2>
-            <dl class="mt-5 grid gap-px overflow-hidden rounded-xl bg-gray-950/10 sm:grid-cols-2 lg:grid-cols-4 dark:bg-white/10">
+            <dl class="mt-5 grid gap-px overflow-hidden rounded-xl bg-gray-950/10 sm:grid-cols-2 lg:grid-cols-5 dark:bg-white/10">
                 <div class="bg-gray-50 p-5 dark:bg-gray-900">
                     <dt class="text-sm font-medium text-gray-600 dark:text-gray-300">Articles found</dt>
                     <dd class="mt-2 text-3xl font-semibold tabular-nums">
@@ -49,6 +49,23 @@
                     <dd class="mt-2 text-3xl font-semibold tabular-nums">
                         {{ details.article_counts.inactive }}
                     </dd>
+                </div>
+                <div class="bg-gray-50 p-5 dark:bg-gray-900">
+                    <dt class="text-sm font-medium text-gray-600 dark:text-gray-300">Domain Rating</dt>
+                    <dd class="mt-2 text-3xl font-semibold tabular-nums">
+                        {% if project.ahrefs_domain_rating_updated_at %}{{ project.ahrefs_domain_rating|floatformat:"-1" }}{% else %}—{% endif %}
+                    </dd>
+                    {% if project.ahrefs_domain_rating_updated_at %}
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            Backlink profile, 0–100 · Updated {{ project.ahrefs_domain_rating_updated_at|date:"Y-m-d" }} ·
+                            <a href="https://ahrefs.com/"
+                               class="text-green-700 dark:text-green-300"
+                               target="_blank"
+                               rel="noopener noreferrer">Domain Rating by Ahrefs</a>
+                        </p>
+                    {% else %}
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Waiting for the first Ahrefs refresh.</p>
+                    {% endif %}
                 </div>
             </dl>
             <div class="mt-5 flex flex-col gap-3 border-y border-gray-950/10 py-5 text-sm sm:flex-row sm:items-center sm:justify-between dark:border-white/10">

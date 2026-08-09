@@ -667,6 +667,12 @@ AI_MODELS = {
     "smart": env("OPENROUTER_MODEL_SMART", default="anthropic/claude-sonnet-4.5"),
 }
 
+AHREFS_API_KEY = env("AHREFS_API_KEY", default="")
+AHREFS_DOMAIN_RATING_TIMEOUT_SECONDS = env.float(
+    "AHREFS_DOMAIN_RATING_TIMEOUT_SECONDS",
+    default=5.0,
+)
+
 QDRANT_URL = CITEGUILD_CONFIG.qdrant_url
 QDRANT_API_KEY = CITEGUILD_CONFIG.qdrant_api_key
 QDRANT_TIMEOUT_SECONDS = CITEGUILD_CONFIG.qdrant_timeout_seconds

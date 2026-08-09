@@ -1,4 +1,6 @@
+import re
 from datetime import timedelta
+from decimal import Decimal
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -174,6 +176,9 @@ def test_dashboard_renders_safe_activity_progress_and_empty_states(auth_client, 
     edge = DetectedNetworkLink.objects.get(source_article=source)
     assert edge.anchor_text.startswith("<script>")
     create_failed_sync(source.project)
+    source.project.ahrefs_domain_rating = Decimal("37.0")
+    source.project.ahrefs_domain_rating_updated_at = timezone.now()
+    source.project.save()
 
     response = auth_client.get(reverse("home"))
     content = response.content.decode()
@@ -184,6 +189,9 @@ def test_dashboard_renders_safe_activity_progress_and_empty_states(auth_client, 
     assert "Needs attention" in content
     assert "Links from site" in content
     assert "Links to site" in content
+    assert "Domain Rating" in content
+    assert "Domain Rating by Ahrefs" in content
+    assert re.search(r">\s*37\s*<", content)
     assert "Detected citations" not in content
     assert "Detected, not attributed" not in content
     assert '<script>alert("crawl")</script>' not in content
