@@ -13,6 +13,8 @@ from apps.core.models import Project
 
 def refresh_missing_project(project_id: int) -> bool:
     try:
+        # Only a persisted rating counts as success; missing, stale, and failed
+        # outcomes remain visible in the command's non-zero summary.
         return refresh_project_domain_rating(project_id) == "updated"
     except DomainRatingError:
         return False
