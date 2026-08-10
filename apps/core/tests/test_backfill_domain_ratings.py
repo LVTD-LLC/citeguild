@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.utils import timezone
 
-from apps.core.domain_ratings import DomainRatingError
+from apps.core.domain_ratings import DOMAIN_RATING_REFRESH_UPDATED, DomainRatingError
 from apps.core.projects import ProjectService
 
 
@@ -43,7 +43,7 @@ def test_backfill_processes_only_sites_missing_domain_rating(profile, settings, 
     sleeps = []
     monkeypatch.setattr(
         "apps.core.management.commands.backfill_domain_ratings.refresh_project_domain_rating",
-        lambda project_id: refreshed.append(project_id) or "updated",
+        lambda project_id: refreshed.append(project_id) or DOMAIN_RATING_REFRESH_UPDATED,
     )
     monkeypatch.setattr(
         "apps.core.management.commands.backfill_domain_ratings.time.sleep",
@@ -67,7 +67,7 @@ def test_backfill_limit_bounds_the_snapshot(profile, settings, monkeypatch):
     refreshed = []
     monkeypatch.setattr(
         "apps.core.management.commands.backfill_domain_ratings.refresh_project_domain_rating",
-        lambda project_id: refreshed.append(project_id) or "updated",
+        lambda project_id: refreshed.append(project_id) or DOMAIN_RATING_REFRESH_UPDATED,
     )
 
     call_command("backfill_domain_ratings", limit=1, stdout=StringIO())

@@ -25,6 +25,7 @@ DOMAIN_RATING_REFRESH_INTERVAL = timedelta(days=30)
 DOMAIN_RATING_REFRESH_BATCH_SIZE = 50
 DOMAIN_RATING_REQUEST_SPACING_SECONDS = 1.0
 DOMAIN_RATING_QUANTUM = Decimal("0.1")
+DOMAIN_RATING_REFRESH_UPDATED = "updated"
 
 
 class DomainRatingError(Exception):
@@ -158,7 +159,7 @@ def refresh_project_domain_rating(
             "project_id": project.pk,
         },
     )
-    return "updated"
+    return DOMAIN_RATING_REFRESH_UPDATED
 
 
 def queue_project_domain_rating_refresh(project_id: int) -> str | None:
@@ -216,7 +217,7 @@ def refresh_due_project_domain_ratings(
         except DomainRatingError:
             failed_projects += 1
             continue
-        if outcome == "updated":
+        if outcome == DOMAIN_RATING_REFRESH_UPDATED:
             updated_projects += 1
         else:
             failed_projects += 1

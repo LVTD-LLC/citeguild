@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.core.domain_ratings import (
+    DOMAIN_RATING_REFRESH_UPDATED,
     DOMAIN_RATING_REQUEST_SPACING_SECONDS,
     DomainRatingError,
     refresh_project_domain_rating,
@@ -15,7 +16,7 @@ def refresh_missing_project(project_id: int) -> bool:
     try:
         # Only a persisted rating counts as success; missing, stale, and failed
         # outcomes remain visible in the command's non-zero summary.
-        return refresh_project_domain_rating(project_id) == "updated"
+        return refresh_project_domain_rating(project_id) == DOMAIN_RATING_REFRESH_UPDATED
     except DomainRatingError:
         return False
 
