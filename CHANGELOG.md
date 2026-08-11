@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
+## 2026-08-11
+
+### Changed
+
+- Reduced the copyable agent setup prompt to the CiteGuild skills repository
+  and the account API key so the receiving agent can follow the repository's
+  current installation instructions.
+
 ## 2026-08-06
 
 ### Added

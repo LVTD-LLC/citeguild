@@ -31,7 +31,7 @@ codex plugin marketplace add LVTD-LLC/citeguild-skills
 codex plugin add citeguild@citeguild-skills
 ```
 
-For Codex, copy the protected dashboard prompt so the plugin receives the account API key from `CITEGUILD_API_KEY`. For Claude Code and ChatGPT, start a new conversation after installation and complete the CiteGuild OAuth flow on the first tool call. The plugin searches opted-in member articles; it does not turn CiteGuild into broad web search or promise reciprocal placement.
+For Codex, copy the protected dashboard prompt. It provides the skills repository and account API key so the agent can follow the repository's current installation instructions. For Claude Code and ChatGPT, start a new conversation after installation and complete the CiteGuild OAuth flow on the first tool call. The plugin searches opted-in member articles; it does not turn CiteGuild into broad web search or promise reciprocal placement.
 
 New accounts receive an API key automatically. The dashboard reveals the
 **Connect an AI agent** prompt after the first site is submitted, but redacts the
@@ -58,11 +58,11 @@ OAuth discovery endpoints:
 - `/.well-known/oauth-authorization-server`
 - `/.well-known/openid-configuration`
 
-Codex uses the API key embedded in the protected copied prompt. The prompt stores
-it as `CITEGUILD_API_KEY` in `~/.codex/.env`; the official plugin reads that
-environment variable as a bearer token after Codex restarts. Other clients can
-still use an API key when configured explicitly. Never hardcode it into source
-control or paste the copied prompt into an untrusted agent.
+Codex receives the API key in the protected copied prompt. The agent should
+inspect the linked skills repository and follow its current secret-configuration
+instructions. Other clients can still use an API key when configured explicitly.
+Never hardcode it into source control or paste the copied prompt into an
+untrusted agent.
 
 - `X-API-Key: <api_key>`
 - `Authorization: Bearer <api_key>`
@@ -77,8 +77,8 @@ support message, screenshot, or log.
 ### Provider-neutral setup
 
 1. Copy the protected dashboard prompt and paste it into a trusted clean agent session.
-2. In Codex, let the prompt install the plugin and store `CITEGUILD_API_KEY` in
-   `~/.codex/.env`; restart before verification.
+2. Let the agent inspect the linked skills repository and follow its current
+   installation and secret-configuration instructions.
 3. In another local client, export `CITEGUILD_API_KEY` and configure an
    `Authorization: Bearer` header through the client's environment-variable
    mechanism, or use OAuth when it is reliable.
@@ -95,10 +95,9 @@ for candidate ranking only.
 
 ### Codex bearer configuration
 
-The official Codex plugin already declares `CITEGUILD_API_KEY` as its bearer
-token source. The protected copied prompt writes the key to `~/.codex/.env`,
-which desktop and IDE clients can load after restart. No duplicate standalone
-MCP entry is needed.
+The official Codex plugin declares `CITEGUILD_API_KEY` as its bearer token
+source. Follow the current skills-repository instructions to store the copied
+key where the client can load it. No duplicate standalone MCP entry is needed.
 
 ```text
 CITEGUILD_API_KEY=<copied securely from the CiteGuild dashboard prompt>

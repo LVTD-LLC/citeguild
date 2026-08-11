@@ -688,12 +688,8 @@ variable expansion; never commit an expanded credential.
 Give an agent this starter prompt:
 
 ```text
-Add CiteGuild MCP support to this repo.
-
-Use MCP URL: <production-url>/mcp/
-Use the MCP client's OAuth flow first. If OAuth is unavailable, use the user's CiteGuild API key from an environment variable and send it as X-API-Key or Authorization: Bearer. Do not hardcode, log, or commit any token or key.
-First verify the connection by calling the get_user_info MCP tool, then add the smallest useful integration for this codebase.
-Document how future agents should configure the MCP server locally.
+CiteGuild skills repository: https://github.com/LVTD-LLC/citeguild-skills
+CiteGuild API key: <copy securely from the CiteGuild dashboard>
 ```
 
 MCP uses ASGI. The generated production server command runs
