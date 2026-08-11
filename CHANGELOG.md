@@ -97,6 +97,8 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 - Added free Ahrefs Domain Rating enrichment for newly submitted sites, monthly
   background refreshes, durable last-successful values, and attributed
   dashboard and sitemap-detail display.
+- Added a resumable, rate-limited management command for backfilling Domain
+  Rating across existing sites from inside the application container.
 
 ## 2026-08-04
 
