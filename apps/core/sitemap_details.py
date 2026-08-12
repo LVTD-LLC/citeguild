@@ -33,8 +33,6 @@ class SitemapLinksData:
     project: Project
     direction: str
     links: Page
-    links_given_count: int
-    links_received_count: int
     domain_count: int
     domain_summaries: tuple[dict, ...]
 
@@ -146,19 +144,10 @@ class SitemapDetailsService:
             .order_by("-link_count", "domain")[: cls.DOMAIN_SUMMARY_SIZE]
         )
         links_page = Paginator(selected_links, cls.LINK_PAGE_SIZE).get_page(page or 1)
-        selected_link_count = links_page.paginator.count
-        links_given_count = (
-            selected_link_count if normalized_direction == "out" else links_given.count()
-        )
-        links_received_count = (
-            selected_link_count if normalized_direction == "in" else links_received.count()
-        )
         return SitemapLinksData(
             project=project,
             direction=normalized_direction,
             links=links_page,
-            links_given_count=links_given_count,
-            links_received_count=links_received_count,
             domain_count=selected_links.values(domain_field).distinct().count(),
             domain_summaries=domain_summaries,
         )

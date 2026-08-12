@@ -254,8 +254,7 @@ def test_network_links_view_separates_directions_and_excludes_same_site_edges(au
     assert response.status_code == 200
     assert "pages/sitemap_links.html" in [template.name for template in response.templates]
     assert response.context["details"].direction == "in"
-    assert response.context["details"].links_received_count == 2
-    assert response.context["details"].links_given_count == 0
+    assert response.context["details"].links.paginator.count == 2
     assert response.context["details"].domain_count == 1
     assert response.context["details"].domain_summaries[0]["domain"] == (
         "links-view-source.example"
