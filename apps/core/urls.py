@@ -9,6 +9,16 @@ urlpatterns = [
     path("home/agent-setup-prompt/", views.agent_setup_prompt, name="agent_setup_prompt"),
     path("sites/<uuid:project_uuid>/", views.sitemap_details, name="sitemap_details"),
     path(
+        "sites/<uuid:project_uuid>/pages/",
+        views.sitemap_articles,
+        name="sitemap_articles",
+    ),
+    path(
+        "sites/<uuid:project_uuid>/links/",
+        views.sitemap_links,
+        name="sitemap_links",
+    ),
+    path(
         "sites/<uuid:project_uuid>/update/",
         views.update_sitemap,
         name="update_sitemap",

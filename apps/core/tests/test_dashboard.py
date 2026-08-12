@@ -79,9 +79,13 @@ def test_dashboard_service_is_owner_scoped_bounded_and_reconciles_counts(profile
     source_card = next(project for project in dashboard.projects if project.pk == source.project_id)
     target_card = next(project for project in dashboard.projects if project.pk == target.project_id)
     assert source_card.detected_links_given_count == 1
+    assert source_card.linked_domain_count == 1
     assert source_card.detected_links_received_count == 0
+    assert source_card.linking_domain_count == 0
     assert target_card.detected_links_given_count == 0
+    assert target_card.linked_domain_count == 0
     assert target_card.detected_links_received_count == 1
+    assert target_card.linking_domain_count == 1
     assert source_card.latest_sync_state == ProjectSyncStates.PARTIAL
     assert source_card.latest_sync_total_count == 5
     assert source_card.latest_sync_succeeded_count == 2
@@ -128,7 +132,9 @@ def test_dashboard_excludes_legacy_same_site_links_from_counts(profile):
     project = dashboard.projects[0]
 
     assert project.detected_links_given_count == 0
+    assert project.linked_domain_count == 0
     assert project.detected_links_received_count == 0
+    assert project.linking_domain_count == 0
 
 
 @pytest.mark.django_db
@@ -155,6 +161,7 @@ def test_dashboard_groups_detected_links_by_site(profile):
 
     assert target_card.detected_links_given_count == 0
     assert target_card.detected_links_received_count == 12
+    assert target_card.linking_domain_count == 12
 
 
 @pytest.mark.django_db
@@ -185,13 +192,14 @@ def test_dashboard_renders_safe_activity_progress_and_empty_states(auth_client, 
 
     assert response.status_code == 200
     assert source.project.normalized_sitemap_url in content
-    assert "Searchable" in content
-    assert "Needs attention" in content
-    assert "Links from site" in content
-    assert "Links to site" in content
+    assert "Indexed pages" in content
+    assert "Links out" in content
+    assert "Links in" in content
+    assert "1 domain" in content
+    assert "Needs attention" not in content
     assert "Domain Rating" in content
     assert "Domain Rating by Ahrefs" in content
-    assert re.search(r">\s*37\s*<", content)
+    assert re.search(r"DR\s+37", content)
     assert "Detected citations" not in content
     assert "Detected, not attributed" not in content
     assert '<script>alert("crawl")</script>' not in content
@@ -229,6 +237,7 @@ def test_dashboard_empty_activity_has_clear_non_marketplace_copy(auth_client, pr
 
     content = auth_client.get(reverse("home")).content.decode()
 
-    assert "Links from site" in content
-    assert "Links to site" in content
+    assert "Links out" in content
+    assert "Links in" in content
+    assert "0 domains" in content
     assert "CiteGuild does not guarantee placements" not in content

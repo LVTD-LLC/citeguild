@@ -1,4 +1,3 @@
-import re
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -8,6 +7,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.core.choices import ProjectSyncStates
 from apps.core.models import DetectedNetworkLink, OutboundLinkObservation, Project
 from apps.core.network_graph import DetectedNetworkLinkService
 from apps.core.projects import ProjectService
@@ -16,6 +16,7 @@ from .test_network_graph import (
     create_article,
     create_articles_for_project,
     create_other_profile,
+    create_project,
 )
 
 
@@ -83,22 +84,46 @@ def test_sitemap_details_shows_owned_site_and_cross_site_link_details(auth_clien
     assert "pages/sitemap_details.html" in [template.name for template in response.templates]
     assert owned_target.project.name in content
     assert owned_target.project.normalized_sitemap_url in content
-    assert "Links received" in content
-    assert "A useful target" in content
-    assert other_source.normalized_canonical_url in content
-    assert "other-source.example" in content
-    assert "Domain Rating by Ahrefs" in content
-    assert re.search(r">\s*44\s*<", content)
+    assert "Pages" in content
+    assert "Incoming" in content
+    assert "Outgoing" in content
+    assert '<h2 id="manage-sitemap-heading"' in content
+    assert '<summary id="manage-sitemap-heading"' not in content
+    assert reverse("sitemap_articles", args=[owned_target.project.uuid]) in content
+    assert f"{reverse('sitemap_links', args=[owned_target.project.uuid])}?direction=in" in content
+    assert "A useful target" not in content
+    assert 'aria-label="Domain Rating 44"' in content
+    assert "DR 44" in content
     assert response.context["details"].links_received.paginator.per_page == 20
+    assert response.context["details"].linking_domain_count == 1
+    assert response.context["details"].linked_domain_count == 0
+
+    links_response = auth_client.get(
+        reverse("sitemap_links", args=[owned_target.project.uuid]),
+        {"direction": "in"},
+    )
+    links_content = links_response.content.decode()
+    assert "A useful target" in links_content
+    assert other_source.normalized_canonical_url in links_content
+    assert "other-source.example" in links_content
 
     response = auth_client.get(reverse("sitemap_details", args=[owned_source.project.uuid]))
     content = response.content.decode()
 
-    assert "Links given" in content
-    assert "A useful reference" in content
-    assert other_target.normalized_canonical_url in content
-    assert "other-target.example" in content
+    assert "Outgoing" in content
+    assert "A useful reference" not in content
     assert response.context["details"].links_given.paginator.per_page == 20
+    assert response.context["details"].linked_domain_count == 1
+    assert response.context["details"].linking_domain_count == 0
+
+    links_response = auth_client.get(
+        reverse("sitemap_links", args=[owned_source.project.uuid]),
+        {"direction": "out"},
+    )
+    links_content = links_response.content.decode()
+    assert "A useful reference" in links_content
+    assert other_target.normalized_canonical_url in links_content
+    assert "other-target.example" in links_content
 
 
 @pytest.mark.django_db
@@ -136,6 +161,118 @@ def test_sitemap_details_excludes_preserved_same_site_edges(auth_client, profile
     assert "Self only" not in content
     assert response.context["details"].links_given.paginator.count == 0
     assert response.context["details"].links_received.paginator.count == 0
+
+
+@pytest.mark.django_db
+def test_indexed_pages_view_is_owner_scoped_and_paginated(auth_client, profile):
+    project = create_project(profile, "indexed-pages.example")
+    articles = create_articles_for_project(
+        project,
+        *((f"p{index}", ()) for index in range(26)),
+    )
+    first = articles[0]
+
+    response = auth_client.get(reverse("sitemap_articles", args=[first.project.uuid]))
+
+    assert response.status_code == 200
+    assert "pages/sitemap_articles.html" in [template.name for template in response.templates]
+    assert response.context["details"].articles.paginator.count == 26
+    assert response.context["details"].articles.paginator.per_page == 25
+    assert reverse("sitemap_details", args=[first.project.uuid]) in response.content.decode()
+
+    other_project = create_article(
+        create_other_profile("indexed-pages-private"),
+        "private-indexed.example",
+        "post",
+    ).project
+    response = auth_client.get(reverse("sitemap_articles", args=[other_project.uuid]))
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_network_links_view_separates_directions_and_excludes_same_site_edges(auth_client, profile):
+    owned_project = create_project(profile, "links-view-target.example")
+    owned_target, same_site_source = create_articles_for_project(
+        owned_project,
+        ("guide", ()),
+        (
+            "self-linking-post",
+            (
+                {
+                    "url": "https://links-view-target.example/guide",
+                    "anchor_text": "Self link",
+                },
+            ),
+        ),
+    )
+    other_profile = create_other_profile("links-view-member")
+    other_source = create_article(
+        other_profile,
+        "links-view-source.example",
+        "post",
+        links=(
+            {
+                "url": owned_target.normalized_canonical_url,
+                "anchor_text": "Inbound member link",
+            },
+        ),
+    )
+    DetectedNetworkLinkService.reconcile_article(other_source)
+    other_source.project.sync_requests.update(state=ProjectSyncStates.SUCCEEDED)
+    (second_other_source,) = create_articles_for_project(
+        other_source.project,
+        (
+            "second-post",
+            (
+                {
+                    "url": owned_target.normalized_canonical_url,
+                    "anchor_text": "Second inbound member link",
+                },
+            ),
+        ),
+    )
+    DetectedNetworkLinkService.reconcile_article(second_other_source)
+
+    observation = OutboundLinkObservation.objects.get(source_article=same_site_source)
+    DetectedNetworkLink.objects.create(
+        observation=observation,
+        source_article=same_site_source,
+        target_project=owned_target.project,
+        target_article=owned_target,
+        normalized_destination_url=owned_target.normalized_canonical_url,
+        anchor_text="Legacy self link",
+        first_detected_at=observation.first_seen_at,
+        last_detected_at=observation.last_seen_at,
+    )
+
+    response = auth_client.get(
+        reverse("sitemap_links", args=[owned_target.project.uuid]),
+        {"direction": "in"},
+    )
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert "pages/sitemap_links.html" in [template.name for template in response.templates]
+    assert response.context["details"].direction == "in"
+    assert response.context["details"].links_received_count == 2
+    assert response.context["details"].links_given_count == 0
+    assert response.context["details"].domain_count == 1
+    assert response.context["details"].domain_summaries[0]["domain"] == (
+        "links-view-source.example"
+    )
+    assert response.context["details"].domain_summaries[0]["link_count"] == 2
+    assert "Inbound member link" in content
+    assert 'id="network-domain-heading"' in content
+    assert "data-uidotsh" not in content
+    assert "ui-picker.js" not in content
+    assert "Legacy self link" not in content
+
+    other_project = create_article(
+        create_other_profile("links-view-private"),
+        "private-links.example",
+        "post",
+    ).project
+    assert auth_client.get(reverse("sitemap_links", args=[other_project.uuid])).status_code == 404
 
 
 @pytest.mark.django_db
