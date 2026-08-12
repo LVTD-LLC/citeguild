@@ -9,7 +9,7 @@
             <div class="flex flex-col gap-6 border-b border-gray-950/10 pb-10 sm:flex-row sm:items-end sm:justify-between dark:border-white/10">
                 <div>
                     <h1 class="max-w-[20ch] text-4xl font-semibold tracking-tight text-balance text-gray-950 dark:text-gray-100">Your sites</h1>
-                    <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">See what CiteGuild can search, what needs attention, and the links detected for each site.</p>
+                    <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">See what CiteGuild has indexed and the links detected for each site.</p>
                 </div>
                 {% if has_subscription %}
                     <button type="button"
@@ -64,113 +64,97 @@
             <section class="mt-10" aria-labelledby="site-list-heading">
                 <h2 id="site-list-heading" class="sr-only">Site details</h2>
                 {% if projects %}
-                    <ul class="grid gap-5" role="list">
-                        {% for project in projects %}
-                            <li class="@container rounded-xl border border-gray-950/10 p-5 sm:p-6 dark:border-white/10">
-                                <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                    <div class="min-w-0">
-                                        <h3 class="truncate text-xl font-semibold">{{ project.name }}</h3>
-                                        <a href="{{ project.normalized_sitemap_url }}"
-                                           class="mt-2 block truncate text-base text-green-700 sm:text-sm dark:text-green-300"
-                                           target="_blank"
-                                           rel="noopener noreferrer">{{ project.normalized_sitemap_url }}</a>
+                    <div class="@container">
+                        <ul class="grid gap-5 @5xl:grid-cols-2" role="list">
+                            {% for project in projects %}
+                                <li class="min-w-0 rounded-xl border border-gray-950/10 p-5 @lg:p-6 dark:border-white/10 dark:bg-gray-900/20">
+                                    <div class="flex min-w-0 items-start justify-between gap-4">
+                                        <div class="min-w-0">
+                                            <div class="flex min-w-0 items-center gap-2">
+                                                <h3 class="min-w-0 truncate text-xl font-semibold">{{ project.name }}</h3>
+                                                <div class="shrink-0 text-base sm:text-sm">
+                                                    <a href="https://ahrefs.com/"
+                                                       class="app-focus inline-flex rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                                                       target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       title="Domain Rating by Ahrefs">
+                                                        DR {% if project.ahrefs_domain_rating_updated_at %}{{ project.ahrefs_domain_rating|floatformat:"-1" }}{% else %}—{% endif %}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <p class="mt-2 truncate text-base sm:text-sm">
+                                                <a href="{{ project.normalized_sitemap_url }}"
+                                                   class="app-focus text-green-700 hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+                                                   target="_blank"
+                                                   rel="noopener noreferrer">{{ project.normalized_sitemap_url }}</a>
+                                            </p>
+                                        </div>
+                                        <div class="shrink-0 text-base sm:text-sm">
+                                            <span class="inline-flex rounded-full px-2.5 py-1 font-semibold {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">
+                                                {{ project.get_state_display }}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="flex shrink-0 items-center gap-3">
+                                    <dl class="mt-6 grid grid-cols-[13fr_10fr_10fr] divide-x divide-gray-950/10 border-y border-gray-950/10 py-5 text-base @lg:grid-cols-3 sm:text-sm dark:divide-white/10 dark:border-white/10">
+                                        <div class="min-w-0 pr-2 @lg:pr-5">
+                                            <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Indexed pages</dt>
+                                            <dd class="mt-1 text-2xl font-normal tabular-nums text-gray-500 dark:text-gray-400">
+                                                {{ project.active_article_count }}
+                                            </dd>
+                                        </div>
+                                        <div class="min-w-0 px-2 @lg:px-5">
+                                            <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Links out</dt>
+                                            <dd class="mt-1 text-gray-500 dark:text-gray-400">
+                                                <p class="text-2xl font-normal tabular-nums">{{ project.detected_links_given_count }}</p>
+                                                <p class="mt-1 truncate">{{ project.linked_domain_count }} domain{{ project.linked_domain_count|pluralize }}</p>
+                                            </dd>
+                                        </div>
+                                        <div class="min-w-0 pl-2 @lg:pl-5">
+                                            <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Links in</dt>
+                                            <dd class="mt-1 text-gray-500 dark:text-gray-400">
+                                                <p class="text-2xl font-normal tabular-nums">{{ project.detected_links_received_count }}</p>
+                                                <p class="mt-1 truncate">{{ project.linking_domain_count }} domain{{ project.linking_domain_count|pluralize }}</p>
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                    {% if project.inactive_article_count %}
+                                        <p class="mt-4 text-base text-gray-500 sm:text-sm dark:text-gray-400">
+                                            {{ project.inactive_article_count }} inactive in history
+                                            {% if project.missing_article_count %}· {{ project.missing_article_count }} missing from sitemap{% endif %}
+                                            {% if project.unavailable_article_count %}· {{ project.unavailable_article_count }} unavailable{% endif %}
+                                            {% if project.excluded_article_count %}· {{ project.excluded_article_count }} excluded by page{% endif %}
+                                        </p>
+                                    {% endif %}
+                                    <div class="mt-5 flex items-center justify-between gap-4">
+                                        <p class="min-w-0 truncate text-base text-gray-500 sm:text-sm dark:text-gray-400">
+                                            {% if project.state == 'suspended' %}
+                                                Indexing paused
+                                            {% elif project.latest_sync_completed_at %}
+                                                Updated {{ project.latest_sync_completed_at|date:"M j, H:i" }}
+                                            {% elif project.latest_sync_started_at %}
+                                                Sync started {{ project.latest_sync_started_at|date:"M j, H:i" }}
+                                            {% elif project.last_sync_at %}
+                                                Updated {{ project.last_sync_at|date:"M j, H:i" }}
+                                            {% else %}
+                                                Waiting for first sync
+                                            {% endif %}
+                                        </p>
                                         <a href="{% url 'sitemap_details' project.uuid %}"
-                                           class="app-button-secondary">View details</a>
-                                        <span class="inline-flex w-fit rounded-full px-3 py-1 text-base font-semibold sm:text-sm {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">
-                                            {{ project.get_state_display }}
-                                        </span>
+                                           class="app-button-secondary shrink-0">View details</a>
                                     </div>
-                                </div>
-                                <dl class="mt-6 grid grid-cols-2 gap-x-8 gap-y-5 border-t border-gray-950/10 pt-5 @4xl:grid-cols-6 dark:border-white/10">
-                                    <div>
-                                        <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Searchable</dt>
-                                        <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
-                                            {{ project.active_article_count }}
-                                        </dd>
-                                    </div>
-                                    <div>
-                                        <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Domain Rating</dt>
-                                        <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
-                                            {% if project.ahrefs_domain_rating_updated_at %}{{ project.ahrefs_domain_rating|floatformat:"-1" }}{% else %}—{% endif %}
-                                        </dd>
-                                        {% if project.ahrefs_domain_rating_updated_at %}
-                                            <a href="https://ahrefs.com/"
-                                               class="mt-1 block text-xs text-green-700 dark:text-green-300"
-                                               target="_blank"
-                                               rel="noopener noreferrer">Domain Rating by Ahrefs</a>
-                                        {% else %}
-                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                        {% endif %}
-                                    </div>
-                                    <div>
-                                        <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Waiting</dt>
-                                        <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
-                                            {{ project.latest_sync_pending_count }}
-                                        </dd>
-                                    </div>
-                                    <div>
-                                        <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Needs attention</dt>
-                                        <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
-                                            {{ project.latest_sync_failed_count }}
-                                        </dd>
-                                    </div>
-                                    <div>
-                                        <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Links from site</dt>
-                                        <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
-                                            {{ project.detected_links_given_count }}
-                                        </dd>
-                                    </div>
-                                    <div>
-                                        <dt class="truncate font-medium text-gray-700 dark:text-gray-200">Links to site</dt>
-                                        <dd class="mt-1 text-2xl font-semibold tabular-nums text-gray-500 dark:text-gray-400">
-                                            {{ project.detected_links_received_count }}
-                                        </dd>
-                                    </div>
-                                </dl>
-                                <div class="mt-5 text-base text-gray-600 sm:text-sm dark:text-gray-300"
-                                     aria-live="polite">
-                                    <p>
-                                        <span class="font-semibold">Indexing:</span>
-                                        {% if project.state == 'suspended' %}
-                                            Paused
-                                        {% elif project.latest_sync_state %}
-                                            {{ project.latest_sync_state|capfirst }}
-                                        {% elif project.last_sync_at %}
-                                            Ready
-                                        {% else %}
-                                            Waiting for first sync
-                                        {% endif %}
-                                        {% if project.latest_sync_completed_at %}
-                                            · Last completed {{ project.latest_sync_completed_at|date:"Y-m-d H:i T" }}
-                                        {% elif project.latest_sync_started_at %}
-                                            · Started {{ project.latest_sync_started_at|date:"Y-m-d H:i T" }}
-                                        {% elif project.last_sync_at %}
-                                            · Last sync {{ project.last_sync_at|date:"Y-m-d H:i T" }}
-                                        {% endif %}
-                                    </p>
-                                </div>
-                                {% if project.inactive_article_count %}
-                                    <p class="mt-3 text-base text-gray-500 sm:text-sm dark:text-gray-400">
-                                        {{ project.inactive_article_count }} inactive in history
-                                        {% if project.missing_article_count %}· {{ project.missing_article_count }} missing from sitemap{% endif %}
-                                        {% if project.unavailable_article_count %}· {{ project.unavailable_article_count }} unavailable{% endif %}
-                                        {% if project.excluded_article_count %}· {{ project.excluded_article_count }} excluded by page{% endif %}
-                                    </p>
-                                {% endif %}
-                                {% if project.state == 'active' and project.last_error_code or project.state == 'active' and project.latest_sync_error_code %}
-                                    <form method="post"
-                                          action="{% url 'retry_site_sync' project.uuid %}"
-                                          class="mt-5 border-t border-gray-950/10 pt-5 dark:border-white/10">
-                                        {% csrf_token %}
-                                        <p class="text-base text-red-700 sm:text-sm dark:text-red-300">Last sync failed: {% firstof project.latest_sync_error_code project.last_error_code %}</p>
-                                        <button type="submit" class="app-button-secondary mt-3">Retry sync</button>
-                                    </form>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
+                                    {% if project.state == 'active' and project.last_error_code or project.state == 'active' and project.latest_sync_error_code %}
+                                        <form method="post"
+                                              action="{% url 'retry_site_sync' project.uuid %}"
+                                              class="mt-5 border-t border-red-700/20 pt-5">
+                                            {% csrf_token %}
+                                            <p class="text-base text-red-700 sm:text-sm dark:text-red-300">Last sync failed: {% firstof project.latest_sync_error_code project.last_error_code %}</p>
+                                            <button type="submit" class="app-button-secondary mt-3">Retry sync</button>
+                                        </form>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                     {% if projects.paginator.num_pages > 1 %}
                         <nav class="mt-5 flex items-center justify-between gap-4 text-base sm:text-sm"
                              aria-label="Sites pagination">

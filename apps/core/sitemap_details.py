@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from django.core.paginator import Page, Paginator
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Max, Q
 
 from apps.core.choices import ArticleStates
 from apps.core.models import Article, DetectedNetworkLink, Profile, Project
@@ -18,10 +18,29 @@ class SitemapDetailsData:
     article_counts: dict[str, int]
     links_given: Page
     links_received: Page
+    linked_domain_count: int
+    linking_domain_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class SitemapArticlesData:
+    project: Project
+    articles: Page
+
+
+@dataclass(frozen=True, slots=True)
+class SitemapLinksData:
+    project: Project
+    direction: str
+    links: Page
+    domain_count: int
+    domain_summaries: tuple[dict, ...]
 
 
 class SitemapDetailsService:
     LINK_PAGE_SIZE = 20
+    ARTICLE_PAGE_SIZE = 25
+    DOMAIN_SUMMARY_SIZE = 5
 
     @staticmethod
     def _cross_site_links():
@@ -67,13 +86,68 @@ class SitemapDetailsService:
     ) -> SitemapDetailsData:
         project = ProjectService.get_for_owner(owner, project_uuid)
         project.latest_sync = project.sync_requests.order_by("-created_at", "-id").first()
+        links_given = cls._links_given(project)
+        links_received = cls._links_received(project)
         return SitemapDetailsData(
             project=project,
             article_counts=cls._article_counts(project),
-            links_given=Paginator(cls._links_given(project), cls.LINK_PAGE_SIZE).get_page(
-                given_page or 1
-            ),
-            links_received=Paginator(cls._links_received(project), cls.LINK_PAGE_SIZE).get_page(
+            links_given=Paginator(links_given, cls.LINK_PAGE_SIZE).get_page(given_page or 1),
+            links_received=Paginator(links_received, cls.LINK_PAGE_SIZE).get_page(
                 received_page or 1
             ),
+            linked_domain_count=links_given.values("target_project_id").distinct().count(),
+            linking_domain_count=links_received.values("source_article__project_id")
+            .distinct()
+            .count(),
+        )
+
+    @classmethod
+    def articles_for_owner(
+        cls,
+        owner: Profile,
+        project_uuid,
+        *,
+        page=1,
+    ) -> SitemapArticlesData:
+        project = ProjectService.get_for_owner(owner, project_uuid)
+        articles = Article.objects.filter(project=project).order_by("-last_seen_at", "-id")
+        return SitemapArticlesData(
+            project=project,
+            articles=Paginator(articles, cls.ARTICLE_PAGE_SIZE).get_page(page or 1),
+        )
+
+    @classmethod
+    def links_for_owner(
+        cls,
+        owner: Profile,
+        project_uuid,
+        *,
+        direction="in",
+        page=1,
+    ) -> SitemapLinksData:
+        project = ProjectService.get_for_owner(owner, project_uuid)
+        normalized_direction = "out" if direction == "out" else "in"
+        links_given = cls._links_given(project)
+        links_received = cls._links_received(project)
+        selected_links = links_given if normalized_direction == "out" else links_received
+        domain_field = (
+            "target_project__normalized_host"
+            if normalized_direction == "out"
+            else "source_article__project__normalized_host"
+        )
+        domain_summaries = tuple(
+            selected_links.values(domain=F(domain_field))
+            .annotate(
+                link_count=Count("id"),
+                last_detected_at=Max("last_detected_at"),
+            )
+            .order_by("-link_count", "domain")[: cls.DOMAIN_SUMMARY_SIZE]
+        )
+        links_page = Paginator(selected_links, cls.LINK_PAGE_SIZE).get_page(page or 1)
+        return SitemapLinksData(
+            project=project,
+            direction=normalized_direction,
+            links=links_page,
+            domain_count=selected_links.values(domain_field).distinct().count(),
+            domain_summaries=domain_summaries,
         )

@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
+## 2026-08-12
+
+### Changed
+
+- Added distinct in-network linking-domain and linked-domain counts to the site
+  overview, excluding external and same-site links from both totals.
+- Refined the site overview into three responsive metric cards and made sitemap
+  management settings permanently visible below the overview.
+- Added distinct in-network domain totals beneath incoming and outgoing link
+  counts on each dashboard site card.
+- Added a compact domain overview to the network-links page, showing the top
+  member domains and their detected-link totals for each direction.
+
 ## 2026-08-11
 
 ### Changed
@@ -12,6 +25,12 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 - Reduced the copyable agent setup prompt to the CiteGuild skills repository
   and the account API key so the receiving agent can follow the repository's
   current installation instructions.
+- Simplified the authenticated dashboard into a responsive site-summary grid
+  with indexed-page totals, compact Domain Rating badges, and observed inbound
+  and outbound link counts.
+- Added owner-scoped Indexed pages and Network links views so site details can
+  stay lightweight while large article and member-link histories remain
+  paginated and navigable.
 
 ## 2026-08-06
 

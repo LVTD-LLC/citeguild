@@ -309,6 +309,43 @@ def sitemap_details(request, project_uuid):
 
 
 @login_required
+def sitemap_articles(request, project_uuid):
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    try:
+        details = SitemapDetailsService.articles_for_owner(
+            profile,
+            project_uuid,
+            page=request.GET.get("page", 1),
+        )
+    except Project.DoesNotExist as error:
+        raise Http404 from error
+    return render(
+        request,
+        "pages/sitemap_articles.html",
+        {"details": details, "project": details.project},
+    )
+
+
+@login_required
+def sitemap_links(request, project_uuid):
+    profile, _created = Profile.objects.get_or_create(user=request.user)
+    try:
+        details = SitemapDetailsService.links_for_owner(
+            profile,
+            project_uuid,
+            direction=request.GET.get("direction", "in"),
+            page=request.GET.get("page", 1),
+        )
+    except Project.DoesNotExist as error:
+        raise Http404 from error
+    return render(
+        request,
+        "pages/sitemap_links.html",
+        {"details": details, "project": details.project},
+    )
+
+
+@login_required
 @require_POST
 def update_sitemap(request, project_uuid):
     profile, _created = Profile.objects.get_or_create(user=request.user)

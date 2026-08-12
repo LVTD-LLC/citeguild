@@ -90,21 +90,29 @@ class DashboardService:
         return {row["project_id"]: row for row in rows}
 
     @staticmethod
-    def _link_counts(project_ids: list[int]) -> tuple[dict[int, int], dict[int, int]]:
+    def _link_counts(
+        project_ids: list[int],
+    ) -> tuple[dict[int, dict], dict[int, dict]]:
         cross_project = DetectedNetworkLink.objects.filter(is_active=True).exclude(
             source_article__project_id=F("target_project_id")
         )
         given = {
-            row["source_article__project_id"]: row["count"]
+            row["source_article__project_id"]: row
             for row in cross_project.filter(source_article__project_id__in=project_ids)
             .values("source_article__project_id")
-            .annotate(count=Count("id"))
+            .annotate(
+                link_count=Count("id"),
+                domain_count=Count("target_project_id", distinct=True),
+            )
         }
         received = {
-            row["target_project_id"]: row["count"]
+            row["target_project_id"]: row
             for row in cross_project.filter(target_project_id__in=project_ids)
             .values("target_project_id")
-            .annotate(count=Count("id"))
+            .annotate(
+                link_count=Count("id"),
+                domain_count=Count("source_article__project_id", distinct=True),
+            )
         }
         return given, received
 
@@ -142,8 +150,12 @@ class DashboardService:
             for field in cls.ARTICLE_COUNT_FIELDS:
                 setattr(project, field, counts.get(field, 0))
 
-            project.detected_links_given_count = links_given.get(project.pk, 0)
-            project.detected_links_received_count = links_received.get(project.pk, 0)
+            given_counts = links_given.get(project.pk, {})
+            received_counts = links_received.get(project.pk, {})
+            project.detected_links_given_count = given_counts.get("link_count", 0)
+            project.linked_domain_count = given_counts.get("domain_count", 0)
+            project.detected_links_received_count = received_counts.get("link_count", 0)
+            project.linking_domain_count = received_counts.get("domain_count", 0)
 
             latest_sync = latest_syncs.get(project.pk, {})
             for field in cls.LATEST_SYNC_FIELDS:

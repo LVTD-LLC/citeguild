@@ -1,0 +1,60 @@
+{% extends "base_app.html" %}
+{% block title %}Indexed pages · {{ project.name }} · {{ block.super }}{% endblock title %}
+{% block content %}
+    <div class="mx-auto w-full max-w-6xl px-6 py-10 lg:px-8">
+        <nav aria-label="Breadcrumb"
+             class="text-base text-gray-500 sm:text-sm dark:text-gray-400">
+            <a href="{% url 'sitemap_details' project.uuid %}"
+               class="text-green-700 dark:text-green-300">← {{ project.name }}</a>
+        </nav>
+        <header class="mt-6 border-b border-gray-950/10 pb-7 dark:border-white/10">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="font-semibold text-green-700 dark:text-green-300">Indexed pages</p>
+                    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{{ project.name }}</h1>
+                    <p class="mt-2 text-base text-gray-600 sm:text-sm dark:text-gray-300">Pages CiteGuild can retrieve as sources.</p>
+                </div>
+                <p class="text-base tabular-nums text-gray-500 sm:text-sm dark:text-gray-400">{{ details.articles.paginator.count }} total</p>
+            </div>
+        </header>
+        {% if details.articles %}
+            <ul class="divide-y divide-gray-950/10 dark:divide-white/10" role="list">
+                {% for article in details.articles %}
+                    <li class="py-6">
+                        <div class="flex items-start justify-between gap-5">
+                            <div class="min-w-0">
+                                <p class="truncate font-semibold">{{ article.title|default:"Untitled page" }}</p>
+                                <a href="{{ article.normalized_canonical_url }}"
+                                   class="mt-2 block truncate text-base text-green-700 sm:text-sm dark:text-green-300"
+                                   target="_blank"
+                                   rel="noopener noreferrer">{{ article.normalized_canonical_url }}</a>
+                                <p class="mt-2 text-base text-gray-500 sm:text-sm dark:text-gray-400">Last seen {{ article.last_seen_at|date:"M j, Y" }}</p>
+                            </div>
+                            <span class="shrink-0 rounded-full px-3 py-1 text-sm font-semibold {% if article.is_active %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200{% endif %}">{{ article.get_state_display }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if details.articles.paginator.num_pages > 1 %}
+                <nav class="mt-6 flex items-center justify-between gap-4 border-t border-gray-950/10 pt-6 text-base sm:text-sm dark:border-white/10"
+                     aria-label="Indexed pages pagination">
+                    {% if details.articles.has_previous %}
+                        <a href="?page={{ details.articles.previous_page_number }}"
+                           class="app-button-secondary">Previous</a>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+                    <span>Page {{ details.articles.number }} of {{ details.articles.paginator.num_pages }}</span>
+                    {% if details.articles.has_next %}
+                        <a href="?page={{ details.articles.next_page_number }}"
+                           class="app-button-secondary">Next</a>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            <p class="mt-8 border-y border-gray-950/10 py-8 text-base text-gray-600 dark:border-white/10 dark:text-gray-300">No pages have been indexed for this site yet.</p>
+        {% endif %}
+    </div>
+{% endblock content %}
