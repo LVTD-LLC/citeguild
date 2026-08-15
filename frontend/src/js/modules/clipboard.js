@@ -1,9 +1,10 @@
 export async function copyText(text) {
   const textPromise = Promise.resolve(text);
+  const isPendingText = text instanceof Promise;
 
   // WebKit can discard user activation while remote copy content is loading.
   // Start the clipboard write during the click and let the ClipboardItem resolve later.
-  if (typeof text?.then === "function" && navigator.clipboard?.write && window.ClipboardItem) {
+  if (isPendingText && navigator.clipboard?.write && window.ClipboardItem) {
     try {
       const blobPromise = textPromise.then((resolvedText) => {
         if (!resolvedText) {
@@ -18,7 +19,12 @@ export async function copyText(text) {
     }
   }
 
-  const resolvedText = await textPromise;
+  let resolvedText;
+  try {
+    resolvedText = await textPromise;
+  } catch {
+    return false;
+  }
   if (!resolvedText) {
     return false;
   }
