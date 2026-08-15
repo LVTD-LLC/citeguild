@@ -66,6 +66,7 @@ class TestHomeView:
         content = response.content.decode()
 
         assert response.status_code == 200
+        assert content.index("Connect an AI agent") < content.index('id="site-list-heading"')
         assert "Prompt preview (API key hidden)" in content
         assert "data-copy-button" in content
         assert 'data-copy-method="POST"' in content
@@ -87,8 +88,9 @@ class TestHomeView:
 
         assert response.status_code == 200
         assert response.json()["prompt"] == (
-            "CiteGuild skills repository: https://github.com/LVTD-LLC/citeguild-skills\n"
-            f"CiteGuild API key: {api_key}\n"
+            "You can refer to CiteGuild skills that live in "
+            "https://github.com/LVTD-LLC/citeguild-skills. "
+            f"Your CiteGuild API key is {api_key}."
         )
         assert response.headers["Cache-Control"] == "no-store, private"
         assert response.headers["Pragma"] == "no-cache"
@@ -124,13 +126,14 @@ class TestHomeView:
         assert new_api_key in response.json()["prompt"]
         assert not profile.check_api_key(legacy_key)
 
-    def test_home_view_hides_agent_prompt_until_first_site_exists(self, auth_client, profile):
+    def test_home_view_shows_agent_prompt_before_first_site_exists(self, auth_client, profile):
         subscribe(profile)
 
         content = auth_client.get(reverse("home")).content.decode()
 
-        assert "Copy/paste prompt" not in content
-        assert "data-copy-button" not in content
+        assert "Connect an AI agent" in content
+        assert "data-copy-button" in content
+        assert content.index("Connect an AI agent") < content.index("No sites yet")
 
     def test_failed_site_shows_owner_scoped_manual_retry(self, auth_client, profile):
         subscribe(profile)
@@ -425,8 +428,9 @@ def test_agent_setup_prompt_contains_only_skills_repository_and_api_key():
     prompt = build_agent_setup_prompt(api_key)
 
     assert prompt == (
-        "CiteGuild skills repository: https://github.com/LVTD-LLC/citeguild-skills\n"
-        f"CiteGuild API key: {api_key}\n"
+        "You can refer to CiteGuild skills that live in "
+        "https://github.com/LVTD-LLC/citeguild-skills. "
+        f"Your CiteGuild API key is {api_key}."
     )
 
 

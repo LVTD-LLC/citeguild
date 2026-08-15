@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
+## 2026-08-15
+
+### Fixed
+
+- Made the dashboard's protected Copy Prompt action work in browsers that
+  require clipboard writes to begin within the original click gesture.
+
+### Changed
+
+- Moved the agent setup prompt to the top of the paid dashboard, made it
+  immediately visible before a site is added, and clarified its wording.
+
 ## 2026-08-12
 
 ### Changed
