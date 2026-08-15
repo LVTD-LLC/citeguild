@@ -20,23 +20,9 @@ export function initCopyButtons(root = document) {
       label.textContent = "Copying…";
       try {
         if (button.dataset.copyUrl) {
-          const headers = { Accept: "application/json" };
-          if (button.dataset.copyCsrfToken) {
-            headers["X-CSRFToken"] = button.dataset.copyCsrfToken;
-          }
-          const response = await fetch(button.dataset.copyUrl, {
-            cache: "no-store",
-            credentials: "same-origin",
-            headers,
-            method: button.dataset.copyMethod || "GET",
-          });
-          if (!response.ok) {
-            throw new Error("Copy source request failed");
-          }
-          const payload = await response.json();
-          text = payload[button.dataset.copyResponseKey || "prompt"] || "";
+          text = fetchCopyText(button);
         }
-        copied = Boolean(text) && (await copyText(text));
+        copied = await copyText(text);
       } catch {
         copied = false;
       } finally {
@@ -51,4 +37,22 @@ export function initCopyButtons(root = document) {
       }, 1600);
     });
   });
+}
+
+async function fetchCopyText(button) {
+  const headers = { Accept: "application/json" };
+  if (button.dataset.copyCsrfToken) {
+    headers["X-CSRFToken"] = button.dataset.copyCsrfToken;
+  }
+  const response = await fetch(button.dataset.copyUrl, {
+    cache: "no-store",
+    credentials: "same-origin",
+    headers,
+    method: button.dataset.copyMethod || "GET",
+  });
+  if (!response.ok) {
+    throw new Error("Copy source request failed");
+  }
+  const payload = await response.json();
+  return payload[button.dataset.copyResponseKey || "prompt"] || "";
 }

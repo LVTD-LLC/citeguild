@@ -75,9 +75,10 @@ def build_absolute_public_url(path: str) -> str:
 
 def build_agent_setup_prompt(api_key: str):
     """Build the dashboard copy/paste prompt for connecting a coding agent."""
-    return f"""CiteGuild skills repository: {CITEGUILD_SKILLS_REPOSITORY_URL}
-CiteGuild API key: {api_key}
-"""
+    return (
+        f"You can refer to CiteGuild skills that live in {CITEGUILD_SKILLS_REPOSITORY_URL}. "
+        f"Your CiteGuild API key is {api_key}."
+    )
 
 
 def agent_instructions_markdown(request):
@@ -168,8 +169,8 @@ API keys are intentionally not accepted in query strings.
 ## Starter prompt for a coding agent
 
 ```text
-CiteGuild skills repository: {CITEGUILD_SKILLS_REPOSITORY_URL}
-CiteGuild API key: <copy securely from the {project_name} dashboard>
+You can refer to CiteGuild skills that live in {CITEGUILD_SKILLS_REPOSITORY_URL}.
+Your CiteGuild API key is <copy securely from the {project_name} dashboard>.
 ```
 """
     return HttpResponse(body, content_type="text/markdown; charset=utf-8")

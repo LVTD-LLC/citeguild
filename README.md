@@ -688,8 +688,8 @@ variable expansion; never commit an expanded credential.
 Give an agent this starter prompt:
 
 ```text
-CiteGuild skills repository: https://github.com/LVTD-LLC/citeguild-skills
-CiteGuild API key: <copy securely from the CiteGuild dashboard>
+You can refer to CiteGuild skills that live in https://github.com/LVTD-LLC/citeguild-skills.
+Your CiteGuild API key is <copy securely from the CiteGuild dashboard>.
 ```
 
 MCP uses ASGI. The generated production server command runs
