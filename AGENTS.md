@@ -286,6 +286,9 @@ npm run lint
 - Read `.agents/skills/django-htmx/SKILL.md` before adding or changing HTMX
   interactions.
 - Keep styles aligned with `DESIGN.md` and Tailwind conventions.
+- Keep each Python function at cyclomatic complexity 10 or lower. Ruff enforces
+  this as `C901`; simplify control flow or extract cohesive helpers instead of
+  suppressing the rule.
 - Keep Stripe webhook handling idempotent and defensive. Billing code belongs in
   `apps/core/stripe_webhooks.py` and related core/API paths.
 - Require an active subscription before accepting a site. Enforce tenant

@@ -78,7 +78,7 @@ rather than a plain `@pytest.mark.django_db` test.
 
 | Command | Purpose |
 | --- | --- |
-| `make python-quality` | Runs pre-commit across the repo, then `make pyscn-check`. |
+| `make python-quality` | Runs pre-commit across the repo, including Ruff's explicit cyclomatic-complexity limit of 10, then `make pyscn-check`. |
 | `make frontend-check` | Runs `npm run lint` and `npm run build`. |
 | `make cli-quality` | Runs Go formatting, vet, unit tests, race tests, build, and isolated install smoke for the CLI. |
 | `make migrations-check` | Runs `manage.py makemigrations --check --dry-run`. |
@@ -180,6 +180,13 @@ make api-fuzz
 Keep focused Django tests for exact business rules and permission cases.
 Schemathesis complements those tests by exploring the wider OpenAPI input
 space; it does not replace endpoint-specific assertions.
+
+## Complexity Policy
+
+Ruff fails `make python-quality` with `C901` when a function's cyclomatic
+complexity exceeds 10. Prefer extracting cohesive helpers or simplifying the
+control flow over adding a `noqa` suppression. Pyscn remains a complementary
+structural check with its own complexity metric and a limit of 15.
 
 ## CI Mapping
 
