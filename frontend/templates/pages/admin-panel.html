@@ -7,7 +7,7 @@
     <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-18">
         <div class="border-b border-gray-950/10 pb-10 dark:border-white/10">
             <h1 class="text-4xl font-semibold tracking-tight text-balance">Admin</h1>
-            <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">A compact view of account growth and recent signups.</p>
+            <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">A compact view of account growth and detected activity across the member network.</p>
         </div>
         <section class="@container py-10" aria-labelledby="account-totals-heading">
             <h2 id="account-totals-heading" class="sr-only">Account totals</h2>
@@ -31,6 +31,81 @@
                     {% endif %}
                 </div>
             </dl>
+        </section>
+        <section class="border-t border-gray-950/10 py-10 dark:border-white/10"
+                 aria-labelledby="network-overview-heading">
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <h2 id="network-overview-heading"
+                        class="text-2xl font-semibold tracking-tight">Network overview</h2>
+                    <p class="app-text-muted mt-2 max-w-[68ch] text-base/7 sm:text-sm/6">Active member-to-member citations last seen during the selected period. Arrows run from the linking site to the cited site.</p>
+                </div>
+                <nav class="flex flex-wrap gap-1 rounded-xl bg-gray-100 p-1 text-sm dark:bg-gray-900"
+                     aria-label="Network activity period">
+                    {% for period in network_overview.periods %}
+                        <a href="?period={{ period.key }}#network-overview-heading"
+                           class="app-focus rounded-lg px-3 py-2 font-medium {% if network_overview.period.key == period.key %}bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white{% else %}text-gray-600 hover:text-gray-950 dark:text-gray-300 dark:hover:text-white{% endif %}"
+                           {% if network_overview.period.key == period.key %}aria-current="page"{% endif %}>{{ period.label }}</a>
+                    {% endfor %}
+                </nav>
+            </div>
+            <dl class="mt-8 grid grid-cols-1 gap-4 border-y border-gray-950/10 py-5 sm:grid-cols-3 dark:border-white/10">
+                <div>
+                    <dt class="app-text-muted text-sm">Detected citations</dt>
+                    <dd class="mt-1 text-2xl font-semibold tabular-nums">
+                        {{ network_overview.citation_count }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="app-text-muted text-sm">Site connections</dt>
+                    <dd class="mt-1 text-2xl font-semibold tabular-nums">
+                        {{ network_overview.connection_count }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="app-text-muted text-sm">Connected sites</dt>
+                    <dd class="mt-1 text-2xl font-semibold tabular-nums">
+                        {{ network_overview.connected_site_count }}
+                    </dd>
+                </div>
+            </dl>
+            {% if network_overview.nodes %}
+                <div class="mt-6 overflow-x-auto rounded-2xl bg-gray-50 dark:bg-gray-900">
+                    <svg viewBox="0 0 640 300"
+                         class="block h-auto w-full min-w-[620px]"
+                         role="img"
+                         aria-labelledby="network-graph-title network-graph-description">
+                        <title id="network-graph-title">CiteGuild member citation network for {{ network_overview.period.label }}</title>
+                        <desc id="network-graph-description">{{ network_overview.citation_count }} active detected citations across {{ network_overview.connected_site_count }} member sites. Arrow labels show citation counts.</desc>
+                        <defs>
+                        <marker id="network-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 8 4 L 0 8 z" class="fill-gray-400 dark:fill-gray-500" />
+                        </marker>
+                        </defs>
+                        {% for edge in network_overview.edges %}
+                            <g>
+                            <title>{{ edge.source_host }} to {{ edge.target_host }}: {{ edge.citation_count }} citation{{ edge.citation_count|pluralize }}</title>
+                            <path d="{{ edge.path }}" fill="none" stroke-width="{{ edge.stroke_width }}" marker-end="url(#network-arrow)" class="stroke-green-600/60 dark:stroke-green-400/60" />
+                            <circle cx="{{ edge.label_x }}" cy="{{ edge.label_y }}" r="10" class="fill-white dark:fill-gray-900" />
+                            <text x="{{ edge.label_x }}" y="{{ edge.label_y }}" dominant-baseline="central" text-anchor="middle" class="fill-gray-700 text-[10px] font-semibold dark:fill-gray-200">{{ edge.citation_count }}</text>
+                            </g>
+                        {% endfor %}
+                        {% for node in network_overview.nodes %}
+                            <g>
+                            <title>{{ node.host }}: {{ node.citation_count }} connected citation{{ node.citation_count|pluralize }}</title>
+                            <circle cx="{{ node.x }}" cy="{{ node.y }}" r="{{ node.radius }}" class="fill-white stroke-gray-300 stroke-2 dark:fill-gray-950 dark:stroke-gray-600" />
+                            <circle cx="{{ node.x }}" cy="{{ node.y }}" r="5" class="fill-green-700 dark:fill-green-400" />
+                            <text x="{{ node.x }}" y="{{ node.label_y }}" text-anchor="middle" class="fill-gray-800 text-[11px] font-medium dark:fill-gray-100">{{ node.label }}</text>
+                            </g>
+                        {% endfor %}
+                    </svg>
+                </div>
+                {% if network_overview.omitted_site_count %}
+                    <p class="app-text-muted mt-3 text-sm">Showing a compact view of 12 highly connected sites. {{ network_overview.omitted_site_count }} more site{{ network_overview.omitted_site_count|pluralize }} are included in the totals.</p>
+                {% endif %}
+            {% else %}
+                <p class="app-text-muted mt-6 rounded-xl bg-gray-50 px-5 py-8 text-center text-base dark:bg-gray-900">No active cross-site citations were detected in this period.</p>
+            {% endif %}
         </section>
         <section class="border-t border-gray-950/10 pt-8 dark:border-white/10"
                  aria-labelledby="recent-users-heading">

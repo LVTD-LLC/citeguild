@@ -25,6 +25,7 @@ from django.views.decorators.debug import sensitive_variables
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, UpdateView
 
+from apps.core.admin_network import AdminNetworkOverviewService
 from apps.core.analytics import (
     CHECKOUT_STARTED,
     has_analytics_consent,
@@ -773,6 +774,7 @@ class AdminPanelView(UserPassesTestMixin, TemplateView):
         new_users_month = User.objects.filter(date_joined__gte=month_ago).count()
 
         recent_users = User.objects.select_related("profile").order_by("-date_joined")[:10]
+        network_overview = AdminNetworkOverviewService.build(self.request.GET.get("period"))
 
         # Calculate average users per day for last 30 days
         avg_users_per_day = new_users_month / 30 if new_users_month > 0 else 0
@@ -785,6 +787,7 @@ class AdminPanelView(UserPassesTestMixin, TemplateView):
                 "new_users_month": new_users_month,
                 "recent_users": recent_users,
                 "avg_users_per_day": avg_users_per_day,
+                "network_overview": network_overview,
             }
         )
 
