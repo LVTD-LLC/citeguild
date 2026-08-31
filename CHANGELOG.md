@@ -12,6 +12,11 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 - Added a compact admin network overview with 7-day, 30-day, 90-day, and
   all-time views of active cross-site detected citations.
 
+### Changed
+
+- Made the Ruff cyclomatic-complexity ceiling of 10 explicit and documented the
+  expectation that complex functions are simplified rather than suppressed.
+
 ## 2026-08-15
 
 ### Fixed

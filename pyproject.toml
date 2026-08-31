@@ -88,6 +88,9 @@ select = [
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "citeguild"]
 
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
 [tool.ruff.format]
 quote-style = "double"
 
