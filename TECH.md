@@ -78,6 +78,12 @@ public-safe retrieval contract and must not grant management/content access.
 Retries must be idempotent. Partial failure must not publish a vector detached
 from authorized, active PostgreSQL state.
 
+Explicit site deletion records a `ProjectDeletionCleanup` intent in the same
+PostgreSQL transaction. A best-effort after-commit task removes the site's
+Qdrant points; a bounded five-minute worker sweep retries outstanding intents
+after broker outages or lost tasks. Only confirmed vector cleanup clears the
+intent. Missing-page responses render without database-backed context processors.
+
 ## Retrieval Contract
 
 MCP, CLI, and API must call one shared search service. It embeds the query,

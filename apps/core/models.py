@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 from django_q.tasks import async_task
 
 from apps.core.base_models import BaseModel
@@ -199,6 +200,17 @@ class Project(BaseModel):
             return False
         owner = Profile.objects.select_related("user").get(pk=self.owner_id)
         return owner.has_active_subscription
+
+
+class ProjectDeletionCleanup(models.Model):
+    """Durable vector cleanup intent, retained after its project is deleted."""
+
+    project_uuid = models.UUIDField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    next_attempt_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    def __str__(self):
+        return str(self.project_uuid)
 
 
 class ProjectStateTransition(BaseModel):

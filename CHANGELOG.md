@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
+## 2026-09-19
+
+### Fixed
+
+- Persist site-deletion vector cleanup in PostgreSQL and retry it after broker
+  or worker failures, so a completed deletion no longer returns a misleading 500.
+- Render missing-page responses without database-backed context processors,
+  preserving 404 responses when a database connection is unavailable.
+- Refresh vulnerable transitive HTTP client dependencies required by the
+  production security gate.
+
 ## 2026-08-31
 
 ### Added

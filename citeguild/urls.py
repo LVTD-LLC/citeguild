@@ -23,6 +23,8 @@ from django.views.generic import TemplateView
 from apps.pages.views import AccountSignupByPasskeyView, AccountSignupView
 from citeguild.sitemaps import sitemaps
 
+handler404 = "citeguild.error_views.page_not_found"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
 ]

@@ -5,7 +5,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.core.choices import ProjectStates
-from apps.core.models import Profile, Project, ProjectStateTransition
+from apps.core.models import Profile, Project, ProjectDeletionCleanup, ProjectStateTransition
 
 
 class ProjectHostConflict(ValidationError):
@@ -171,6 +171,7 @@ class ProjectService:
             owner = cls._locked_active_owner(owner)
             project = cls.for_owner(owner).select_for_update().get(uuid=project_uuid)
             deleted_uuid = project.uuid
+            ProjectDeletionCleanup.objects.create(project_uuid=deleted_uuid)
             project.delete()
 
             from apps.search.qdrant import queue_project_deletion
