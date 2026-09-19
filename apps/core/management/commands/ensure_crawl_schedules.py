@@ -8,12 +8,23 @@ from apps.core.crawl_jobs import (
     schedule_due_sitemap_reconciliations,
 )
 from apps.core.domain_ratings import DOMAIN_RATING_REFRESH_SWEEP_TASK
+from apps.search.cleanup import PROJECT_CLEANUP_TASK, recover_project_deletions
 
 
 class Command(BaseCommand):
     help = "Create idempotent worker schedules and run one startup crawl sweep."
 
     def handle(self, *args, **options):
+        Schedule.objects.update_or_create(
+            name="citeguild-project-deletion-cleanup",
+            defaults={
+                "func": PROJECT_CLEANUP_TASK,
+                "schedule_type": Schedule.MINUTES,
+                "minutes": 5,
+                "repeats": -1,
+            },
+        )
+        recover_project_deletions()
         schedule, created = Schedule.objects.update_or_create(
             name="citeguild-crawl-recovery",
             defaults={

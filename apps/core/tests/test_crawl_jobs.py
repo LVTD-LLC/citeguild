@@ -894,3 +894,8 @@ def test_recovery_schedule_is_named_and_idempotent(monkeypatch):
     assert schedule.func == "apps.core.crawl_jobs.recover_crawl_jobs"
     assert schedule.schedule_type == Schedule.MINUTES
     assert schedule.minutes == 5
+    cleanup = Schedule.objects.get(name="citeguild-project-deletion-cleanup")
+    assert cleanup.func == "apps.search.cleanup.recover_project_deletions"
+    assert cleanup.schedule_type == Schedule.MINUTES
+    assert cleanup.minutes == 5
+    assert cleanup.repeats == -1

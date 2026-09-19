@@ -6,6 +6,7 @@ filters reduce the candidate set, but callers must supply already-authorized pro
 
 from __future__ import annotations
 
+import logging
 import math
 from dataclasses import dataclass
 from datetime import datetime
@@ -26,10 +27,12 @@ from apps.core.choices import (
     ExtractionStates,
     ProjectStates,
 )
-from apps.core.models import Article, Project
+from apps.core.models import Article, Project, ProjectDeletionCleanup
 
 ARTICLE_OBJECTS = Article.objects  # ty: ignore[unresolved-attribute]
 PROJECT_OBJECTS = Project.objects  # ty: ignore[unresolved-attribute]
+CLEANUP_OBJECTS = ProjectDeletionCleanup.objects  # ty: ignore[unresolved-attribute]
+logger = logging.getLogger(__name__)
 
 MAX_SEARCH_LIMIT = 50
 PAYLOAD_INDEXES = {
@@ -460,17 +463,31 @@ def delete_project_points(project_uuid: str, *, client: QdrantClient | None = No
             ),
             wait=True,
         )
+    CLEANUP_OBJECTS.filter(project_uuid=project_uuid).delete()
     return str(project_uuid)
 
 
 def queue_project_deletion(project_uuid) -> str | None:
     if not settings.CITEGUILD_INDEXING_ENABLED:
         return None
-    return async_task(
-        "apps.search.qdrant.delete_project_points",
-        str(project_uuid),
-        group=f"project-delete:{project_uuid}",
-    )
+    try:
+        return async_task(
+            "apps.search.qdrant.delete_project_points",
+            str(project_uuid),
+            group=f"project-delete:{project_uuid}",
+        )
+    except Exception as error:
+        # The deletion has committed. The database intent survives broker failure
+        # and is retried by the periodic cleanup sweep.
+        logger.warning(
+            "search.project_cleanup.enqueue_failed",
+            extra={
+                "event.name": "search.project_cleanup.enqueue_failed",
+                "outcome": "failure",
+                "exception_type": type(error).__name__,
+            },
+        )
+        return None
 
 
 def rebuild_article_collection(
