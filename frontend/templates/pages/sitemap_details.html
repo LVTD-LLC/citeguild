@@ -22,6 +22,7 @@
             </div>
             <p class="inline-flex w-fit rounded-full px-3 py-1 text-base font-semibold sm:text-sm {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">{{ project.get_state_display }}</p>
         </header>
+        {% include "pages/partials/metric_history.html" %}
         <section class="mt-10" aria-labelledby="site-overview-heading">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <h2 id="site-overview-heading"

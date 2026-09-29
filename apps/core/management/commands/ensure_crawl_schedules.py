@@ -8,6 +8,7 @@ from apps.core.crawl_jobs import (
     schedule_due_sitemap_reconciliations,
 )
 from apps.core.domain_ratings import DOMAIN_RATING_REFRESH_SWEEP_TASK
+from apps.core.metric_history import capture_daily_metrics
 from apps.search.cleanup import PROJECT_CLEANUP_TASK, recover_project_deletions
 
 
@@ -51,6 +52,15 @@ class Command(BaseCommand):
                 "repeats": -1,
             },
         )
+        Schedule.objects.update_or_create(
+            name="citeguild-daily-metric-snapshots",
+            defaults={
+                "func": "apps.core.metric_history.capture_daily_metrics",
+                "schedule_type": Schedule.HOURLY,
+                "repeats": -1,
+            },
+        )
+        capture_daily_metrics()
         recovery = recover_crawl_jobs()
         reconciliation = schedule_due_sitemap_reconciliations()
         action = "created" if created else "updated"

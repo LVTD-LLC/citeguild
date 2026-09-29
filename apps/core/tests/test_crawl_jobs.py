@@ -899,3 +899,8 @@ def test_recovery_schedule_is_named_and_idempotent(monkeypatch):
     assert cleanup.schedule_type == Schedule.MINUTES
     assert cleanup.minutes == 5
     assert cleanup.repeats == -1
+
+    snapshots = Schedule.objects.get(name="citeguild-daily-metric-snapshots")
+    assert snapshots.func == "apps.core.metric_history.capture_daily_metrics"
+    assert snapshots.schedule_type == Schedule.HOURLY
+    assert snapshots.repeats == -1

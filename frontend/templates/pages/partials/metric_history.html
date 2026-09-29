@@ -1,0 +1,82 @@
+<section id="metric-history"
+         class="mt-10"
+         aria-labelledby="metric-history-heading">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <h2 id="metric-history-heading" class="text-2xl font-semibold">Metric history</h2>
+        <nav aria-label="History range" class="flex gap-2">
+            {% for days in metric_history.ranges %}
+                <a href="?history_days={{ days }}#metric-history"
+                   class="app-focus rounded-lg border px-3 py-2 text-sm {% if metric_history.days == days %}bg-gray-100 font-semibold dark:bg-gray-800{% endif %}"
+                   {% if metric_history.days == days %}aria-current="true"{% endif %}>{{ days }} days</a>
+            {% endfor %}
+        </nav>
+    </div>
+    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Daily snapshots in UTC. Domain Rating uses the latest available Ahrefs value, not a new daily lookup. Links count other sites in the CiteGuild network only.</p>
+    {% if metric_history.rows %}
+        {% if metric_history.rows|length == 1 %}
+            <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">Your first snapshot is recorded. Trend lines appear as daily snapshots accumulate.</p>
+        {% endif %}
+        <div class="mt-6 grid min-w-0 gap-6 md:grid-cols-2">
+            {% for chart in metric_history.charts %}
+                <figure class="min-w-0 rounded-xl border border-gray-950/10 p-4 dark:border-white/10">
+                    <figcaption class="flex items-baseline justify-between gap-3">
+                        <span class="font-medium">{{ chart.label }}</span>
+                        <span class="text-2xl font-semibold tabular-nums">{{ chart.latest|default_if_none:"—" }}</span>
+                    </figcaption>
+                    <svg viewBox="0 0 580 190"
+                         role="img"
+                         aria-label="{{ chart.label }} daily history"
+                         class="mt-4 w-full text-green-700 dark:text-green-300">
+                        <title>{{ chart.label }} daily history; exact values in the snapshot table below</title>
+                        <path d="M48,20 H552 M48,85 H552 M48,150 H552" fill="none" stroke="currentColor" opacity="0.15" />
+                        <text x="38" y="24" text-anchor="end" fill="currentColor" font-size="12">{{ chart.ceiling|floatformat:"-1" }}</text>
+                        <text x="38" y="154" text-anchor="end" fill="currentColor" font-size="12">0</text>
+                        <path d="{{ chart.path }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                        {% for point in chart.points %}
+                            <circle cx="{{ point.x }}" cy="{{ point.y }}" r="3" fill="currentColor"><title>{{ point.date|date:"M j, Y" }}: {{ point.value }}</title></circle>
+                        {% endfor %}
+                        <text x="48" y="180" fill="currentColor" font-size="12">{{ metric_history.rows.0.date|date:"M j" }}</text>
+                        {% with last=metric_history.rows|last %}
+                            <text x="552" y="180" text-anchor="end" fill="currentColor" font-size="12">{{ last.date|date:"M j" }}</text>
+                        {% endwith %}
+                    </svg>
+                </figure>
+            {% endfor %}
+        </div>
+        <details class="mt-5">
+            <summary class="app-focus cursor-pointer text-sm font-medium">View daily snapshot values</summary>
+            <div class="mt-3 overflow-x-auto">
+                <table class="w-full whitespace-nowrap text-left text-sm tabular-nums">
+                    <caption class="sr-only">Daily metric snapshots; missing values are unavailable, not zero</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" class="p-2">Date (UTC)</th>
+                            <th scope="col" class="p-2">Domain Rating</th>
+                            <th scope="col" class="p-2">Indexed pages</th>
+                            <th scope="col" class="p-2">Links out</th>
+                            <th scope="col" class="p-2">Domains out</th>
+                            <th scope="col" class="p-2">Links in</th>
+                            <th scope="col" class="p-2">Domains in</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in metric_history.rows %}
+                            <tr class="border-t border-gray-950/10 dark:border-white/10">
+                                <th scope="row" class="p-2 font-normal">{{ row.date|date:"Y-m-d" }}</th>
+                                <td class="p-2">{{ row.domain_rating|default_if_none:"—" }}</td>
+                                <td class="p-2">{{ row.indexed_pages }}</td>
+                                <td class="p-2">{{ row.links_out }}</td>
+                                <td class="p-2">{{ row.domains_out }}</td>
+                                <td class="p-2">{{ row.links_in }}</td>
+                                <td class="p-2">{{ row.domains_in }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Missing days and unavailable values are left as gaps. History starts when snapshots were enabled.</p>
+    {% else %}
+        <p class="mt-5 text-gray-600 dark:text-gray-400">No snapshots in this range yet. Your first snapshot will appear after the next scheduled capture.</p>
+    {% endif %}
+</section>

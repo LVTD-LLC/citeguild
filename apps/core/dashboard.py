@@ -90,7 +90,7 @@ class DashboardService:
         return {row["project_id"]: row for row in rows}
 
     @staticmethod
-    def _link_counts(
+    def link_counts(
         project_ids: list[int],
     ) -> tuple[dict[int, dict], dict[int, dict]]:
         cross_project = DetectedNetworkLink.objects.filter(is_active=True).exclude(
@@ -142,7 +142,7 @@ class DashboardService:
 
         project_ids = [project.pk for project in projects]
         article_counts = cls._article_counts(project_ids)
-        links_given, links_received = cls._link_counts(project_ids)
+        links_given, links_received = cls.link_counts(project_ids)
         latest_syncs = cls._latest_syncs(project_ids)
 
         for project in projects:

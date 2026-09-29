@@ -202,6 +202,32 @@ class Project(BaseModel):
         return owner.has_active_subscription
 
 
+class ProjectMetricSnapshot(models.Model):
+    """First observed dashboard values per site and UTC day; never backfilled."""
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="metric_snapshots")
+    date = models.DateField()
+    captured_at = models.DateTimeField(default=timezone.now)
+    domain_rating = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    domain_rating_updated_at = models.DateTimeField(null=True, blank=True)
+    indexed_pages = models.PositiveIntegerField()
+    links_out = models.PositiveIntegerField()
+    domains_out = models.PositiveIntegerField()
+    links_in = models.PositiveIntegerField()
+    domains_in = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "date"], name="core_metric_project_day_unique"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.project_id}: {self.date}"
+
+
 class ProjectDeletionCleanup(models.Model):
     """Durable vector cleanup intent, retained after its project is deleted."""
 
