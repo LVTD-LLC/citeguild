@@ -6,6 +6,21 @@ from apps.core.utils import DivErrorList
 
 
 class CustomSignUpForm(SignupForm):
+    invitation_code = forms.CharField(
+        label="Invitation code",
+        max_length=36,
+        help_text="Ask an existing member for their invitation code or link.",
+    )
+
+    def clean_invitation_code(self):
+        from apps.core.invitations import valid_invitation
+
+        code = self.cleaned_data["invitation_code"]
+        invitation = valid_invitation(code)
+        if invitation is None:
+            raise forms.ValidationError("Enter a valid invitation code from an existing member.")
+        return str(invitation.code)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.error_class = DivErrorList

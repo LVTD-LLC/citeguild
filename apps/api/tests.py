@@ -46,7 +46,9 @@ def test_api_key_auth_returns_profile_for_valid_key():
     api_key = "ak_public.secret"
 
     for auth_class in [APIKeyHeaderAuth, BearerAPIKeyAuth]:
-        profile = SimpleNamespace(id=11, check_api_key=Mock(return_value=True))
+        profile = SimpleNamespace(
+            id=11, user=SimpleNamespace(is_active=True), check_api_key=Mock(return_value=True)
+        )
         with patch("apps.api.auth.Profile.objects") as objects:
             objects.select_related.return_value.get.return_value = profile
             response = auth_class().authenticate(HttpRequest(), api_key)
@@ -78,12 +80,12 @@ def test_superuser_api_key_auth_eager_loads_user_and_requires_superuser():
     for auth_class in [SuperuserAPIKeyHeaderAuth, SuperuserBearerAPIKeyAuth]:
         superuser_profile = SimpleNamespace(
             id=11,
-            user=SimpleNamespace(id=21, is_superuser=True),
+            user=SimpleNamespace(id=21, is_superuser=True, is_active=True),
             check_api_key=Mock(return_value=True),
         )
         regular_profile = SimpleNamespace(
             id=12,
-            user=SimpleNamespace(id=22, is_superuser=False),
+            user=SimpleNamespace(id=22, is_superuser=False, is_active=True),
             check_api_key=Mock(return_value=True),
         )
 

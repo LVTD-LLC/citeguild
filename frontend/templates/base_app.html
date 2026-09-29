@@ -98,7 +98,7 @@
                             <a href="{% url 'account_login' %}"
                                class="app-focus hover:text-gray-950 dark:hover:text-white">sign in</a>
                             <a href="{% url 'account_signup' %}"
-                               class="app-focus rounded-lg border border-gray-950/20 px-3 py-2 font-semibold text-gray-950 hover:border-gray-950/50 dark:border-white/20 dark:text-white dark:hover:border-white/50">join · $10/mo</a>
+                               class="app-focus rounded-lg border border-gray-950/20 px-3 py-2 font-semibold text-gray-950 hover:border-gray-950/50 dark:border-white/20 dark:text-white dark:hover:border-white/50">join with an invite</a>
                         {% endif %}
                     </div>
                     <details class="relative ml-auto lg:hidden">
@@ -116,7 +116,7 @@
                                 {% else %}
                                     <a class="app-focus" href="{% url 'account_login' %}">sign in</a>
                                     <a class="app-focus font-semibold text-green-700 dark:text-green-400"
-                                       href="{% url 'account_signup' %}">join · $10/mo</a>
+                                       href="{% url 'account_signup' %}">join with an invite</a>
                                 {% endif %}
                                 <button type="button"
                                         data-theme-toggle

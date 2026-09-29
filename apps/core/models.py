@@ -124,10 +124,22 @@ class Profile(BaseModel):
         return verify_api_key(api_key, self.api_key_hash)
 
     @property
+    def has_product_access(self):
+        """Membership is free; disabled accounts cannot access the corpus."""
+        return self.user.is_active
+
+    @property
     def has_active_subscription(self):
         return self.stripe_subscription_status in {"active", "past_due"} or (
             self.user.is_superuser and settings.ENVIRONMENT == "prod"
         )
+
+
+class MemberInvitation(BaseModel):
+    """Reusable, unguessable invitation owned by one existing member."""
+
+    owner = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="invitation")
+    code = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
 
 class StripeWebhookEvent(BaseModel):
@@ -199,7 +211,7 @@ class Project(BaseModel):
         if self.state != ProjectStates.ACTIVE:
             return False
         owner = Profile.objects.select_related("user").get(pk=self.owner_id)
-        return owner.has_active_subscription
+        return owner.has_product_access
 
 
 class ProjectMetricSnapshot(models.Model):

@@ -1,6 +1,6 @@
 # AGENTS.md - CiteGuild
 
-CiteGuild is the source network for AI content agents: subscribed members add
+CiteGuild is the source network for AI content agents: invited members add
 sitemaps, CiteGuild indexes their articles, and writing agents retrieve
 genuinely relevant sources through MCP, CLI, or API. Keep changes small,
 tested, and aligned with the MVP contract below.
@@ -22,9 +22,9 @@ tested, and aligned with the MVP contract below.
 
 ## MVP Truth
 
-- One plan: **$10/month**, monthly only. No free plan, trial, annual billing,
-  premium/agency tier, or per-site pricing.
-- A paid account may add unlimited projects/sites. Normal anti-abuse and
+- Free, invitation-only membership. New registrations require a reusable
+  member invitation code/link. Existing accounts retain access without payment.
+- A active account may add unlimited projects/sites. Normal anti-abuse and
   infrastructure safeguards still apply.
 - MVP ingestion starts from a submitted sitemap URL. Crawling a site without a
   sitemap is out of scope.
@@ -291,7 +291,7 @@ npm run lint
   suppressing the rule.
 - Keep Stripe webhook handling idempotent and defensive. Billing code belongs in
   `apps/core/stripe_webhooks.py` and related core/API paths.
-- Require an active subscription before accepting a site. Enforce tenant
+- Require an active user account before accepting a site. Enforce tenant
   ownership for site/article management, ingestion state, jobs, and private
   dashboard/API data; never trust a caller-supplied account or project
   identifier. Shared search intentionally crosses tenants, but only over

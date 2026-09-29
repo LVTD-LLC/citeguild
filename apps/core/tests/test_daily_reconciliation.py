@@ -201,7 +201,7 @@ def test_concurrent_due_schedulers_create_one_sync(profile, monkeypatch, setting
 
 
 @pytest.mark.django_db
-def test_due_scheduler_skips_suspended_and_unpaid_sites(profile, django_user_model, settings):
+def test_due_scheduler_skips_suspended_and_disabled_sites(profile, django_user_model, settings):
     settings.RECONCILE_INTERVAL_HOURS = 24
     anchor = datetime(2026, 8, 1, tzinfo=UTC)
     suspended = create_project(profile, host="suspended.example")
@@ -218,6 +218,8 @@ def test_due_scheduler_skips_suspended_and_unpaid_sites(profile, django_user_mod
     completed_inventory(unpaid, completed_at=anchor, candidates=())
     unpaid_user.profile.stripe_subscription_status = "churned"
     unpaid_user.profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    unpaid_user.is_active = False
+    unpaid_user.save(update_fields=["is_active"])
 
     result = schedule_due_sitemap_reconciliations(
         now=anchor + timedelta(hours=25),

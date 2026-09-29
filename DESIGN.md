@@ -226,7 +226,7 @@ Use simple responsive layouts that work well for server-rendered Django pages.
 - Forms should be narrow enough to scan comfortably. Dashboards can use wider containers, but avoid dense data walls without hierarchy.
 - Design empty, loading, error, and success states as first-class UI, not afterthoughts.
 - Give fixed-format UI, such as toolbars, icon buttons, counters, tables, and cards, stable dimensions so hover states, labels, and dynamic content do not shift the layout.
-- Make the dashboard sequence obvious: subscribe, add a sitemap-backed site,
+- Make the dashboard sequence obvious: join with an invitation, add a sitemap-backed site,
   wait for indexing, connect an agent, then inspect detected network activity.
 - Prefer a scannable site list and status detail over a dense generic KPI wall.
   Put indexing health, detected-link counts, and recent actionable sync failures

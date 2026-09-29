@@ -8,7 +8,7 @@
     <div class="mx-auto max-w-5xl px-6 py-14 lg:px-8 lg:py-18">
         <div class="border-b border-gray-950/10 pb-10 dark:border-white/10">
             <h1 class="text-4xl font-semibold tracking-tight text-balance">Settings</h1>
-            <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">Manage your account, sign-in methods, API access, and billing.</p>
+            <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">Manage your account, sign-in methods, API access, and invitations.</p>
         </div>
         <div class="mt-8">{% include "components/confirm-email.html" with email_verified=email_verified %}</div>
         <section class="grid gap-6 border-b border-gray-950/10 py-10 md:grid-cols-[7fr_13fr] dark:border-white/10"
@@ -107,18 +107,39 @@
                 </form>
             </div>
         </section>
-        {% if not has_subscription %}
-            <section class="grid gap-6 border-b border-gray-950/10 py-10 md:grid-cols-[7fr_13fr] dark:border-white/10"
+        <section class="grid gap-6 border-b border-gray-950/10 py-10 md:grid-cols-[7fr_13fr] dark:border-white/10"
+                 aria-labelledby="invitation-heading">
+            <div>
+                <h2 id="invitation-heading" class="text-xl font-semibold">Invite someone</h2>
+                <p class="app-text-muted mt-2 text-sm/6">CiteGuild is free and invitation-only. Your reusable link lets others join.</p>
+            </div>
+            <div class="min-w-0">
+                <label for="invitation-url" class="block text-sm font-medium">Your invite link</label>
+                <input id="invitation-url"
+                       value="{{ invitation_url }}"
+                       readonly
+                       class="app-input mt-2 block w-full" />
+                <button type="button"
+                        data-copy-button
+                        data-copy-source="#invitation-url"
+                        class="app-button-secondary mt-3"><span data-copy-label>Copy invite link</span></button>
+                <label for="invitation-code" class="mt-5 block text-sm font-medium">Invitation code</label>
+                <input id="invitation-code"
+                       value="{{ invitation_code }}"
+                       readonly
+                       class="app-input mt-2 block w-full font-mono" />
+            </div>
+        </section>
+        {% if has_legacy_billing %}
+            <section class="border-b border-gray-950/10 py-10 dark:border-white/10"
                      aria-labelledby="billing-settings-heading">
-                <div>
-                    <h2 id="billing-settings-heading" class="text-xl font-semibold">Billing</h2>
-                    <p class="app-text-muted mt-2 text-base/7 text-pretty sm:text-sm/6">One $10 monthly membership. Unlimited sites.</p>
-                </div>
+                <h2 id="billing-settings-heading" class="text-xl font-semibold">Previous billing</h2>
+                <p class="app-text-muted mt-2">Payment is no longer required. Manage any existing subscription or invoices here.</p>
                 <form method="post"
-                      action="{% url 'user_upgrade_checkout_session' %}"
-                      class="self-start">
+                      action="{% url 'create_customer_portal_session' %}"
+                      class="mt-4">
                     {% csrf_token %}
-                    <button type="submit" class="app-button-secondary">Subscribe for $10/month</button>
+                    <button type="submit" class="app-button-secondary">Manage billing</button>
                 </form>
             </section>
         {% endif %}

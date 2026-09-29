@@ -338,8 +338,8 @@ def create_v1_project(request: HttpRequest, payload: ProjectSubmissionIn):
             403,
             _error_payload(
                 request,
-                code="subscription_required",
-                message="An active subscription is required to add a site.",
+                code="account_inactive",
+                message="An active account is required to add a site.",
             ),
         )
     except ProjectHostConflict:
@@ -431,9 +431,9 @@ def search_v1(request: HttpRequest, payload: SearchRequest):
             transport="api",
         )
     except SearchError as error:
-        if error.code == "subscription_required":
+        if error.code == "account_inactive":
             status = 403
-            message = "An active subscription is required to search."
+            message = "An active account is required to search."
         elif error.code in _SEARCH_INPUT_ERRORS:
             status = 422
             message = "The search request is invalid."
@@ -497,8 +497,8 @@ def create_project(request: HttpRequest, payload: ProjectSubmissionIn):
         )
     except PermissionDenied:
         return 403, {
-            "code": "subscription_required",
-            "message": "An active subscription is required to add a site.",
+            "code": "account_inactive",
+            "message": "An active account is required to add a site.",
             "retryable": False,
         }
     except ProjectHostConflict:

@@ -120,11 +120,9 @@ def _normalize_excluded_domains(values: Iterable[str]) -> set[str]:
 
 
 def _eligible_project_uuids() -> set[UUID]:
-    paid_owner = Q(owner__stripe_subscription_status__in={"active", "past_due"})
-    if settings.ENVIRONMENT == "prod":
-        paid_owner |= Q(owner__user__is_superuser=True)
+    active_owner = Q(owner__user__is_active=True)
     return set(
-        PROJECT_OBJECTS.filter(paid_owner, state=ProjectStates.ACTIVE).values_list(
+        PROJECT_OBJECTS.filter(active_owner, state=ProjectStates.ACTIVE).values_list(
             "uuid",
             flat=True,
         )
@@ -268,8 +266,8 @@ class SearchService:
             normalized_language = _normalize_language(language)
             normalized_exclusions = _normalize_excluded_domains(excluded_domains)
             profile.refresh_from_db()
-            if not profile.has_active_subscription:
-                raise SearchError("subscription_required")
+            if not profile.has_product_access:
+                raise SearchError("account_inactive")
             project_uuids = _eligible_project_uuids()
             if not project_uuids:
                 response = SearchResponse(SEARCH_CONTRACT_VERSION, ())

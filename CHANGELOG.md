@@ -7,6 +7,9 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-09-29
 
+- Make membership free across dashboard, site management, indexing, API, and MCP search; disable new checkout sessions while retaining legacy billing management and webhooks.
+- Require valid member invitations for password, passkey, and social registration; add reusable per-user invite links/codes in Settings and preserve email verification and signup pause controls.
+
 ### Added
 
 - Record immutable daily UTC snapshots of Domain Rating, indexed pages, incoming/outgoing links and unique domains. Add owner-scoped 30/90/365-day history charts and accessible values on site details; unknown values and missed days remain gaps.

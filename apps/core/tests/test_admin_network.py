@@ -101,6 +101,7 @@ def test_admin_network_overview_filters_old_inactive_and_same_site_links(profile
 
 @pytest.mark.django_db
 def test_admin_panel_renders_network_period_and_requires_superuser(auth_client, user):
+    type(user).objects.filter(pk=user.pk).update(is_superuser=False)
     response = auth_client.get(reverse("admin_panel"), {"period": "90"})
     assert response.status_code == 302
 

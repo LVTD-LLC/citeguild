@@ -5,13 +5,13 @@
 {% endblock meta %}
 {% block content %}
     <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-18" x-data>
-        {% if has_subscription or subscription_pending %}
+        {% if has_product_access %}
             <div class="flex flex-col gap-6 border-b border-gray-950/10 pb-10 sm:flex-row sm:items-end sm:justify-between dark:border-white/10">
                 <div>
                     <h1 class="max-w-[20ch] text-4xl font-semibold tracking-tight text-balance text-gray-950 dark:text-gray-100">Your sites</h1>
                     <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">See what CiteGuild has indexed and the links detected for each site.</p>
                 </div>
-                {% if has_subscription %}
+                {% if has_product_access %}
                     <button type="button"
                             class="app-button-primary"
                             data-open-add-site
@@ -19,7 +19,7 @@
                 {% endif %}
             </div>
         {% endif %}
-        {% if has_subscription %}
+        {% if has_product_access %}
             <section class="mt-8 border-b border-gray-950/10 pb-8 dark:border-white/10"
                      aria-labelledby="connect-agent-heading">
                 <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -52,48 +52,7 @@
                 </div>
             </section>
         {% endif %}
-        {% if subscription_pending %}
-            <section class="mt-10 border-y border-amber-700/20 py-7"
-                     aria-labelledby="subscription-pending-heading"
-                     aria-live="polite">
-                <h2 id="subscription-pending-heading"
-                    class="text-2xl font-semibold tracking-tight">Confirming your subscription</h2>
-                <p class="app-text-muted mt-3">Stripe is confirming access. This normally takes a few seconds.</p>
-                <a href="{% url 'home' %}" class="app-button-secondary mt-5">Check again</a>
-            </section>
-        {% elif not has_subscription %}
-            <section class="@container py-4 sm:py-8" aria-labelledby="subscribe-heading">
-                <h1 id="subscribe-heading"
-                    class="max-w-[20ch] text-4xl font-semibold tracking-tight text-balance">Add your first site</h1>
-                <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">Membership lets you submit sitemap-backed sites and makes eligible articles available when writing agents need a relevant source.</p>
-                <form method="post"
-                      action="{% url 'user_upgrade_checkout_session' %}"
-                      class="mt-6">
-                    {% csrf_token %}
-                    <button type="submit" class="app-button-primary">Subscribe for $10/month</button>
-                </form>
-                <dl class="mt-12 grid border-y border-gray-950/10 @3xl:grid-cols-3 dark:border-white/10">
-                    <div class="py-5 @3xl:pr-6">
-                        <dt class="font-medium text-gray-700 dark:text-gray-200">Membership</dt>
-                        <dd class="mt-1 tabular-nums text-gray-500 dark:text-gray-400">
-                            $10 monthly · no trial
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-950/10 py-5 @3xl:border-l @3xl:border-t-0 @3xl:px-6 dark:border-white/10">
-                        <dt class="font-medium text-gray-700 dark:text-gray-200">Sites</dt>
-                        <dd class="mt-1 text-gray-500 dark:text-gray-400">
-                            Unlimited legitimate sites
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-950/10 py-5 @3xl:border-l @3xl:border-t-0 @3xl:pl-6 dark:border-white/10">
-                        <dt class="font-medium text-gray-700 dark:text-gray-200">Setup</dt>
-                        <dd class="mt-1 text-gray-500 dark:text-gray-400">
-                            Start with one sitemap URL
-                        </dd>
-                    </div>
-                </dl>
-            </section>
-        {% else %}
+        {% if has_product_access %}
             <section class="mt-10" aria-labelledby="site-list-heading">
                 <h2 id="site-list-heading" class="sr-only">Site details</h2>
                 {% if projects %}

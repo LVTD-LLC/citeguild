@@ -207,7 +207,7 @@ def test_search_reauthorizes_active_members_and_applies_language_filter(
 
 
 @pytest.mark.django_db
-def test_search_enforces_subscription_input_and_limit_bounds(profile, search_client):
+def test_search_enforces_active_account_input_and_limit_bounds(profile, search_client):
     from apps.search.service import SearchError, SearchService
 
     service = SearchService(
@@ -239,9 +239,12 @@ def test_search_enforces_subscription_input_and_limit_bounds(profile, search_cli
 
     profile.stripe_subscription_status = "canceled"
     profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    service.search(profile=profile, query="valid query")
+    profile.user.is_active = False
+    profile.user.save(update_fields=["is_active"])
     with pytest.raises(SearchError) as raised:
         service.search(profile=profile, query="valid query")
-    assert raised.value.code == "subscription_required"
+    assert raised.value.code == "account_inactive"
 
 
 @pytest.mark.django_db

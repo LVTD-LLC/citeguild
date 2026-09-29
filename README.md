@@ -1,5 +1,9 @@
 # CiteGuild
 
+Membership is free and invitation-only. Share your reusable invitation link from Settings.
+See [membership and invitations](docs/invitations.md); legacy Stripe configuration below
+is retained for existing invoices and subscriptions, not new checkout or access gates.
+
 AI-native editorial source network for relevant agent-discovered citations
 
 Product definition: [CiteGuild — AI-Native Editorial Link Network](https://outline.gregagi.com/doc/citeguild-ai-native-editorial-link-network-ss3kILTcjB).

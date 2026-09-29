@@ -22,6 +22,14 @@
                   action="{% url 'account_signup' %}">
                 {% csrf_token %}
                 {{ form.non_field_errors | safe }}
+                <div>
+                    <label for="id_invitation_code" class="block text-sm font-medium">Invitation code</label>
+                    {% render_field form.invitation_code class="app-input mt-2 block w-full" autocomplete="off" %}
+                    {% for error in form.invitation_code.errors %}
+                        <p class="mt-2 text-sm text-red-700 dark:text-red-300">{{ error }}</p>
+                    {% endfor %}
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Free to use. Ask an existing member for an invitation code or link.</p>
+                </div>
                 <input type="hidden" name="remember" value="true" />
                 <div class="-space-y-px rounded-md shadow-sm">
                     <div>

@@ -80,8 +80,8 @@ class ProjectService:
     @staticmethod
     def _locked_active_owner(owner: Profile):
         owner = Profile.objects.select_for_update().get(pk=owner.pk)
-        if not owner.has_active_subscription:
-            raise PermissionDenied("An active subscription is required to manage sites.")
+        if not owner.has_product_access:
+            raise PermissionDenied("An active account is required to manage sites.")
         return owner
 
     @staticmethod

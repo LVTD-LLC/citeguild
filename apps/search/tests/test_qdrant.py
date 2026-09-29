@@ -329,10 +329,10 @@ def test_search_requires_authorized_scope_and_applies_filters(profile):
         == []
     )
 
-    # Qdrant's point may lag behind billing and article changes. PostgreSQL is
+    # Qdrant's point may lag behind account and article changes. PostgreSQL is
     # authoritative even when the caller's project scope is stale.
-    profile.stripe_subscription_status = "canceled"
-    profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    profile.user.is_active = False
+    profile.user.save(update_fields=["is_active"])
     assert (
         semantic_search(
             [1.0, 0.0, 0.0],
@@ -366,8 +366,8 @@ def test_search_requires_authorized_scope_and_applies_filters(profile):
         == []
     )
 
-    profile.stripe_subscription_status = "active"
-    profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+    profile.user.is_active = True
+    profile.user.save(update_fields=["is_active"])
     article.content_hash = "0" * 64
     article.save(update_fields=["content_hash", "updated_at"])
     assert (

@@ -44,8 +44,10 @@ def test_project_api_validates_and_queues_one_initial_sync(client, profile, vali
 
 
 @pytest.mark.django_db
-def test_project_api_requires_subscription_before_fetch(client, profile, monkeypatch):
+def test_project_api_rejects_disabled_account_before_fetch(client, profile, monkeypatch):
     api_key = profile.rotate_api_key()
+    profile.user.is_active = False
+    profile.user.save(update_fields=["is_active"])
     fetch = pytest.fail
     monkeypatch.setattr("apps.core.sitemap_submission.validate_sitemap", fetch)
 
@@ -56,12 +58,7 @@ def test_project_api_requires_subscription_before_fetch(client, profile, monkeyp
         HTTP_X_API_KEY=api_key,
     )
 
-    assert response.status_code == 403
-    assert response.json() == {
-        "code": "subscription_required",
-        "message": "An active subscription is required to add a site.",
-        "retryable": False,
-    }
+    assert response.status_code == 401
 
 
 @pytest.mark.django_db

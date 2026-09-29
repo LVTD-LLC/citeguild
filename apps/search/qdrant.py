@@ -301,9 +301,7 @@ def _authorized_search_hits(
     authorized_project_uuids: set[UUID],
     limit: int,
 ) -> list[ArticleSearchHit]:
-    eligible_owner = Q(project__owner__stripe_subscription_status__in=("active", "past_due"))
-    if settings.ENVIRONMENT == "prod":
-        eligible_owner |= Q(project__owner__user__is_superuser=True)
+    eligible_owner = Q(project__owner__user__is_active=True)
     authorized_articles = {
         article.uuid: article
         for article in ARTICLE_OBJECTS.filter(
