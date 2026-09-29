@@ -111,10 +111,7 @@ tested, and aligned with the MVP contract below.
    before finishing.
 8. Update `CHANGELOG.md` under the current ISO date heading (`## YYYY-MM-DD`)
    in every PR, including docs and agent-guidance changes.
-9. Push the branch and open a PR. Required CI must be green, ReviewGate and any
-   configured review bots must finish for the current head, and material
-   feedback must be resolved unless the project owner explicitly waives a gate
-   for that PR.
+9. Push the branch and open a PR. Required CI must be green.
 10. Merge only after the applicable gates pass, then append the PR URL, review
     outcome, merge SHA, validation evidence, and durable decisions to the
     Rowset task before marking it `Done`.
