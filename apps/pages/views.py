@@ -72,6 +72,9 @@ class SignupTrackingMixin:
 
     def _track_signup(self):
         user = self.user
+        if user is None:
+            # Allauth intentionally hides whether an email is already registered.
+            return
         profile = user.profile
         if has_analytics_consent(self.request):
             track_event(

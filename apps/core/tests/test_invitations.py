@@ -187,3 +187,21 @@ def test_invitation_can_be_reused(client, invitation, monkeypatch):
         assert response.status_code == 302
         assert User.objects.filter(email=f"invited-{number}@example.com").exists()
         client.logout()
+
+
+def test_existing_email_signup_with_invite_is_handled_without_duplicate(
+    client, invitation, monkeypatch
+):
+    monkeypatch.setattr("citeguild.adapters.CustomAccountAdapter.send_mail", lambda *a, **kw: None)
+    email = invitation.owner.user.email
+    before = User.objects.filter(email=email).count()
+    response = client.post(
+        reverse("account_signup"),
+        {
+            "email": email,
+            "password1": "A-secure-password-1928!",
+            "invitation_code": str(invitation.code),
+        },
+    )
+    assert response.status_code in {200, 302}
+    assert User.objects.filter(email=email).count() == before
