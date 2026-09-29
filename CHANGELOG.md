@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
+## 2026-09-29
+
+- Record immutable daily UTC snapshots of Domain Rating, indexed pages, incoming/outgoing links and unique domains. Add owner-scoped 30/90/365-day history charts and accessible values on site details; unknown values and missed days remain gaps.
+
 ## 2026-09-28
 
 ### Changed

@@ -43,6 +43,7 @@ from apps.core.forms import (
     SiteRenameForm,
 )
 from apps.core.funnel_analytics import AGENT_CREDENTIAL_CREATED, track_funnel_event
+from apps.core.metric_history import metric_history
 from apps.core.models import Profile, Project, StripeWebhookEvent
 from apps.core.projects import ProjectHostConflict, ProjectService
 from apps.core.sitemap_details import SitemapDetailsService
@@ -297,6 +298,7 @@ def _sitemap_details_context(request, profile, project_uuid, *, update_form=None
     return {
         "details": details,
         "project": project,
+        "metric_history": metric_history(project, request.GET.get("history_days")),
         "update_form": update_form
         or SitemapUpdateForm(initial={"name": project.name, "sitemap_url": project.sitemap_url}),
         "delete_form": delete_form or SitemapDeleteForm(project_name=project.name),
