@@ -7,7 +7,16 @@ with release sections grouped by ISO 8601 date headings (`## YYYY-MM-DD`).
 
 ## 2026-09-29
 
+### Added
+
 - Record immutable daily UTC snapshots of Domain Rating, indexed pages, incoming/outgoing links and unique domains. Add owner-scoped 30/90/365-day history charts and accessible values on site details; unknown values and missed days remain gaps.
+
+### Fixed
+
+- Stabilized dashboard table column widths, truncated long sitemap URLs, and
+  kept domain counts and sync timestamps on one line. Compact indexing-history
+  summaries retain their full breakdown on hover; mobile scrolling stays within
+  the table.
 
 ## 2026-09-28
 

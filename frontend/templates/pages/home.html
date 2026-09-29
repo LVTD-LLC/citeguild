@@ -101,9 +101,18 @@
                          role="region"
                          aria-labelledby="site-list-heading"
                          tabindex="0">
-                        <table class="w-full min-w-[64rem] text-left text-base sm:text-sm">
+                        <table class="w-full min-w-[72rem] table-fixed text-left text-sm">
                             <caption class="sr-only">Your projects, indexing status, and network links</caption>
-                            <thead class="bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-200">
+                            <colgroup>
+                                <col>
+                                <col class="w-36">
+                                <col class="w-48">
+                                <col class="w-28">
+                                <col class="w-28">
+                                <col class="w-52">
+                                <col class="w-36">
+                            </colgroup>
+                            <thead class="whitespace-nowrap bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-200">
                                 <tr>
                                     <th scope="col" class="px-4 py-3 font-semibold">Project</th>
                                     <th scope="col" class="px-4 py-3 font-semibold">Domain Rating</th>
@@ -116,14 +125,16 @@
                             </thead>
                             <tbody class="divide-y divide-gray-950/10 dark:divide-white/10">
                                 {% for project in projects %}
-                                    <tr class="align-top">
-                                        <th scope="row" class="min-w-64 max-w-xs px-4 py-4 font-normal">
+                                    <tr class="align-middle hover:bg-gray-50/70 dark:hover:bg-gray-900/50">
+                                        <th scope="row" class="px-4 py-4 font-normal">
                                             <a href="{% url 'sitemap_details' project.uuid %}"
-                                               class="app-focus break-words font-semibold hover:underline">{{ project.name }}</a>
+                                               class="app-focus block truncate font-semibold hover:underline"
+                                               title="{{ project.name }}">{{ project.name }}</a>
                                             <a href="{{ project.normalized_sitemap_url }}"
-                                               class="app-focus mt-1 block break-all text-green-700 hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+                                               class="app-focus mt-1 block truncate text-xs text-green-700 hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
                                                target="_blank"
-                                               rel="noopener noreferrer">{{ project.normalized_sitemap_url }}</a>
+                                               rel="noopener noreferrer"
+                                               title="{{ project.normalized_sitemap_url }}">{{ project.normalized_sitemap_url }}</a>
                                         </th>
                                         <td class="whitespace-nowrap px-4 py-4">
                                             <a href="https://ahrefs.com/"
@@ -137,7 +148,8 @@
                                         <td class="px-4 py-4 tabular-nums">
                                             <p class="font-semibold">{{ project.active_article_count }}</p>
                                             {% if project.inactive_article_count %}
-                                                <p class="mt-2 text-base text-gray-500 sm:text-sm dark:text-gray-400">
+                                                <p class="mt-1 truncate text-xs text-gray-500 dark:text-gray-400"
+                                                   title="{{ project.inactive_article_count }} inactive in history {% if project.missing_article_count %}· {{ project.missing_article_count }} missing from sitemap{% endif %} {% if project.unavailable_article_count %}· {{ project.unavailable_article_count }} unavailable{% endif %} {% if project.excluded_article_count %}· {{ project.excluded_article_count }} excluded by page{% endif %}">
                                                     {{ project.inactive_article_count }} inactive in history
                                                     {% if project.missing_article_count %}· {{ project.missing_article_count }} missing from sitemap{% endif %}
                                                     {% if project.unavailable_article_count %}· {{ project.unavailable_article_count }} unavailable{% endif %}
@@ -147,17 +159,17 @@
                                         </td>
                                         <td class="whitespace-nowrap px-4 py-4 tabular-nums">
                                             <p class="font-semibold">{{ project.detected_links_given_count }}</p>
-                                            <p class="app-text-muted mt-1">{{ project.linked_domain_count }} domain{{ project.linked_domain_count|pluralize }}</p>
+                                            <p class="app-text-muted mt-1 whitespace-nowrap text-xs">{{ project.linked_domain_count }} domain{{ project.linked_domain_count|pluralize }}</p>
                                         </td>
                                         <td class="whitespace-nowrap px-4 py-4 tabular-nums">
                                             <p class="font-semibold">{{ project.detected_links_received_count }}</p>
-                                            <p class="app-text-muted mt-1">{{ project.linking_domain_count }} domain{{ project.linking_domain_count|pluralize }}</p>
+                                            <p class="app-text-muted mt-1 whitespace-nowrap text-xs">{{ project.linking_domain_count }} domain{{ project.linking_domain_count|pluralize }}</p>
                                         </td>
-                                        <td class="min-w-48 px-4 py-4">
+                                        <td class="px-4 py-4">
                                             <span class="inline-flex rounded-full px-2.5 py-1 font-semibold {% if project.state == 'active' %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200{% endif %}">
                                                 {{ project.get_state_display }}
                                             </span>
-                                            <p class="app-text-muted mt-2">
+                                            <p class="app-text-muted mt-1 whitespace-nowrap text-xs">
                                                 {% if project.state == 'suspended' %}
                                                     Indexing paused
                                                 {% elif project.latest_sync_completed_at %}
@@ -175,7 +187,7 @@
                                                       action="{% url 'retry_site_sync' project.uuid %}"
                                                       class="mt-3">
                                                     {% csrf_token %}
-                                                    <p class="text-base text-red-700 sm:text-sm dark:text-red-300">Last sync failed: {% firstof project.latest_sync_error_code project.last_error_code %}</p>
+                                                    <p class="break-words text-xs text-red-700 dark:text-red-300">Last sync failed: {% firstof project.latest_sync_error_code project.last_error_code %}</p>
                                                     <button type="submit" class="app-button-secondary mt-2">Retry sync</button>
                                                 </form>
                                             {% endif %}
