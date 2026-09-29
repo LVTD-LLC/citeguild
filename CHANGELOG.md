@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-29
+
+### Removed
+
+- Remove this repository's ReviewGate PR-review GitHub Actions workflow; retain application CI and deployment workflows.
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

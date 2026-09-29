@@ -179,7 +179,5 @@ CI runs `make python-quality`, `make type-check`, `make frontend-check`,
 ## Ship Contract
 
 Pull current `main`, branch, implement, test, update `CHANGELOG.md`, push, and
-open a PR. Never commit directly to `main`. Required CI and current-head
-ReviewGate/configured review feedback must pass and material comments must be
-resolved unless the owner explicitly waives a gate for that PR. Record the PR,
+open a PR. Never commit directly to `main`. Required CI must pass. Record the PR,
 review outcome, merge SHA, and validation evidence on the live Rowset task.

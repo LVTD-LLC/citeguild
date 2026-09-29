@@ -29,7 +29,6 @@ development guidance.
 - Tool-neutral `AGENTS.md` plus focused `PRODUCT.md`, `TECH.md`, `STRUCTURE.md`,
   `DESIGN.md`, and `ANALYTICS.md` contracts for humans and coding agents.
 
-- ReviewGate AI reviews for same-repository pull requests.
 
 
 - Stripe Checkout, Billing Portal links, and defensive webhook handling.
@@ -60,7 +59,6 @@ development guidance.
 - [Frontend](#frontend)
 - [AI-Assisted Development](#ai-assisted-development)
 
-- [ReviewGate AI Reviews](#reviewgate-ai-reviews)
 
 - [Available Commands](#available-commands)
 - [Testing And Quality](#testing-and-quality)
@@ -817,18 +815,6 @@ structural findings, including clone detection, for refactoring passes.
 
 Use `docs/quality.md` before PRs and when choosing targeted checks for a
 touched area.
-
-
-## ReviewGate AI reviews
-
-The generated `.github/workflows/reviewgate.yml` reviews same-repository pull
-requests with ReviewGate. Add `OPENROUTER_API_KEY` as a GitHub Actions
-repository secret before relying on the check.
-
-ReviewGate runs when a pull request is opened, updated, reopened, or marked
-ready for review. Repository owners, members, and collaborators can request a
-fresh review by commenting `@reviewgate review` on an open pull request.
-
 
 
 ### Pydantic AI model presets

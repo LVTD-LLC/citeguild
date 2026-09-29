@@ -9,7 +9,7 @@
 3. Refresh current competitor facts before commercial alternatives or comparison pages.
 4. Execute one deployable phase per branch and PR.
 5. Run the phase quality gates, update the link inventory, and mark the tracker row complete in the same PR.
-6. Follow the repo ship contract: changelog, CI, ReviewGate/current review bots, merge, and production verification.
+6. Follow the repo ship contract: changelog, CI, merge, and production verification.
 
 ## Phase Status Tracker
 
