@@ -52,7 +52,7 @@ This guide compares seven current options using the same criteria: who sends the
 | MentionMatch | B2B and SaaS expertise | Writer request → expertise matching → email response | Free | Narrower subject coverage than general media services |
 | SourceBottle | Regional and lifestyle call-outs | Public call-out → targeted email alert → response | Free for call-outs and general subscribers | Interface and opportunity mix may not suit every beat |
 | ResponseSource | UK PR and communications teams | Verified enquiry → category feed → response | From £625 per category/year, excluding VAT | Paid annual category subscriptions |
-| CiteGuild | Publishers who want agents to discover existing articles | Sitemap → persistent index → agent retrieval | $10/month | Not a journalist-request or pitching service |
+| CiteGuild | Publishers who want agents to discover existing articles | Sitemap → persistent index → agent retrieval | Free, invitation-only | Not a journalist-request or pitching service |
 
 Pricing and product details were checked against official pages on August 5, 2026. Plans change; verify the linked pricing page before buying.
 
@@ -159,7 +159,7 @@ Members submit public sitemaps. CiteGuild indexes eligible articles and exposes 
 
 **Best for:** SaaS companies, developer-tool publishers, independent blogs, and content teams that already publish useful articles and use writing agents.
 
-**Pricing:** [CiteGuild membership is $10 per month](https://citeguild.lvtd.dev/pricing) for unlimited legitimate sitemap-backed sites. There is no free plan or trial.
+**Pricing:** [CiteGuild membership is free and invitation-only](https://citeguild.lvtd.dev/pricing) for unlimited legitimate sitemap-backed sites. Ask an existing member for an invitation.
 
 **Why choose it:** One sitemap submission creates an always-on source surface. Articles can be found after the moment of publication, without waiting for a journalist to send a matching request. The [relevance-ranked agent retrieval](https://citeguild.lvtd.dev/#agent-retrieval) workflow fits directly into assisted writing.
 

@@ -57,6 +57,19 @@ class LandingPageView(TemplateView):
 class SignupTrackingMixin:
     tracking_source_name = "signup"
 
+    def get_initial(self):
+        from apps.core.invitations import INVITATION_SESSION_KEY, valid_invitation
+
+        initial = super().get_initial()
+        code = self.request.GET.get("invite")
+        if code is not None:
+            self.request.session.pop(INVITATION_SESSION_KEY, None)
+            invitation = valid_invitation(code)
+            if invitation:
+                self.request.session[INVITATION_SESSION_KEY] = str(invitation.code)
+        initial["invitation_code"] = self.request.session.get(INVITATION_SESSION_KEY, "")
+        return initial
+
     def _track_signup(self):
         user = self.user
         profile = user.profile

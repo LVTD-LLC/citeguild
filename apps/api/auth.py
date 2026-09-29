@@ -38,7 +38,7 @@ def get_profile_for_api_key(key: str) -> Profile | None:
         )
         return None
 
-    if not profile.check_api_key(key):
+    if not profile.user.is_active or not profile.check_api_key(key):
         logger.warning(
             "api.authentication.completed",
             extra={

@@ -17,30 +17,28 @@ useful sources; it does not buy, require, or guarantee a link.
 
 ## Customers and Users
 
-- Paying customers are founders, publishers, content teams, agencies, and
+- Members are founders, publishers, content teams, agencies, and
   operators with one or more legitimate sites.
 - The primary active user is often a writing agent: Codex or Claude Code via
   MCP, OpenClaw or Hermes via CLI, and other automations via API.
 - A customer may submit sites without connecting an agent. Onboarding should
   still make agent connection the obvious next step after the first index.
 
-## Commercial Contract
+## Membership Contract
 
-- One subscription: **$10 per month**, monthly billing only.
-- No free plan, free trial, annual plan, premium/agency tier, per-site price, or
-  backlink/placement purchase.
-- An active subscription is required before a site can be added.
-- Each subscribed account can add unlimited projects/sites. Operational
-  anti-abuse, crawl-rate, storage, and security controls are allowed, but must
-  not silently become paid tiers.
-- Customers cancel in Stripe's hosted billing portal. A cancellation scheduled
-  for period end keeps access through that paid period. Access ends when Stripe
-  reports the subscription canceled, unpaid, or expired; `past_due` receives
-  Stripe's normal retry grace period.
+- Membership is free; payment is not required for any product feature.
+- New registrations require a valid reusable invitation code/link from an active
+  existing member. Each member's code and link are available in Settings.
+- Existing accounts retain access without entering an invitation.
+- Each active account may add unlimited legitimate sitemap-backed sites, subject
+  to anti-abuse, crawl-rate, storage, and security controls.
+- New Stripe checkouts are disabled. Legacy subscription/invoice management and
+  idempotent webhooks remain available; billing status does not gate access.
+- `ALLOW_SIGNUPS=False` remains an operator-wide registration pause.
 
 ## Core Loop
 
-1. A person signs up and starts the $10 monthly subscription.
+1. A person signs up using a member invitation and verifies their email.
 2. They submit a sitemap URL; CiteGuild infers the initial site name from the
    normalized host and lets them rename it later. Sitemap support is mandatory
    for MVP.
@@ -70,7 +68,7 @@ useful sources; it does not buy, require, or guarantee a link.
   readable and JSON output.
 - **API:** authenticated semantic search plus account/site operations needed by
   the dashboard and other automations.
-- **Dashboard:** subscription state, site CRUD, sitemap/sync state, page counts,
+- **Dashboard:** invitation settings, site CRUD, sitemap/sync state, page counts,
   recent sync errors, Copy Prompt onboarding, and detected links given/received.
 
 All search surfaces should share one service-level contract. Search only active
@@ -81,8 +79,8 @@ source metadata, and never auto-insert a result.
 
 In scope:
 
-- Account creation and the single subscription gate.
-- Unlimited sitemap-backed projects/sites per subscribed account.
+- Invitation-only account creation and free membership.
+- Unlimited sitemap-backed projects/sites per active account.
 - Sitemap and sitemap-index parsing.
 - Safe HTML fetch, main-content extraction, metadata, canonicalization, and
   content hashing.
@@ -106,10 +104,10 @@ Explicitly deferred:
 
 ## Success Criteria
 
-Measure paid accounts, sites per paid account, sitemap indexing success, active
+Measure active accounts, sites per active account, sitemap indexing success, active
 articles, searches per connected account/agent, selected/used results when that
 signal exists, detected citations and participating sites, citation retention,
-subscription retention, and crawl/embedding/storage cost per account and page.
+member retention, and crawl/embedding/storage cost per account and page.
 
 The decisive validation question is whether writing agents repeatedly search
 CiteGuild and create a growing graph of genuinely relevant citations—not only

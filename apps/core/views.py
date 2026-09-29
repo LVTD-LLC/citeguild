@@ -1,6 +1,5 @@
 import logging
-import uuid
-from urllib.parse import urlencode, urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit
 
 import stripe
 from allauth.account.internal.flows.email_verification import (
@@ -14,7 +13,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
@@ -27,12 +26,9 @@ from django.views.generic import TemplateView, UpdateView
 
 from apps.core.admin_network import AdminNetworkOverviewService
 from apps.core.analytics import (
-    CHECKOUT_STARTED,
     has_analytics_consent,
     track_account_deleted_event,
-    track_event,
 )
-from apps.core.billing import MONTHLY_PRICE, validate_monthly_price
 from apps.core.crawl_jobs import retry_project_sync
 from apps.core.dashboard import DashboardService
 from apps.core.forms import (
@@ -44,7 +40,7 @@ from apps.core.forms import (
 )
 from apps.core.funnel_analytics import AGENT_CREDENTIAL_CREATED, track_funnel_event
 from apps.core.metric_history import metric_history
-from apps.core.models import Profile, Project, StripeWebhookEvent
+from apps.core.models import MemberInvitation, Profile, Project, StripeWebhookEvent
 from apps.core.projects import ProjectHostConflict, ProjectService
 from apps.core.sitemap_details import SitemapDetailsService
 from apps.core.sitemap_submission import SitemapSubmissionError, SitemapSubmissionService
@@ -185,18 +181,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         profile, _created = Profile.objects.get_or_create(user=self.request.user)
-        payment_status = self.request.GET.get("payment")
-        if payment_status == "success":
-            if profile.has_active_subscription:
-                messages.success(self.request, "Your subscription is active. Add your first site.")
-                context["show_confetti"] = True
-            else:
-                context["subscription_pending"] = True
-        elif payment_status == "failed":
-            messages.error(self.request, "Checkout was not completed. You can try again.")
-
         context["profile"] = profile
-        context["has_subscription"] = profile.has_active_subscription
+        context["has_product_access"] = profile.has_product_access
         dashboard = DashboardService.for_owner(
             profile,
             site_page=self.request.GET.get("site_page", 1),
@@ -212,8 +198,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         profile, _created = Profile.objects.get_or_create(user=request.user)
-        if not profile.has_active_subscription:
-            messages.error(request, "Subscribe before adding a site.")
+        if not profile.has_product_access:
+            messages.error(request, "An active account is required to add a site.")
             return redirect("pricing")
 
         form = SiteCreateForm(request.POST)
@@ -235,13 +221,13 @@ class HomeView(LoginRequiredMixin, TemplateView):
                         "event.name": "project.create.completed",
                         "user_id": request.user.id,
                         "profile_id": profile.id,
-                        "operation.status": "subscription_became_inactive",
+                        "operation.status": "account_became_inactive",
                         "outcome": "failure",
                     },
                 )
                 messages.error(
                     request,
-                    "Your subscription became inactive. Update billing before adding a site.",
+                    "Your account is inactive.",
                 )
                 return redirect("pricing")
             else:
@@ -422,7 +408,12 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             user=user,
             type=Authenticator.Type.RECOVERY_CODES,
         ).exists()
-        context["has_subscription"] = profile.has_active_subscription
+        invitation, _ = MemberInvitation.objects.get_or_create(owner=profile)
+        context["invitation_code"] = str(invitation.code)
+        context["invitation_url"] = build_absolute_public_url(
+            reverse("account_signup") + "?invite=" + str(invitation.code)
+        )
+        context["has_legacy_billing"] = bool(profile.stripe_customer_id)
         context["api_key_prefix"] = profile.api_key_prefix
         context["has_api_key"] = profile.has_api_key
         context["new_api_key"] = self.request.session.pop(NEW_API_KEY_SESSION_KEY, "")
@@ -595,120 +586,8 @@ def delete_account(request):
 @login_required
 @require_POST
 def create_checkout_session(request):
-    user = request.user
-    profile = user.profile
-    price_id = settings.STRIPE_PRICE_ID_MONTHLY
-    if not price_id:
-        logger.warning(
-            "stripe.checkout.create.completed",
-            extra={
-                "event.name": "stripe.checkout.create.completed",
-                "user_id": user.id,
-                "profile_id": profile.id,
-                "operation.status": "price_not_configured",
-                "outcome": "failure",
-            },
-        )
-        messages.error(request, "Unable to find pricing for the selected plan.")
-        return redirect("pricing")
-
-    if profile.has_active_subscription:
-        return redirect("home")
-
-    try:
-        price = stripe.Price.retrieve(
-            price_id, expand=["product"], stripe_context=settings.STRIPE_CONTEXT or None
-        )
-        validate_monthly_price(price)
-        customer = get_or_create_stripe_customer(profile, user)
-    except (stripe.error.StripeError, ImproperlyConfigured) as exc:
-        logger.error(
-            "stripe.customer.ensure.completed",
-            extra={
-                "event.name": "stripe.customer.ensure.completed",
-                "profile_id": profile.id,
-                "outcome": "failure",
-                "error.type": exc.__class__.__name__,
-            },
-            exc_info=True,
-        )
-        messages.error(request, "Unable to start checkout. Please try again.")
-        return redirect("pricing")
-
-    base_success_url = request.build_absolute_uri(reverse("home"))
-    base_cancel_url = request.build_absolute_uri(reverse("home"))
-
-    success_params = {"payment": "success"}
-    success_url = f"{base_success_url}?{urlencode(success_params)}"
-
-    cancel_params = {"payment": "failed"}
-    cancel_url = f"{base_cancel_url}?{urlencode(cancel_params)}"
-
-    session_params = {
-        "customer": customer.id,
-        "payment_method_types": ["card"],
-        "automatic_tax": {"enabled": True},
-        "line_items": [
-            {
-                "price": price_id,
-                "quantity": 1,
-            }
-        ],
-        "mode": "subscription",
-        "success_url": success_url,
-        "cancel_url": cancel_url,
-        "customer_update": {
-            "address": "auto",
-        },
-        "client_reference_id": str(user.id),
-        "metadata": {
-            "user_id": user.id,
-            "profile_id": profile.id,
-            "price_id": price_id,
-            "plan": MONTHLY_PRICE.plan,
-        },
-        "subscription_data": {
-            "metadata": {
-                "user_id": user.id,
-                "profile_id": profile.id,
-                "price_id": price_id,
-                "plan": MONTHLY_PRICE.plan,
-            }
-        },
-    }
-
-    try:
-        idempotency_key = request.session.setdefault(
-            "stripe_checkout_idempotency_key", uuid.uuid4().hex
-        )
-        checkout_session = stripe.checkout.Session.create(
-            **session_params,
-            idempotency_key=f"citeguild-checkout-{profile.id}-{idempotency_key}",
-            stripe_context=settings.STRIPE_CONTEXT or None,
-        )
-    except stripe.error.StripeError as exc:
-        logger.error(
-            "stripe.checkout.create.completed",
-            extra={
-                "event.name": "stripe.checkout.create.completed",
-                "profile_id": profile.id,
-                "plan": MONTHLY_PRICE.plan,
-                "outcome": "failure",
-                "error.type": exc.__class__.__name__,
-            },
-            exc_info=True,
-        )
-        messages.error(request, "Unable to start checkout. Please try again.")
-        return redirect("pricing")
-
-    if has_analytics_consent(request):
-        track_event(
-            profile,
-            CHECKOUT_STARTED,
-            {"plan": MONTHLY_PRICE.plan, "checkout_mode": "subscription"},
-            source_function="create_checkout_session",
-        )
-    return HttpResponse(status=303, headers={"Location": checkout_session.url})
+    messages.info(request, "CiteGuild is free. No payment is required.")
+    return redirect("home")
 
 
 @login_required

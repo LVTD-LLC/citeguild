@@ -7,14 +7,14 @@ canonical event in the same PR.
 
 ## Measurement Goal
 
-The decisive question is whether paid members supply legitimate articles and
+The decisive question is whether members supply legitimate articles and
 writing agents repeatedly retrieve useful sources, producing a growing graph
 of detected citations at sustainable crawl and embedding cost.
 
 Primary funnel:
 
 1. Account signs up.
-2. Subscription becomes active on the single $10 monthly plan.
+2. Invitation is validated before account creation; payment is not required.
 3. First sitemap-backed site is added.
 4. First sitemap sync completes and at least one article becomes searchable.
 5. Copy Prompt is copied or an MCP/CLI/API integration first searches.
@@ -27,8 +27,8 @@ detected network activity.
 
 ## Canonical Metrics
 
-- Active paid accounts and subscription retention.
-- Sites added per active paid account.
+- Active active accounts and subscription retention.
+- Sites added per active active account.
 - Sitemap sync success rate and time to first searchable article.
 - Active/inactive article counts and content-change/index refresh rate.
 - Search queries and querying days per account, agent, and interface.

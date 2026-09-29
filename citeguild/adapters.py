@@ -22,6 +22,12 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         """Allow operators to pause new registrations without affecting existing users."""
         return getattr(settings, "ALLOW_SIGNUPS", True) and super().is_open_for_signup(request)
 
+    def save_user(self, request, user, form, commit=True):
+        from apps.core.invitations import require_invitation
+
+        require_invitation(request)
+        return super().save_user(request, user, form, commit=commit)
+
     def send_confirmation_mail(self, request, emailconfirmation, signup):
         """
         Override to track email confirmation sends.
@@ -66,10 +72,19 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def is_open_for_signup(self, request, sociallogin):
         """Mirror email signup gating for social-account auto-signups."""
-        return getattr(settings, "ALLOW_SIGNUPS", True) and super().is_open_for_signup(
-            request,
-            sociallogin,
+        from apps.core.invitations import request_invitation
+
+        if not getattr(settings, "ALLOW_SIGNUPS", True):
+            return False
+        return bool(request_invitation(request)) and super().is_open_for_signup(
+            request, sociallogin
         )
+
+    def save_user(self, request, sociallogin, form=None):
+        from apps.core.invitations import require_invitation
+
+        require_invitation(request)
+        return super().save_user(request, sociallogin, form=form)
 
     def get_connect_redirect_url(self, request, socialaccount):
         """Return users home after connecting a third-party account."""

@@ -179,20 +179,20 @@ class TestHomeView:
         assert response.url == reverse("home")
         retry.assert_called_once_with(owner=profile, project_uuid=project.uuid)
 
-    def test_unsubscribed_user_sees_checkout_not_add_site_form(self, auth_client):
+    def test_free_user_sees_add_site_form(self, auth_client):
         response = auth_client.get(reverse("home"))
         content = response.content.decode()
 
-        assert "Add your first site" in content
-        assert "Unlimited legitimate sites" in content
-        assert "Your sites" not in content
-        assert "Subscribe for $10/month" in content
-        assert 'id="add-site"' not in content
+        assert "No sites yet" in content
+        assert "Your sites" in content
+        assert "Subscribe for $10/month" not in content
+        assert 'x-ref="addSiteDialog"' in content
 
-    def test_payment_success_shows_confirmation_until_webhook_grants_access(self, auth_client):
+    def test_legacy_checkout_return_does_not_gate_access(self, auth_client):
         response = auth_client.get(reverse("home"), {"payment": "success"})
 
-        assert "Confirming your subscription" in response.content.decode()
+        assert "Your sites" in response.content.decode()
+        assert "Confirming your subscription" not in response.content.decode()
 
     def test_subscribed_user_sees_empty_state_and_accessible_add_site_form(
         self, auth_client, profile
@@ -225,20 +225,18 @@ class TestHomeView:
         assert project.name == "example.com"
         assert project.normalized_host == "example.com"
 
-    def test_unsubscribed_user_cannot_post_site(self, auth_client):
+    def test_free_user_can_post_site(self, auth_client):
         response = auth_client.post(
             reverse("home"),
             {"sitemap_url": "https://blocked.example/sitemap.xml"},
         )
 
         assert response.status_code == 302
-        assert response.url == reverse("pricing")
-        assert not Project.objects.exists()
+        assert response.url == reverse("home")
+        assert Project.objects.exists()
 
     @patch("apps.core.views.SitemapSubmissionService.submit", side_effect=PermissionDenied)
-    def test_subscription_race_is_logged_and_redirects_to_billing(
-        self, create_project, auth_client, profile, caplog
-    ):
+    def test_account_disabled_race_is_logged(self, create_project, auth_client, profile, caplog):
         subscribe(profile)
 
         with caplog.at_level(logging.WARNING, logger="apps.core.views"):
@@ -250,9 +248,9 @@ class TestHomeView:
 
         create_project.assert_called_once()
         assert response.redirect_chain[0][0] == reverse("pricing")
-        assert "subscription became inactive" in response.content.decode()
+        assert "account is inactive" in response.content.decode()
         record = next(item for item in caplog.records if item.msg == "project.create.completed")
-        assert record.__dict__["operation.status"] == "subscription_became_inactive"
+        assert record.__dict__["operation.status"] == "account_became_inactive"
         assert record.outcome == "failure"
 
     def test_temporary_sitemap_failure_is_visible_and_retryable(

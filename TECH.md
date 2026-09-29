@@ -16,7 +16,7 @@ PostgreSQL/Redis integration, PostHog/Sentry, server-rendered frontend, and
 CapRover app/worker deployment. Do not mistake generated example behavior for
 completed CiteGuild domain features.
 
-The target MVP adds subscription-gated sites, secure sitemap ingestion, article
+The target MVP adds member-owned sites, secure sitemap ingestion, article
 extraction, whole-article embeddings in Qdrant, shared semantic search, daily
 reconciliation, CLI access, and detected citation tracking. Implement these in
 dependency order from the live Rowset taskboard.
@@ -27,7 +27,7 @@ dependency order from the live Rowset taskboard.
 - Redis 8.6.3 and Django Q2 for background work and scheduling.
 - Django Ninja for HTTP API; FastMCP mounted at `/mcp/` for agent access.
 - Django templates, Tailwind CSS 4, HTMX, and Alpine.js; no SPA framework.
-- Stripe for the single subscription, PostHog for consented product analytics,
+- Stripe for legacy billing, PostHog for consented product analytics,
   and Sentry for content-safe operational telemetry.
 - Self-hosted Qdrant for semantic retrieval. PostgreSQL is authoritative.
 - Go 1.25-compatible, independently distributed CLI under `cli/`; tagged
@@ -41,7 +41,7 @@ Pinned versions and dependencies live in `pyproject.toml`, `uv.lock`,
 ## Domain and Data Contracts
 
 - **Account/profile:** user identity and subscription state. Stripe webhooks are
-  the server truth and must remain idempotent.
+  the billing truth and must remain idempotent; they do not grant product access.
 - **Site/project:** tenant owner, name, submitted sitemap URL, derived base
   domain, lifecycle/indexing state, and last successful sync.
 - **Article:** site, original/canonical URL, metadata, extracted content or
@@ -106,7 +106,7 @@ content to analytics/observability. Never auto-edit or publish customer content.
   time, worker concurrency, retries, and per-tenant/global crawl rates.
 - Treat XML, HTML, metadata, canonical tags, links, filenames, model text, and
   error bodies as untrusted input. Do not execute page scripts.
-- Enforce subscription and tenant isolation for management, ingestion,
+- Enforce active-account access and tenant isolation for management, ingestion,
   background jobs, and private dashboard/API state. Shared MCP/CLI/API search
   may cross tenants only over eligible active public articles; keep private
   fields out of Qdrant payloads and retrieval results.

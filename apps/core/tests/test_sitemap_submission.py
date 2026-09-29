@@ -190,7 +190,9 @@ def test_submission_enqueues_only_after_commit(
 
 
 @pytest.mark.django_db
-def test_unsubscribed_submission_does_not_fetch_or_create_site(profile):
+def test_disabled_submission_does_not_fetch_or_create_site(profile):
+    profile.user.is_active = False
+    profile.user.save(update_fields=["is_active"])
     client = RecordingFetchClient(fetch_result(b"<urlset />"))
 
     with pytest.raises(PermissionDenied):

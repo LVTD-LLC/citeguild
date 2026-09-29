@@ -6,12 +6,12 @@ from django.shortcuts import redirect
 
 
 def subscription_required(view_func):
-    """Require Stripe-confirmed paid access for server-side product views."""
+    """Require active account access for server-side product views."""
 
     @login_required
     @wraps(view_func)
     def wrapped(request, *args, **kwargs):
-        if not request.user.profile.has_active_subscription:
+        if not request.user.profile.has_product_access:
             return redirect("pricing")
         return view_func(request, *args, **kwargs)
 
@@ -19,9 +19,9 @@ def subscription_required(view_func):
 
 
 class ActiveSubscriptionRequiredMixin(LoginRequiredMixin):
-    """Reusable paywall for future site-management class-based views."""
+    """Active-account guard for site-management class-based views."""
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and not request.user.profile.has_active_subscription:
+        if request.user.is_authenticated and not request.user.profile.has_product_access:
             return redirect("pricing")
         return super().dispatch(request, *args, **kwargs)

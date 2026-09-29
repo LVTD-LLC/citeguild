@@ -46,7 +46,7 @@ def test_landing_page_explains_source_discovery_and_backlink_outcome(client):
     assert "citeguild-logo.svg" in content
     assert "data-uidotsh-pick=" not in content
     assert "https://ui.sh/ui-picker.js" not in content
-    assert "join · $10/mo" in content
+    assert "join with an invite" in content
     assert "Start for Free" not in content
     assert "Get Started" not in content
     assert "The source desk for AI writing agents" not in content
@@ -73,7 +73,7 @@ def test_landing_page_exposes_feature_anchors_and_product_schema(client):
     assert set(graph) == {"Organization", "SoftwareApplication"}
     assert graph["SoftwareApplication"]["offers"] == {
         "@type": "Offer",
-        "price": "10.00",
+        "price": "0.00",
         "priceCurrency": "USD",
         "url": "https://testserver/pricing",
         "availability": "https://schema.org/InStock",
@@ -137,7 +137,7 @@ def test_public_pages_share_the_selected_navigation_without_picker(client):
     content = response.content.decode()
     assert 'aria-label="Homepage"' in content
     assert "citeguild-logo.svg" in content
-    assert "join · $10/mo" in content
+    assert "join with an invite" in content
     assert "https://ui.sh/ui-picker.js" not in content
 
 
@@ -173,7 +173,7 @@ def test_public_policies_match_citeguild_indexing_and_editorial_behavior(client)
     assert privacy.status_code == 200
     terms_content = " ".join(terms.content.decode().split())
     privacy_content = " ".join(privacy.content.decode().split())
-    assert "$10 USD per month" in terms_content
+    assert "CiteGuild is free to use" in terms_content
     assert "does not guarantee a backlink" in terms_content
     assert "Membership never requires one member to link to another" in terms_content
     assert "Submit a site without authority" in terms_content
@@ -205,7 +205,7 @@ def test_login_page_uses_email_instead_of_username(client):
     assert 'placeholder="Username"' not in content
 
 
-def test_signup_redirects_to_email_code_verification(client, monkeypatch, settings):
+def test_signup_redirects_to_email_code_verification(client, monkeypatch, settings, member_invite):
     sent_confirmations = []
 
     def fake_send_confirmation_mail(self, request, emailconfirmation, signup):
@@ -221,6 +221,7 @@ def test_signup_redirects_to_email_code_verification(client, monkeypatch, settin
         reverse("account_signup"),
         data={
             "email": "newuser@example.com",
+            "invitation_code": str(member_invite.code),
             "password1": "strong-test-pass-123",
         },
     )
@@ -235,7 +236,9 @@ def test_signup_redirects_to_email_code_verification(client, monkeypatch, settin
     assert verification["code"]
 
 
-def test_email_verification_code_page_uses_app_styling(client, monkeypatch, settings):
+def test_email_verification_code_page_uses_app_styling(
+    client, monkeypatch, settings, member_invite
+):
     def fake_send_confirmation_mail(self, request, emailconfirmation, signup):
         pass
 
@@ -249,6 +252,7 @@ def test_email_verification_code_page_uses_app_styling(client, monkeypatch, sett
         reverse("account_signup"),
         data={
             "email": "codeuser@example.com",
+            "invitation_code": str(member_invite.code),
             "password1": "strong-test-pass-123",
         },
     )
@@ -263,7 +267,7 @@ def test_email_verification_code_page_uses_app_styling(client, monkeypatch, sett
 
 
 def test_passkey_signup_verifies_email_then_shows_styled_passkey_creation(
-    client, monkeypatch, settings
+    client, monkeypatch, settings, member_invite
 ):
     def fake_send_confirmation_mail(self, request, emailconfirmation, signup):
         pass
@@ -276,7 +280,7 @@ def test_passkey_signup_verifies_email_then_shows_styled_passkey_creation(
 
     signup_response = client.post(
         reverse("account_signup_by_passkey"),
-        data={"email": "passkey-new@example.com"},
+        data={"email": "passkey-new@example.com", "invitation_code": str(member_invite.code)},
     )
     assert signup_response.status_code == 302
     assert signup_response["Location"] == reverse("account_email_verification_sent")
@@ -317,8 +321,8 @@ def test_dashboard_does_not_show_email_confirmation_reminder(client):
     assert response.status_code == 200
     content = response.content.decode()
     assert "Your email is not yet confirmed" not in content
-    assert "Add your first site" in content
-    assert "$10 monthly · no trial" in content
+    assert "No sites yet" in content
+    assert "$10 monthly · no trial" not in content
 
 
 def test_settings_requires_email_confirmation_before_passkey_setup(client):

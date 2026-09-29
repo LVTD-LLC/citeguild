@@ -85,6 +85,8 @@ def test_monthly_price_contract_fails_closed_on_drift(field, value):
 @pytest.mark.django_db
 def test_subscription_required_redirects_inactive_user(rf, user):
     request = rf.get("/sites/new")
+    user.is_active = False
+    user.save(update_fields=["is_active"])
     request.user = user
     protected = subscription_required(lambda request: HttpResponse("ok"))
 
@@ -114,20 +116,11 @@ def test_checkout_is_fixed_post_only_contract(
     assert auth_client.get(url).status_code == 405
     response = auth_client.post(url)
 
-    assert response.status_code == 303
-    retrieve.assert_called_once_with(
-        "price_monthly",
-        expand=["product"],
-        stripe_context="acct_lvtd",
-    )
-    params = create_session.call_args.kwargs
-    assert params["mode"] == "subscription"
-    assert params["line_items"] == [{"price": "price_monthly", "quantity": 1}]
-    assert params["metadata"]["plan"] == "single_monthly"
-    assert params["subscription_data"]["metadata"]["price_id"] == "price_monthly"
-    assert params["stripe_context"] == "acct_lvtd"
-    assert "allow_promotion_codes" not in params
-    assert params["idempotency_key"].startswith("citeguild-checkout-")
+    assert response.status_code == 302
+    assert response.url == reverse("home")
+    retrieve.assert_not_called()
+    create_customer.assert_not_called()
+    create_session.assert_not_called()
 
 
 @pytest.mark.django_db

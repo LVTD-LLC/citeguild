@@ -46,3 +46,11 @@ def auth_client(client, user):
 @pytest.fixture
 def profile(user):
     return user.profile
+
+
+@pytest.fixture
+def member_invite(django_user_model):
+    from apps.core.models import MemberInvitation
+
+    inviter = django_user_model.objects.create_user(username="inviter", email="inviter@example.com")
+    return MemberInvitation.objects.create(owner=inviter.profile)

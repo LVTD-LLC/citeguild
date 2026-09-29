@@ -290,7 +290,7 @@ def _claim_due_reconciliation(project_id: int, *, now: datetime) -> tuple[bool, 
                 .first()
             )
             if project is None or (
-                project.state != ProjectStates.ACTIVE or not project.owner.has_active_subscription
+                project.state != ProjectStates.ACTIVE or not project.owner.has_product_access
             ):
                 return False, None
             due_at = reconciliation_due_at(project.uuid, _reconciliation_anchor(project))
@@ -329,13 +329,11 @@ def _claim_due_reconciliation(project_id: int, *, now: datetime) -> tuple[bool, 
 
 
 def schedule_due_sitemap_reconciliations(*, now=None, limit: int = 100) -> dict[str, int]:
-    """Claim and enqueue a bounded batch of due paid, active sites."""
+    """Claim and enqueue a bounded batch of due active sites."""
     now = now or timezone.now()
     limit = max(1, min(int(limit), 100))
     interval = timedelta(hours=settings.RECONCILE_INTERVAL_HOURS)
-    eligible_owner = Q(owner__stripe_subscription_status__in=("active", "past_due"))
-    if settings.ENVIRONMENT == "prod":
-        eligible_owner |= Q(owner__user__is_superuser=True)
+    eligible_owner = Q(owner__user__is_active=True)
     latest_daily_created_at = Subquery(
         ProjectSyncRequest.objects.filter(
             project_id=OuterRef("pk"),
@@ -404,7 +402,7 @@ def retry_project_sync(*, owner: Profile, project_uuid) -> ProjectSyncRequest:
             .select_related("owner__user", "active_sitemap_inventory__sync_request")
             .get(owner=owner, uuid=project_uuid)
         )
-        if project.state != ProjectStates.ACTIVE or not project.owner.has_active_subscription:
+        if project.state != ProjectStates.ACTIVE or not project.owner.has_product_access:
             raise PermissionDenied("This site is not eligible for synchronization.")
         sync_request = (
             ProjectSyncRequest.objects.filter(
@@ -751,7 +749,7 @@ def _index_ready_article(article: Article) -> None:
     EmbeddingService().embed_article(article_uuid=article.uuid)
     owner_id = Project.objects.values_list("owner_id", flat=True).get(pk=article.project_id)
     # Lock in Article -> Profile -> Project order. Deactivation locks Article before
-    # updating Project, while subscription and project transitions lock Profile
+    # updating Project, while account and project transitions lock Profile
     # before Project. Holding all three makes the eligibility decision linearizable
     # with the bounded Qdrant publication and avoids cross-path deadlocks.
     with transaction.atomic():
@@ -763,7 +761,7 @@ def _index_ready_article(article: Article) -> None:
             # prefetched lock target so a direct concurrent reassignment cannot
             # publish under the previous owner's eligibility.
             raise ArticleIndexingError("project_owner_changed", retryable=True)
-        if project.state != ProjectStates.ACTIVE or not owner.has_active_subscription:
+        if project.state != ProjectStates.ACTIVE or not owner.has_product_access:
             raise ProjectBecameIneligibleError
         try:
             upsert_article(article=article)

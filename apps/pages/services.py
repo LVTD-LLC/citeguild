@@ -318,7 +318,7 @@ def software_application_schema() -> dict:
         "publisher": {"@id": organization_schema()["@id"]},
         "offers": {
             "@type": "Offer",
-            "price": "10.00",
+            "price": "0.00",
             "priceCurrency": "USD",
             "url": build_absolute_public_url(reverse("pricing")),
             "availability": "https://schema.org/InStock",

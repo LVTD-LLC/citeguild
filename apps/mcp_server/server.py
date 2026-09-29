@@ -133,8 +133,8 @@ def search_member_articles(
         )
         return _search_payload(response)
     except SearchError as error:
-        if error.code == "subscription_required":
-            message = "An active subscription is required to search."
+        if error.code == "account_inactive":
+            message = "An active account is required to search."
         elif error.code in {
             "invalid_query",
             "query_required",

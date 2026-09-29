@@ -194,8 +194,8 @@ class SitemapSubmissionService:
         client: SafeFetchClient | None = None,
     ) -> SitemapSubmission:
         owner = Profile.objects.select_related("user").get(pk=owner.pk)
-        if not owner.has_active_subscription:
-            raise PermissionDenied("An active subscription is required to add a site.")
+        if not owner.has_product_access:
+            raise PermissionDenied("An active account is required to add a site.")
 
         normalized_url, host = normalize_sitemap_url(sitemap_url)
         normalized_name = name.strip() if name is not None else host.removeprefix("www.")[:120]

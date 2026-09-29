@@ -24,7 +24,9 @@ def test_project_input_lengths_are_bounded_before_database_or_network():
 
 
 @pytest.mark.django_db
-def test_unsubscribed_profile_cannot_create_project(profile):
+def test_disabled_profile_cannot_create_project(profile):
+    profile.user.is_active = False
+    profile.user.save(update_fields=["is_active"])
     with pytest.raises(PermissionDenied):
         ProjectService.create(
             owner=profile, name="Example", sitemap_url="https://example.com/sitemap.xml"
@@ -99,7 +101,7 @@ def test_suspension_blocks_sync_and_preserves_transition_history(profile):
 
 
 @pytest.mark.django_db
-def test_lost_subscription_makes_active_project_ineligible(profile):
+def test_cancellation_keeps_project_eligible_but_disabling_user_does_not(profile):
     subscribe(profile)
     project = ProjectService.create(
         owner=profile, name="Example", sitemap_url="https://example.com/sitemap.xml"
@@ -107,6 +109,9 @@ def test_lost_subscription_makes_active_project_ineligible(profile):
     profile.stripe_subscription_status = "canceled"
     profile.save(update_fields=["stripe_subscription_status", "updated_at"])
 
+    assert project.is_sync_eligible is True
+    profile.user.is_active = False
+    profile.user.save(update_fields=["is_active"])
     assert project.is_sync_eligible is False
 
 

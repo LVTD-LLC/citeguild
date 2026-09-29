@@ -95,7 +95,7 @@
                                 <a class="app-focus rounded-xl border border-gray-950/20 px-3 py-2 font-semibold hover:border-gray-950/50 dark:border-white/20 dark:hover:border-white/50"
                                    href="{% url 'account_signup' %}"
                                    data-posthog-cta="signup"
-                                   data-posthog-cta-location="site_header">join · $10/mo</a>
+                                   data-posthog-cta-location="site_header">join with an invite</a>
                             {% endif %}
                         </div>
                         <details class="relative ml-auto lg:hidden">
@@ -105,7 +105,7 @@
                                     <a class="app-focus" href="{% url 'blog_posts' %}">journal</a>
                                     <a class="app-focus" href="{% url 'pricing' %}">pricing</a>
                                     {% if user.is_authenticated %}<a class="app-focus" href="{% url 'home' %}">dashboard</a>{% else %}<a class="app-focus" href="{% url 'account_login' %}">sign in</a><a class="app-focus font-semibold text-green-700 dark:text-green-400"
-   href="{% url 'account_signup' %}">join · $10/mo</a>{% endif %}
+   href="{% url 'account_signup' %}">join with an invite</a>{% endif %}
                                     <button type="button"
                                             data-theme-toggle
                                             class="app-focus text-left"
@@ -125,7 +125,7 @@
                             <a href="{% url 'landing' %}"
                                class="app-focus inline-flex shrink-0"
                                aria-label="Homepage">{% include 'components/brand_mark.html' %}</a>
-                            <p class="mt-4 text-gray-600 dark:text-gray-300">$10 monthly · unlimited sites</p>
+                            <p class="mt-4 text-gray-600 dark:text-gray-300">Free · invitation-only</p>
                             <p class="mt-2 text-gray-500 dark:text-gray-400">&copy; {% now "Y" %} CiteGuild</p>
                         </div>
                         <nav class="grid grid-cols-2 gap-x-8 gap-y-4 text-gray-600 dark:text-gray-300 sm:flex sm:flex-wrap sm:justify-end">
