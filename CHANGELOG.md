@@ -2,6 +2,10 @@
 
 ## 2026-10-02
 
+### Removed
+
+- Remove the analytics consent notice from public and signed-in pages, preserving existing analytics choices and the default opt-out.
+
 ### Fixed
 
 - Update locked PyJWT to 2.15.1 and urllib3 to 2.8.0 to clear dependency security advisories blocking CI.
