@@ -97,7 +97,9 @@ small enumerated `failure_type`; never attach exception text or response bodies.
 
 - Browser capture is opted out by default, DOM autocapture is disabled, and
   pageviews are emitted manually only for allowlisted routes in
-  `apps/core/context_processors.py` after a visitor chooses **Allow analytics**.
+  `apps/core/context_processors.py` when a previously granted analytics choice
+  is present. The consent notice is no longer displayed; visitors without a
+  saved opt-in remain opted out. Removing the notice does not grant consent.
 - Never send passwords, form values, API keys, payment/customer identifiers,
   full URLs, query strings, sitemap URLs/bodies, article content, search query
   or draft text, embeddings, result excerpts, anchor text, raw domains from
