@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02
+
+### Fixed
+
+- Style the passkey verification login step with the CiteGuild light/dark shell, make passkey verification the primary action, and correctly label recovery codes instead of implying an authenticator app is required.
+- Explain old-domain passkey recovery and the extra verification enabled by registering a passkey; preserve allauth MFA, CSRF, cancellation, and single-use recovery-code enforcement.
+
 ## 2026-09-29
 
 ### Removed
