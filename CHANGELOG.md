@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-08
+
+- Send transactional and error emails from `rasul@citeguild.dev` via the dedicated Mailgun domain `mg.citeguild.dev`; align production sender defaults and local environment examples.
+
 ## 2026-10-02
 
 ### Removed

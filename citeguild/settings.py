@@ -409,16 +409,16 @@ ANYMAIL = {
     "MAILGUN_API_KEY": MAILGUN_API_KEY,
     "MAILGUN_SENDER_DOMAIN": env(
         "MAILGUN_SENDER_DOMAIN",
-        default="mg.citeguild.app",
+        default="mg.citeguild.dev",
     ),
 }
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL",
-    default=("LVTD LLC from CiteGuild <hello@citeguild.app>"),
+    default=("CiteGuild <rasul@citeguild.dev>"),
 )
 SERVER_EMAIL = env(
     "SERVER_EMAIL",
-    default=("CiteGuild Errors <error@citeguild.app>"),
+    default=("CiteGuild Errors <rasul@citeguild.dev>"),
 )
 
 if EMAIL_BACKEND_OVERRIDE:
