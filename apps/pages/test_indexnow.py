@@ -308,6 +308,7 @@ def test_hourly_run_retries_failed_deployment_revision(monkeypatch, tmp_path):
     assert "No changed" in indexnow.submit_changes(SITE, state, expected_revision="new")
 
 
+@pytest.mark.django_db
 def test_live_sitemap_contract_excludes_member_and_authenticated_pages(client, settings):
     from xml.etree import ElementTree
 
