@@ -1,5 +1,7 @@
 ## 2026-10-08
 
+- Move transactional and error email sending to `rasul@citeguild.com` through `mg.citeguild.com`, matching the new public domain. Preserve the previous domain for rollback and retain suppression lists.
+
 - Add a public IndexNow ownership proof and revision-verified notifications after successful deployments and hourly sitemap change checks. Submit only CiteGuild public pages; retain successful checkpoints for additions, changes, and removals. Add transport, retry, and checkpoint regression tests and operator documentation.
 
 # Changelog
