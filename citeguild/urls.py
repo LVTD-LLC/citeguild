@@ -20,12 +20,14 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from apps.pages.indexnow_views import indexnow_key
 from apps.pages.views import AccountSignupByPasskeyView, AccountSignupView
 from citeguild.sitemaps import sitemaps
 
 handler404 = "citeguild.error_views.page_not_found"
 
 urlpatterns = [
+    path("indexnow-key.txt", indexnow_key, name="indexnow_key"),
     path("admin/", admin.site.urls),
 ]
 

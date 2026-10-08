@@ -1,3 +1,7 @@
+## 2026-10-08
+
+- Add a public IndexNow ownership proof and revision-verified notifications after successful deployments and hourly sitemap change checks. Submit only CiteGuild public pages; retain successful checkpoints for additions, changes, and removals. Add transport, retry, and checkpoint regression tests and operator documentation.
+
 # Changelog
 
 ## 2026-10-08
