@@ -786,8 +786,8 @@ def test_settings_resend_confirmation_code_confirms_email(client, monkeypatch):
 
 
 def test_mailgun_sender_defaults_are_configurable():
-    expected_server_email = "CiteGuild Errors <rasul@citeguild.dev>"
+    expected_server_email = "CiteGuild Errors <rasul@citeguild.com>"
 
-    assert settings.DEFAULT_FROM_EMAIL == "CiteGuild <rasul@citeguild.dev>"
+    assert settings.DEFAULT_FROM_EMAIL == "CiteGuild <rasul@citeguild.com>"
     assert settings.SERVER_EMAIL == expected_server_email
-    assert settings.ANYMAIL["MAILGUN_SENDER_DOMAIN"] == "mg.citeguild.dev"
+    assert settings.ANYMAIL["MAILGUN_SENDER_DOMAIN"] == "mg.citeguild.com"
