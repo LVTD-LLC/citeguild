@@ -698,3 +698,6 @@ EXTRACTION_MAX_TREE_SIZE = CITEGUILD_CONFIG.extraction_max_tree_size
 RECONCILE_INTERVAL_HOURS = CITEGUILD_CONFIG.reconcile_interval_hours
 CITEGUILD_INDEXING_ENABLED = CITEGUILD_CONFIG.indexing_enabled
 CITEGUILD_BILLING_ENABLED = CITEGUILD_CONFIG.billing_enabled
+
+# Public IndexNow ownership proof; independent of application credentials.
+INDEXNOW_KEY = "43700c8c274042872865140f10e4a89a3ceffa52d0ca07b43e38dbe2ed726995"
