@@ -307,15 +307,16 @@ def test_blog_post_schema_supports_item_lists_and_faqs(blog_posts_dir):
 
 
 def test_checked_in_haro_alternatives_article_meets_content_contract(settings):
-    settings.SITE_URL = "https://citeguild.lvtd.dev"
+    settings.SITE_URL = "https://citeguild.com"
     path = Path(__file__).parent / "posts" / "haro-alternatives.md"
     post = load_blog_post(path, content_dir=path.parent)
     schema = blog_post_schema(post)
 
+    assert post.canonical_url == "https://citeguild.com/blog/haro-alternatives"
     assert post.title == "7 Best HARO Alternatives for 2026"
     assert len(post.description) <= 155
     assert len(post.content.split()) >= 1500
-    assert post.content.count("https://citeguild.lvtd.dev/") >= 3
+    assert post.content.count("https://citeguild.com/") >= 3
     assert {item["@type"] for item in schema["@graph"]} == {
         "BlogPosting",
         "BreadcrumbList",
