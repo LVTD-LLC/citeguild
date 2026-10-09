@@ -6,7 +6,7 @@ updated_at: 2026-08-05
 author: "LVTD LLC"
 keywords: [HARO alternatives, Help a Reporter Out alternatives, journalist request platforms]
 topics: [digital PR, source discovery, editorial citations, AI writing agents]
-canonical_url: "https://citeguild.lvtd.dev/blog/haro-alternatives"
+canonical_url: "https://citeguild.com/blog/haro-alternatives"
 robots: "index, follow"
 item_list:
   - name: Source of Sources
@@ -22,7 +22,7 @@ item_list:
   - name: ResponseSource
     url: https://www.responsesource.com/
   - name: CiteGuild
-    url: https://citeguild.lvtd.dev/
+    url: https://citeguild.com/
 faqs:
   - question: Is HARO still active in 2026?
     answer: "Yes. Featured acquired HARO from Cision in April 2025 and revived the free email digest. Featured also operates Connectively, where members can access HARO queries through a dashboard."
@@ -77,7 +77,7 @@ That produces three distinct jobs:
 - Choose a niche request service when broad digests create too much irrelevant work.
 - Choose a persistent index when you already publish source-worthy material and want it available beyond short request windows.
 
-These jobs can complement each other. A founder might answer a Qwoted request personally while making the company's technical articles available through [sitemap-backed article indexing](https://citeguild.lvtd.dev/#article-indexing).
+These jobs can complement each other. A founder might answer a Qwoted request personally while making the company's technical articles available through [sitemap-backed article indexing](https://citeguild.com/#article-indexing).
 
 ## 1. Source of Sources: best free replacement for classic HARO
 
@@ -153,15 +153,15 @@ These jobs can complement each other. A founder might answer a Qwoted request pe
 
 ## 7. CiteGuild: best for persistent discovery by writing agents
 
-[CiteGuild](https://citeguild.lvtd.dev/) is not a journalist-request marketplace. It is an AI-native editorial source network for publishers who want their existing articles available when writing agents need relevant evidence or context.
+[CiteGuild](https://citeguild.com/) is not a journalist-request marketplace. It is an AI-native editorial source network for publishers who want their existing articles available when writing agents need relevant evidence or context.
 
 Members submit public sitemaps. CiteGuild indexes eligible articles and exposes the same relevance-ranked search contract through MCP, CLI, and API. A writing agent searches the corpus during drafting and decides whether a result helps the reader. CiteGuild later records member-to-member links it observes, without claiming it caused them.
 
 **Best for:** SaaS companies, developer-tool publishers, independent blogs, and content teams that already publish useful articles and use writing agents.
 
-**Pricing:** [CiteGuild membership is free and invitation-only](https://citeguild.lvtd.dev/pricing) for unlimited legitimate sitemap-backed sites. Ask an existing member for an invitation.
+**Pricing:** [CiteGuild membership is free and invitation-only](https://citeguild.com/pricing) for unlimited legitimate sitemap-backed sites. Ask an existing member for an invitation.
 
-**Why choose it:** One sitemap submission creates an always-on source surface. Articles can be found after the moment of publication, without waiting for a journalist to send a matching request. The [relevance-ranked agent retrieval](https://citeguild.lvtd.dev/#agent-retrieval) workflow fits directly into assisted writing.
+**Why choose it:** One sitemap submission creates an always-on source surface. Articles can be found after the moment of publication, without waiting for a journalist to send a matching request. The [relevance-ranked agent retrieval](https://citeguild.com/#agent-retrieval) workflow fits directly into assisted writing.
 
 **Tradeoffs:** CiteGuild does not arrange interviews, distribute journalist queries, run outreach, or guarantee citations. It requires source-worthy published content and an agent that chooses to search and evaluate results. If your goal is a personal quote in tomorrow's newspaper, use a request platform. If your goal is persistent discovery of your article library, CiteGuild addresses a different problem.
 
@@ -177,7 +177,7 @@ Choose the service that matches your actual work, not the longest feature list.
 - **Choose ResponseSource** if UK media enquiries are important enough for an annual category subscription.
 - **Choose CiteGuild** if your durable asset is a library of published articles and your consumer is a writing agent.
 
-A small combination is often more rational than a single winner. Use one broad or niche request platform for timely expert commentary, then use a persistent index for your evergreen content. Keep the measurement honest: track replies, accepted quotes, published mentions, referral traffic, and [detected citations](https://citeguild.lvtd.dev/#citation-observation) separately. A submitted pitch is not a backlink, and an indexed article is not a promised citation.
+A small combination is often more rational than a single winner. Use one broad or niche request platform for timely expert commentary, then use a persistent index for your evergreen content. Keep the measurement honest: track replies, accepted quotes, published mentions, referral traffic, and [detected citations](https://citeguild.com/#citation-observation) separately. A submitted pitch is not a backlink, and an indexed article is not a promised citation.
 
 ## Frequently asked questions
 

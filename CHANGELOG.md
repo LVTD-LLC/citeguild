@@ -1,5 +1,7 @@
 ## 2026-10-09
 
+- Correct the HARO alternatives article canonical, structured-data item URL, and internal links to citeguild.com after the domain migration.
+
 - Point automated IndexNow notifications at citeguild.com and isolate its checkpoint from the retired .dev domain so the new sitemap receives a fresh submission.
 
 ## 2026-10-08
