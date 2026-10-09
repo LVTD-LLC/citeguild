@@ -7,8 +7,8 @@
 - **Name:** CiteGuild
 - **One-liner (≤20 words):** CiteGuild makes member articles discoverable when AI writing agents need a relevant source.
 - **What we do:** Members add public sitemaps. CiteGuild indexes eligible articles and lets writing agents retrieve relevant sources through MCP, CLI, or API. Agents decide whether a source helps; CiteGuild records member-to-member links later observed on published pages.
-- **Pricing structure:** One $10 monthly plan for unlimited legitimate sitemap-backed sites.
-- **Free tier?** No — no free plan, trial, annual plan, agency tier, or per-site pricing.
+- **Pricing structure:** Free, invitation-only membership for unlimited legitimate sitemap-backed sites.
+- **Free tier?** Membership is free; new registrations require an existing member’s invitation. No payment is required.
 
 ## Audience
 
@@ -77,7 +77,7 @@ The final five competitors came from the product memo's 2026-07-31 scan. Re-veri
 
 ## Links to existing surfaces
 
-- Homepage: https://citeguild.lvtd.dev/
-- Pricing: https://citeguild.lvtd.dev/pricing
-- Existing blog/content: https://citeguild.lvtd.dev/blog/
+- Homepage: https://citeguild.com/
+- Pricing: https://citeguild.com/pricing
+- Existing blog/content: https://citeguild.com/blog/
 - Existing features list: No dedicated public feature index yet; product explanation lives on the homepage.

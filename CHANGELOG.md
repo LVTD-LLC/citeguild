@@ -1,3 +1,7 @@
+## 2026-10-09
+
+- Repair the HARO guide’s canonical and structured-data identity after the citeguild.com move, replace retired-domain internal links, and add rendered metadata regression coverage. Refresh SEO domain/membership guidance while preserving existing private research locators.
+
 ## 2026-10-08
 
 - Move transactional and error email sending to `rasul@citeguild.com` through `mg.citeguild.com`, matching the new public domain. Preserve the previous domain for rollback and retain suppression lists.

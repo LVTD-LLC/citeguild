@@ -8,11 +8,11 @@
 
 | Slug | URL | Title / anchor candidate | Used by patterns |
 |---|---|---|---|
-| `/` | https://citeguild.lvtd.dev/ | Find and cite relevant member articles | All |
-| `/pricing` | https://citeguild.lvtd.dev/pricing | CiteGuild pricing — $10/month | Compare, playbooks |
-| `/blog/` | https://citeguild.lvtd.dev/blog/ | CiteGuild journal | Playbooks |
-| `/privacy-policy` | https://citeguild.lvtd.dev/privacy-policy | Privacy policy | Trust/legal only |
-| `/terms-of-service` | https://citeguild.lvtd.dev/terms-of-service | Terms of service | Trust/legal only |
+| `/` | https://citeguild.com/ | Find and cite relevant member articles | All |
+| `/pricing` | https://citeguild.com/pricing | CiteGuild pricing — $10/month | Compare, playbooks |
+| `/blog/` | https://citeguild.com/blog/ | CiteGuild journal | Playbooks |
+| `/privacy-policy` | https://citeguild.com/privacy-policy | Privacy policy | Trust/legal only |
+| `/terms-of-service` | https://citeguild.com/terms-of-service | Terms of service | Trust/legal only |
 
 There is no public `/about` page. Do not invent one or link authenticated docs as an indexable marketing surface.
 
@@ -20,10 +20,10 @@ There is no public `/about` page. Do not invent one or link authenticated docs a
 
 | Slug | URL | Title / anchor candidate | Used by patterns |
 |---|---|---|---|
-| `/#article-indexing` | https://citeguild.lvtd.dev/#article-indexing | Sitemap-backed article indexing | Alternatives, use cases, playbooks |
-| `/#agent-retrieval` | https://citeguild.lvtd.dev/#agent-retrieval | Relevance-ranked retrieval for writing agents | Alternatives, compare, use cases |
-| `/#citation-observation` | https://citeguild.lvtd.dev/#citation-observation | Detected member-to-member citations | Compare, use cases, playbooks |
-| `/#membership` | https://citeguild.lvtd.dev/#membership | One $10 monthly membership | Alternatives, compare, use cases |
+| `/#article-indexing` | https://citeguild.com/#article-indexing | Sitemap-backed article indexing | Alternatives, use cases, playbooks |
+| `/#agent-retrieval` | https://citeguild.com/#agent-retrieval | Relevance-ranked retrieval for writing agents | Alternatives, compare, use cases |
+| `/#citation-observation` | https://citeguild.com/#citation-observation | Detected member-to-member citations | Compare, use cases, playbooks |
+| `/#membership` | https://citeguild.com/#membership | One $10 monthly membership | Alternatives, compare, use cases |
 
 `/uses` remains publicly accessible for transparency but is `noindex` and excluded from the sitemap because its generic technology-stack intent does not support the product's search strategy.
 
@@ -35,8 +35,8 @@ No public tools exist yet.
 
 | Slug | URL | Title / anchor candidate | Inbound links from |
 |---|---|---|---|
-| `/blog/haro-alternatives` | https://citeguild.lvtd.dev/blog/haro-alternatives | HARO alternatives guide; current source-request platforms; journalist requests versus agent retrieval | Homepage, pricing, blog index |
-| `/for/saas-link-building` | https://citeguild.lvtd.dev/for/saas-link-building | SaaS link building without forced swaps; relevance-first source discovery; source-readiness loop | Homepage, pricing |
+| `/blog/haro-alternatives` | https://citeguild.com/blog/haro-alternatives | HARO alternatives guide; current source-request platforms; journalist requests versus agent retrieval | Homepage, pricing, blog index |
+| `/for/saas-link-building` | https://citeguild.com/for/saas-link-building | SaaS link building without forced swaps; relevance-first source discovery; source-readiness loop | Homepage, pricing |
 
 ## SEO-sprint-generated pages
 

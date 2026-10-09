@@ -1,0 +1,13 @@
+[
+  {
+    "claim": "Public blog content must not point to retired CiteGuild hosts",
+    "paths": [
+      "apps/pages/posts/*.md"
+    ],
+    "must_not_match": [
+      "https://citeguild\\.lvtd\\.dev",
+      "https://citeguild\\.dev"
+    ],
+    "must_match": []
+  }
+]

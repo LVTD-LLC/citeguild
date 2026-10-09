@@ -306,8 +306,9 @@ def test_blog_post_schema_supports_item_lists_and_faqs(blog_posts_dir):
     assert faq["mainEntity"][0]["name"] == "Which tool is first?"
 
 
-def test_checked_in_haro_alternatives_article_meets_content_contract(settings):
-    settings.SITE_URL = "https://citeguild.lvtd.dev"
+@pytest.mark.parametrize("site_url", ["https://citeguild.com", "https://canonical.example"])
+def test_checked_in_haro_alternatives_article_meets_content_contract(settings, client, site_url):
+    settings.SITE_URL = site_url
     path = Path(__file__).parent / "posts" / "haro-alternatives.md"
     post = load_blog_post(path, content_dir=path.parent)
     schema = blog_post_schema(post)
@@ -315,7 +316,24 @@ def test_checked_in_haro_alternatives_article_meets_content_contract(settings):
     assert post.title == "7 Best HARO Alternatives for 2026"
     assert len(post.description) <= 155
     assert len(post.content.split()) >= 1500
-    assert post.content.count("https://citeguild.lvtd.dev/") >= 3
+    assert post.content.count("](/") >= 3
+    assert "citeguild.lvtd.dev" not in post.html
+    assert "citeguild.dev" not in post.html
+    expected_url = f"{site_url}/blog/haro-alternatives"
+    assert post.canonical_url == expected_url
+    article = next(item for item in schema["@graph"] if item["@type"] == "BlogPosting")
+    assert article["url"] == expected_url
+    assert article["mainEntityOfPage"]["@id"] == expected_url
+    assert article["datePublished"].startswith("2026-08-05")
+    assert article["dateModified"].startswith("2026-10-09")
+    settings.BLOG_POSTS_DIR = path.parent
+    response = client.get(reverse("blog_post", kwargs={"slug": post.slug}))
+    assert response.status_code == 200
+    rendered = response.content.decode()
+    assert f'<link rel="canonical" href="{expected_url}"' in rendered
+    assert f'property="og:url" content="{expected_url}"' in rendered
+    assert "citeguild.lvtd.dev" not in rendered
+    assert "citeguild.dev" not in rendered
     assert {item["@type"] for item in schema["@graph"]} == {
         "BlogPosting",
         "BreadcrumbList",
