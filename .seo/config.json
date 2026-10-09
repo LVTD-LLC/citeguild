@@ -2,14 +2,16 @@
   "schema_version": "1.0",
   "mode": "resume",
   "roadmap_path": "docs/seo-sprint.md",
-  "domain": "citeguild.lvtd.dev",
-  "site_url": "https://citeguild.lvtd.dev",
+  "domain": "citeguild.com",
+  "site_url": "https://citeguild.com",
   "future_domain": {
     "domain": "citeguild.app",
-    "status": "dns_missing",
+    "status": "historical_unadopted",
     "checked_at": "2026-08-05T15:20:49Z"
   },
-  "stack": "django-templates",
+  "stack": {
+    "kind": "django-templates"
+  },
   "language": "django-html",
   "routing_convention": "controller-based",
   "marketing_route_prefix": "apps/pages",
@@ -22,8 +24,8 @@
   "keyword_data_source": "dataforseo",
   "dataforseo_location": "United States",
   "dataforseo_language": "English",
-  "gsc_property": "sc-domain:lvtd.dev",
-  "gsc_page_filter": "citeguild.lvtd.dev",
+  "gsc_property": "sc-domain:citeguild.dev",
+  "gsc_page_filter": "citeguild.dev",
   "gsc_sitemap": {
     "url": "https://citeguild.lvtd.dev/sitemap.xml",
     "submitted_at": "2026-08-05T16:40:58.906Z",
@@ -72,5 +74,134 @@
     },
     "schema_version": "1.0",
     "last_sync_at": "2026-08-06T09:03:00Z"
+  },
+  "gsc": {
+    "site_url": "sc-domain:citeguild.dev",
+    "status": "connected_legacy_domain",
+    "intended_site_url": "sc-domain:citeguild.com",
+    "note": "OpenSEO live response on 2026-10-09 still binds the .dev property; not .com coverage."
+  },
+  "posthog": {
+    "project_id": 538803
+  },
+  "research_store": {
+    "backend": "rowset",
+    "datasets": {
+      "opportunities": {
+        "key": "0d4c2270-cc89-45ce-b15a-b30789cede3b",
+        "url": "https://rowset.lvtd.dev/datasets/0d4c2270-cc89-45ce-b15a-b30789cede3b"
+      },
+      "tool_evidence": {
+        "key": "45770624-6e51-4a64-be94-6dec3d514c0d",
+        "url": "https://rowset.lvtd.dev/datasets/45770624-6e51-4a64-be94-6dec3d514c0d"
+      },
+      "backlink_targets": {
+        "key": "cd58d6fe-4e69-463b-8ce4-93a84393c314",
+        "url": "https://rowset.lvtd.dev/datasets/cd58d6fe-4e69-463b-8ce4-93a84393c314"
+      },
+      "content_ledger": {
+        "key": "2a5f31de-69dd-4e44-90d1-7caae43c2595",
+        "url": "https://rowset.lvtd.dev/datasets/2a5f31de-69dd-4e44-90d1-7caae43c2595"
+      },
+      "research_briefs": {
+        "key": "148cfe19-da70-43c8-9be9-355fe00126f7",
+        "url": "https://rowset.lvtd.dev/datasets/148cfe19-da70-43c8-9be9-355fe00126f7"
+      }
+    },
+    "project_key": "b97868d4-36a2-4b51-a9ea-715447035b01",
+    "seo_section_key": "3b11ff0e-d52b-4da9-a9ab-8203b0db1bd4",
+    "schema_version": "1.0",
+    "last_sync_at": "2026-08-06T09:03:00Z"
+  },
+  "tool_evidence": {},
+  "radar": {
+    "_comment": "Demand radar seeds: 5-15 topic phrases in the audience's own words (not product names) and the communities where the ideal customer talks. cadence_days governs the paid tier (news, trends, video); the free tier runs daily.",
+    "seeds": [
+      "editorial source discovery",
+      "SaaS link building",
+      "HARO alternatives",
+      "find sources for AI writing",
+      "sitemap article indexing"
+    ],
+    "communities": [],
+    "cadence_days": 7
+  },
+  "repo": {
+    "_comment": "Product-change panel (measure.md 4b). scripts/repo_changes.py lists commits since the last run that touch these globs; a shipped feature, a price change or a removed route is the freshest demand signal the site has. Fill with this repo's real paths.",
+    "watch_paths": [
+      "PRODUCT.md",
+      "CHANGELOG.md",
+      "apps/pages/**",
+      "frontend/templates/**",
+      "apps/core/adapters.py"
+    ]
+  },
+  "serp": {
+    "_comment": "SERP-feature panel (measure.md 3d). Weekly serp_organic_live_advanced on the top N queries by clicks; serp_features.py records which features appeared and whether the AI Overview cites us.",
+    "top_queries": 20
+  },
+  "distribute": {
+    "_comment": "Restore the full distribute lane: discovery push, Postiz owned-channel drafts, and one third-party brief. Postiz scheduling/posting uses the user's explicit channel/content authorization; site-shipping autonomy is not blanket social/outreach permission.",
+    "social_skill": "postiz",
+    "window_days": 14
+  },
+  "cadence": {
+    "_comment": "Freshness windows in hours; a panel younger than its window is read from cache. See measure.md section 0. Weekly (168) and monthly (720) panels: competitor delta, SERP features, backlinks new/lost, link opportunities, seasonality, on-site search.",
+    "gsc_hours": 20,
+    "health_hours": 6,
+    "link_check_hours": 20,
+    "radar_free_hours": 20,
+    "bing_hours": 20,
+    "outcomes_hours": 20,
+    "competitor_hours": 168,
+    "serp_hours": 168,
+    "backlinks_hours": 168,
+    "link_opportunities_hours": 168,
+    "seasonality_hours": 720,
+    "site_search_hours": 168,
+    "url_inspection_hours": 168
+  },
+  "site": {
+    "name": "CiteGuild",
+    "domain": "citeguild.com",
+    "sitemap_url": "https://citeguild.com/sitemap.xml"
+  },
+  "paths": {
+    "roadmap": "docs/seo-sprint.md",
+    "ledger": ".seo/content-ledger.md",
+    "truth": ".seo/truth.md",
+    "needs_you": ".seo/needs-you.md",
+    "runs": ".seo/runs/",
+    "health": ".seo/health/",
+    "briefs": ".seo/briefs/",
+    "evidence": ".seo/evidence/"
+  },
+  "budget": {
+    "per_run_usd": 0,
+    "ai_panel_cadence_days": 14,
+    "health_diff_cadence_days": 1,
+    "claim_reverify_sample": 3,
+    "_comment": "No paid research authorized for this run; optional paid panels deferred.",
+    "link_check_cadence_days": 7
+  },
+  "select": {
+    "floor": 9,
+    "_comment": "Growth-first rubric: floor 9 of 40. Cooldown is same target/intervention from verified deployment, not outcome-read timing. After 2 no-public-change runs, require fresh opportunity or concrete blocker work; never force publication.",
+    "cooldown_days": 2,
+    "no_change_research_after": 2
+  },
+  "bing": {
+    "api_key_env": null,
+    "site_url": null,
+    "_comment": "Optional. api_key_env names the environment variable holding the Bing Webmaster API key; never store the key itself. The AI Performance report is UI-only \u2014 no API. Record Bing as a separate panel, never summed with Google."
+  },
+  "_legacy_keys_note": "Flat pre-v2 keys are kept for anything that still reads them. The nested blocks above are authoritative. `stack` was a string in v1; its value now lives at stack.kind.",
+  "version": "2.2",
+  "openseo": {
+    "project_id": "50e25bb6-2552-484b-9120-c3ee55a0e2ed"
+  },
+  "git": {
+    "mode": "pr",
+    "merge_policy": "autonomous"
   }
 }
