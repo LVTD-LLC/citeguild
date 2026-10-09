@@ -24,8 +24,8 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: indexnow-state.json
-          key: indexnow-v1-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: indexnow-v1-
+          key: indexnow-citeguild-com-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: indexnow-citeguild-com-v1-
       - name: Notify IndexNow after verifying the live revision
         env:
           EXPECTED_REVISION: ${{ github.event.workflow_run.head_sha || github.sha }}
@@ -33,8 +33,8 @@ jobs:
         run: |
           flags=()
           if [ "$EVENT_NAME" = workflow_run ]; then flags+=(--force); fi
-          python citeguild/indexnow.py --site-url https://citeguild.dev --state indexnow-state.json --expected-revision "$EXPECTED_REVISION" "${flags[@]}"
+          python citeguild/indexnow.py --site-url https://citeguild.com --state indexnow-state.json --expected-revision "$EXPECTED_REVISION" "${flags[@]}"
       - uses: actions/cache/save@v4
         with:
           path: indexnow-state.json
-          key: indexnow-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          key: indexnow-citeguild-com-v1-${{ github.run_id }}-${{ github.run_attempt }}

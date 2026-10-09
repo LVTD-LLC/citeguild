@@ -1,6 +1,6 @@
 # IndexNow
 
-CiteGuild notifies https://api.indexnow.org/indexnow after successful Deploy Prod runs and hourly at minute 17 UTC (GitHub scheduling can be delayed). Only canonical URLs from https://citeguild.dev/sitemap.xml are submitted: marketing and public blog pages, never member article URLs, account pages, or authenticated docs.
+CiteGuild notifies https://api.indexnow.org/indexnow after successful Deploy Prod runs and hourly at minute 17 UTC (GitHub scheduling can be delayed). Only canonical URLs from https://citeguild.com/sitemap.xml are submitted: marketing and public blog pages, never member article URLs, account pages, or authenticated docs.
 
 The public `/indexnow-key.txt` ownership proof uses a site-specific random value, not an application credential. It reports the running image's CITEGUILD_RELEASE. No new environment variables, migrations, or provider credentials are needed.
 
@@ -9,10 +9,14 @@ The workflow verifies the deployed revision before submitting. Deployment notifi
 ## Operations
 
 - Run the `IndexNow public URL changes` workflow manually to retry.
-- Read-only check: `python citeguild/indexnow.py --site-url https://citeguild.dev --dry-run`.
+- Read-only check: `python citeguild/indexnow.py --site-url https://citeguild.com --dry-run`.
 - Explicit full refresh: `uv run python manage.py submit_indexnow`.
 - Removed URLs can be supplied via a JSON array using `--previous FILE`.
 
 State is stored in a serialized GitHub Actions cache. Cache eviction resets the baseline and loses historical removal evidence; URLs added and deleted between checks are not observed. Repository-backed content changes require deployment. No Google indexing guarantee is implied.
 
 The historical MVP taskboard is archived; this owner-requested follow-up is tracked by the PR and changelog without reopening that board.
+
+## Domain migration
+
+The October 2026 move to citeguild.com uses a domain-specific cache prefix (`indexnow-citeguild-com-v1-`). Never restore the old .dev checkpoint into .com submissions: cross-host URLs are correctly rejected by the transport. The first .com run submits a fresh public sitemap baseline. Keep permanent path-preserving redirects from .dev; the ownership proof is served directly on .com and does not need a new key. When changing domains again, update both the workflow origin and cache namespace.

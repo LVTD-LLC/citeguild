@@ -1,6 +1,10 @@
 ## 2026-10-09
 
-- Repair the HARO guide’s canonical and structured-data identity after the citeguild.com move, replace retired-domain internal links, and add rendered metadata regression coverage. Refresh SEO domain/membership guidance while preserving existing private research locators.
+- Harden the HARO guide’s canonical/OG/article identity against future domain changes, make internal links domain-independent, and add rendered metadata regression coverage. Refresh stale SEO membership/domain guidance while preserving private research history.
+
+- Correct the HARO alternatives article canonical, structured-data item URL, and internal links to citeguild.com after the domain migration.
+
+- Point automated IndexNow notifications at citeguild.com and isolate its checkpoint from the retired .dev domain so the new sitemap receives a fresh submission.
 
 ## 2026-10-08
 
