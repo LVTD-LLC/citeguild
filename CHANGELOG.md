@@ -1,3 +1,7 @@
+## 2026-10-09
+
+- Point automated IndexNow notifications at citeguild.com and isolate its checkpoint from the retired .dev domain so the new sitemap receives a fresh submission.
+
 ## 2026-10-08
 
 - Move transactional and error email sending to `rasul@citeguild.com` through `mg.citeguild.com`, matching the new public domain. Preserve the previous domain for rollback and retain suppression lists.
