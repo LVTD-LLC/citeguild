@@ -10,6 +10,7 @@ from django.urls import reverse
 
 from apps.pages.services import (
     BLOG_DEFAULT_IMAGE_URL,
+    BlogPostValidationError,
     blog_post_schema,
     get_blog_post,
     list_blog_posts,
@@ -87,6 +88,10 @@ def test_blog_post_renders_markdown_and_frontmatter_metadata(client, blog_posts_
     assert "Agent workflow dashboard" in content
     assert '"@type": "BlogPosting"' in content
     assert '"datePublished": "2026-07-03T00:00:00+00:00"' in content
+    schema = json.loads(response.context["schema_json"])
+    article = next(item for item in schema["@graph"] if item["@type"] == "BlogPosting")
+    assert article["author"]["@type"] == "Person"
+    assert article["author"]["name"] == "Ada Lovelace"
 
 
 def test_blog_posts_are_sorted_by_publication_date(blog_posts_dir):
@@ -306,6 +311,92 @@ def test_blog_post_schema_supports_item_lists_and_faqs(blog_posts_dir):
     assert faq["mainEntity"][0]["name"] == "Which tool is first?"
 
 
+@pytest.mark.parametrize("steps", [None, []])
+def test_blog_schema_omits_howto_without_steps(blog_posts_dir, steps):
+    metadata = {
+        "title": "Regular article",
+        "description": "An article without a procedure.",
+        "published_at": "2026-10-10",
+    }
+    if steps is not None:
+        metadata["howto_steps"] = steps
+    write_post(blog_posts_dir, "regular-article", metadata, "Article body.")
+
+    schema = blog_post_schema(get_blog_post("regular-article"))
+
+    assert {item["@type"] for item in schema["@graph"]} == {"BlogPosting", "BreadcrumbList"}
+
+
+def test_blog_schema_renders_ordered_howto_steps(client, blog_posts_dir):
+    write_post(
+        blog_posts_dir,
+        "source-workflow",
+        {
+            "title": "Source workflow",
+            "description": "Find and verify sources.",
+            "published_at": "2026-10-10",
+            "howto_steps": [
+                {"name": " Find a candidate ", "text": " Open a relevant source. "},
+                {"name": "Verify the claim", "text": "Read the supporting passage."},
+            ],
+        },
+        "## Find a candidate\n\nOpen a relevant source.\n\n"
+        "## Verify the claim\n\nRead the supporting passage.",
+    )
+
+    response = client.get(reverse("blog_post", kwargs={"slug": "source-workflow"}))
+
+    assert response.status_code == 200
+    schema = json.loads(response.context["schema_json"])
+    assert {item["@type"] for item in schema["@graph"]} == {
+        "BlogPosting",
+        "BreadcrumbList",
+        "HowTo",
+    }
+    howto = next(item for item in schema["@graph"] if item["@type"] == "HowTo")
+    assert howto == {
+        "@type": "HowTo",
+        "name": "Source workflow",
+        "description": "Find and verify sources.",
+        "url": "https://canonical.example/blog/source-workflow",
+        "step": [
+            {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "Find a candidate",
+                "text": "Open a relevant source.",
+            },
+            {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "Verify the claim",
+                "text": "Read the supporting passage.",
+            },
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    "steps",
+    ["not a list", ["not a mapping"], [{"name": "Missing text"}], [{"name": " ", "text": "x"}]],
+)
+def test_blog_rejects_invalid_howto_steps(blog_posts_dir, steps):
+    path = write_post(
+        blog_posts_dir,
+        "invalid-howto",
+        {
+            "title": "Invalid how-to",
+            "description": "Invalid step metadata.",
+            "published_at": "2026-10-10",
+            "howto_steps": steps,
+        },
+        "Article body.",
+    )
+
+    with pytest.raises(BlogPostValidationError, match="howto_steps"):
+        load_blog_post(path, content_dir=blog_posts_dir)
+
+
 @pytest.mark.parametrize("site_url", ["https://citeguild.com", "https://canonical.example"])
 def test_checked_in_haro_alternatives_article_meets_content_contract(settings, client, site_url):
     settings.SITE_URL = site_url
@@ -340,6 +431,58 @@ def test_checked_in_haro_alternatives_article_meets_content_contract(settings, c
         "ItemList",
         "FAQPage",
     }
+
+
+@pytest.mark.parametrize("site_url", ["https://citeguild.com", "https://canonical.example"])
+def test_source_selection_guide_renders_indexable_metadata(settings, client, site_url):
+    settings.SITE_URL = site_url
+    settings.BLOG_POSTS_DIR = Path(__file__).parent / "posts"
+    post = get_blog_post("find-sources-ai-writing")
+    expected_url = f"{site_url}/blog/find-sources-ai-writing"
+
+    assert post.title == "Find Sources for AI Writing"
+    assert len(post.description) <= 155
+    assert len(post.content.split()) >= 1200
+    response = client.get(post.get_absolute_url())
+
+    assert response.status_code == 200
+    rendered = response.content.decode()
+    assert "<title>Find Sources for AI Writing | CiteGuild Blog</title>" in rendered
+    assert '<meta name="robots" content="index, follow"' in rendered
+    assert f'<link rel="canonical" href="{expected_url}"' in rendered
+    assert f'property="og:url" content="{expected_url}"' in rendered
+    assert "citeguild.lvtd.dev" not in rendered
+    assert "citeguild.dev" not in rendered
+    schema = json.loads(response.context["schema_json"])
+    article = next(item for item in schema["@graph"] if item["@type"] == "BlogPosting")
+    assert {item["@type"] for item in schema["@graph"]} == {
+        "BlogPosting",
+        "BreadcrumbList",
+        "FAQPage",
+        "HowTo",
+    }
+    assert article["headline"] == post.title
+    assert article["author"]["@type"] == "Organization"
+    assert article["author"]["name"] == "CiteGuild"
+    assert article["author"]["url"] == f"{site_url}/"
+    assert article["url"] == expected_url
+    assert article["mainEntityOfPage"]["@id"] == expected_url
+    assert article["datePublished"].startswith("2026-10-10")
+
+
+def test_source_selection_guide_is_discoverable_from_home_blog_and_sitemap(settings, client):
+    settings.SITE_URL = "https://citeguild.com"
+    settings.BLOG_POSTS_DIR = Path(__file__).parent / "posts"
+    guide_path = reverse("blog_post", kwargs={"slug": "find-sources-ai-writing"})
+
+    for route in ("landing", "blog_posts"):
+        response = client.get(reverse(route))
+        assert response.status_code == 200
+        assert f'href="{guide_path}"' in response.content.decode()
+
+    response = client.get("/sitemap.xml")
+    assert response.status_code == 200
+    assert f"<loc>https://citeguild.com{guide_path}</loc>" in response.content.decode()
 
 
 def post_schema_json(post):

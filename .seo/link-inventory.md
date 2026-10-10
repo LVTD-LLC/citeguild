@@ -81,3 +81,5 @@ Vary anchors naturally. Useful families include:
 - Use cases: “SaaS link building without link swaps,” “source discovery for bloggers,” “AI-assisted editorial citations”
 
 Never use anchors that promise guaranteed links, rankings, placement, or reciprocity.
+
+- `/blog/find-sources-ai-writing` — Find Sources for AI Writing; find and verify sources for AI writing; source-selection workflow; claim-level evidence checklist; agent source review. Inbound: homepage and blog index.

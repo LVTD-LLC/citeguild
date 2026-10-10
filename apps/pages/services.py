@@ -61,6 +61,7 @@ class BlogPost:
     robots: str
     item_list: tuple[tuple[str, str], ...]
     faqs: tuple[tuple[str, str], ...]
+    howto_steps: tuple[tuple[str, str], ...]
     source_path: Path
 
     def get_absolute_url(self) -> str:
@@ -127,6 +128,24 @@ def _coerce_named_links(value, field_name: str) -> tuple[tuple[str, str], ...]:
             raise BlogPostValidationError(f"{field_name} entries require name and url")
         items.append((name, url))
     return tuple(items)
+
+
+def _coerce_howto_steps(value) -> tuple[tuple[str, str], ...]:
+    if value in (None, ""):
+        return ()
+    if not isinstance(value, list):
+        raise BlogPostValidationError("howto_steps must be a list")
+
+    steps = []
+    for item in value:
+        if not isinstance(item, dict):
+            raise BlogPostValidationError("howto_steps entries must be mappings")
+        name = _coerce_string(item.get("name"), "howto_steps.name")
+        text = _coerce_string(item.get("text"), "howto_steps.text")
+        if not name or not text:
+            raise BlogPostValidationError("howto_steps entries require name and text")
+        steps.append((name, text))
+    return tuple(steps)
 
 
 def _coerce_faqs(value) -> tuple[tuple[str, str], ...]:
@@ -202,6 +221,7 @@ def load_blog_post(path: Path, *, content_dir: Path | None = None) -> BlogPost:
     robots = _coerce_string(metadata.get("robots", "index, follow"), "robots")
     item_list = _coerce_named_links(metadata.get("item_list"), "item_list")
     faqs = _coerce_faqs(metadata.get("faqs"))
+    howto_steps = _coerce_howto_steps(metadata.get("howto_steps"))
 
     content = post.content.strip()
     html = markdown.markdown(content, extensions=BLOG_MARKDOWN_EXTENSIONS)
@@ -224,6 +244,7 @@ def load_blog_post(path: Path, *, content_dir: Path | None = None) -> BlogPost:
         robots=robots,
         item_list=item_list,
         faqs=faqs,
+        howto_steps=howto_steps,
         source_path=path,
     )
 
@@ -280,6 +301,8 @@ def blog_index_url() -> str:
 
 
 def author_schema(name: str, author_url: str = BLOG_DEFAULT_AUTHOR_URL) -> dict:
+    if name == "CiteGuild":
+        return organization_schema()
     schema = {"@type": "Person", "name": name}
     if author_url:
         schema["url"] = author_url
@@ -468,6 +491,24 @@ def blog_post_schema(post: BlogPost) -> dict:
         faq = faq_page_schema(list(post.faqs))
         faq.pop("@context")
         graph.append(faq)
+    if post.howto_steps:
+        graph.append(
+            {
+                "@type": "HowTo",
+                "name": post.title,
+                "description": post.description,
+                "url": post.canonical_url,
+                "step": [
+                    {
+                        "@type": "HowToStep",
+                        "position": position,
+                        "name": name,
+                        "text": text,
+                    }
+                    for position, (name, text) in enumerate(post.howto_steps, start=1)
+                ],
+            }
+        )
     return {"@context": "https://schema.org", "@graph": graph}
 
 
