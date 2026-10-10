@@ -1,3 +1,9 @@
+## 2026-10-10
+
+- Publish a source-selection guide for AI writing agents with a claim-level evidence checklist, verified CLI example, HowTo schema, and homepage/blog discovery links.
+- Keep blog prose, metadata, links, and source-selection diagrams readable in dark mode.
+- Align SEO configuration with the verified citeguild.com Search Console property while preserving existing private research stores.
+
 ## 2026-10-09
 
 - Harden the HARO guide’s canonical/OG/article identity against future domain changes, make internal links domain-independent, and add rendered metadata regression coverage. Refresh stale SEO membership/domain guidance while preserving private research history.

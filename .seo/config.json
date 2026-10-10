@@ -24,8 +24,8 @@
   "keyword_data_source": "dataforseo",
   "dataforseo_location": "United States",
   "dataforseo_language": "English",
-  "gsc_property": "sc-domain:citeguild.dev",
-  "gsc_page_filter": "citeguild.dev",
+  "gsc_property": "sc-domain:citeguild.com",
+  "gsc_page_filter": "citeguild.com",
   "gsc_sitemap": {
     "url": "https://citeguild.lvtd.dev/sitemap.xml",
     "submitted_at": "2026-08-05T16:40:58.906Z",
@@ -76,10 +76,10 @@
     "last_sync_at": "2026-08-06T09:03:00Z"
   },
   "gsc": {
-    "site_url": "sc-domain:citeguild.dev",
-    "status": "connected_legacy_domain",
-    "intended_site_url": "sc-domain:citeguild.com",
-    "note": "OpenSEO live response on 2026-10-09 still binds the .dev property; not .com coverage."
+    "site_url": "sc-domain:citeguild.com",
+    "status": "connected",
+    "verified_at": "2026-10-10",
+    "note": "OpenSEO final comparable page windows Sep10-Oct7 and Aug13-Sep9 both returned no rows. Historical .dev data remains separate, not .com performance."
   },
   "posthog": {
     "project_id": 538803
@@ -203,5 +203,12 @@
   "git": {
     "mode": "pr",
     "merge_policy": "autonomous"
+  },
+  "figure_style": {
+    "framework": "Tailwind 4",
+    "text_and_strokes": "currentColor",
+    "theme": "inherit page color; verify light/dark",
+    "source": "DESIGN.md",
+    "checked_at": "2026-10-10"
   }
 }
