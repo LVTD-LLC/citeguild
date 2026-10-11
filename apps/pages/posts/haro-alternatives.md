@@ -2,7 +2,7 @@
 title: "7 Best HARO Alternatives for 2026"
 description: "Compare seven current HARO alternatives by workflow, audience, pricing, and limitations—including when persistent agent retrieval fits better."
 published_at: 2026-08-05
-updated_at: 2026-10-09
+updated_at: 2026-10-11
 author: "LVTD LLC"
 keywords: [HARO alternatives, Help a Reporter Out alternatives, journalist request platforms]
 topics: [digital PR, source discovery, editorial citations, AI writing agents]

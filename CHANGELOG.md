@@ -1,3 +1,7 @@
+## 2026-10-11
+
+- Keep blog comparison tables inside keyboard-accessible horizontal scroll regions, so the HARO alternatives guide fits mobile screens without hiding columns. Preserve table headings and links in server-rendered HTML.
+
 ## 2026-10-10
 
 - Publish a source-selection guide for AI writing agents with a claim-level evidence checklist, verified CLI example, HowTo schema, and homepage/blog discovery links.

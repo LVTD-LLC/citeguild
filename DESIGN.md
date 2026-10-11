@@ -300,6 +300,11 @@ Motion should communicate state, not decorate page load.
 
 ## Frontend Quality Bar
 
+Blog Markdown tables use `.blog-table-scroll` with an accessible region name,
+`tabindex="0"`, and the shared `.app-focus` treatment. Keep native table
+semantics and column headers inside the region; horizontal overflow must stay
+inside the table rather than widening the article or hiding comparison columns.
+
 Before shipping generated-project UI changes:
 
 - Read `.agents/skills/frontend-ui-quality/SKILL.md` for the portable UI quality workflow.

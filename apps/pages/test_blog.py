@@ -416,7 +416,7 @@ def test_checked_in_haro_alternatives_article_meets_content_contract(settings, c
     assert article["url"] == expected_url
     assert article["mainEntityOfPage"]["@id"] == expected_url
     assert article["datePublished"].startswith("2026-08-05")
-    assert article["dateModified"].startswith("2026-10-09")
+    assert article["dateModified"].startswith("2026-10-11")
     settings.BLOG_POSTS_DIR = path.parent
     response = client.get(reverse("blog_post", kwargs={"slug": post.slug}))
     assert response.status_code == 200
@@ -425,6 +425,10 @@ def test_checked_in_haro_alternatives_article_meets_content_contract(settings, c
     assert f'property="og:url" content="{expected_url}"' in rendered
     assert "citeguild.lvtd.dev" not in rendered
     assert "citeguild.dev" not in rendered
+    assert 'class="blog-table-scroll app-focus"' in rendered
+    assert 'aria-label="Article table 1, scroll to see all columns"' in rendered
+    assert 'role="region" tabindex="0"' in rendered
+    assert '<th scope="col">Main limitation</th>' in rendered
     assert {item["@type"] for item in schema["@graph"]} == {
         "BlogPosting",
         "BreadcrumbList",

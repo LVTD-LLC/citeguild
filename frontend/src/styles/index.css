@@ -63,6 +63,14 @@
     @apply rounded-xl border border-white/10 bg-gray-950 p-3 text-sm text-gray-50;
   }
 
+  .blog-table-scroll {
+    @apply my-6 max-w-full overflow-x-auto rounded-md focus-visible:ring-green-700 dark:focus-visible:ring-green-400;
+  }
+
+  .blog-table-scroll table {
+    @apply my-0;
+  }
+
   .docs-code-blocks pre {
     @apply border border-gray-800 bg-gray-950 text-gray-50;
   }
