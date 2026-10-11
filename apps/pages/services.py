@@ -16,6 +16,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
+from apps.pages.markdown import ScrollableTablesExtension
+
 logger = logging.getLogger(__name__)
 
 BLOG_TITLE = "CiteGuild Blog"
@@ -30,7 +32,7 @@ BLOG_DEFAULT_IMAGE_PARAMS = {
     "subtitle": BLOG_DESCRIPTION,
 }
 BLOG_DEFAULT_IMAGE_URL = "https://osig.app/g?" + urlencode(BLOG_DEFAULT_IMAGE_PARAMS)
-BLOG_MARKDOWN_EXTENSIONS = ["fenced_code", "tables"]
+BLOG_MARKDOWN_EXTENSIONS = ["fenced_code", "tables", ScrollableTablesExtension()]
 BLOG_REQUIRED_FRONTMATTER = ("title", "description", "published_at")
 BLOG_SLUG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
