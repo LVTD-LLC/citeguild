@@ -139,3 +139,30 @@ Set `POSTHOG_BROWSER_HOST` to a first-party reverse proxy in production when
 possible. Keep `POSTHOG_HOST` on the regional ingestion endpoint for server
 capture. MCP usage is enabled when `POSTHOG_API_KEY` is set, and the ASGI
 lifespan drains pending MCP events during graceful shutdown.
+
+## Public content and service-host coverage (2026-10-12)
+
+Existing opted-in `$pageview` events may include `public_content_id`, in the
+form `blog:<published-repository-slug>`. Only a successfully loaded public blog
+view supplies it. Unknown posts, private routes, docs, and non-blog pages do
+not. HTMX navigation and history restore replace or clear the value. It is
+an event property, never a stored first/latest-touch or person property. Route
+and URL properties remain normalized; consent defaults are unchanged.
+
+Existing backend product events include `site_host`, the hostname from the
+service's configured `SITE_URL`, not the inbound request host, customer domain,
+or browser acquisition host. Filter both `environment=prod` and
+`site_host=citeguild.com` for new production-service observations. Do not use
+this field to relabel historical `.dev` traffic or claim a browser origin.
+These are additive properties: event_version remains 1 because success,
+identity, and consent semantics have not changed. Missing fields on older
+events mean unknown coverage, not zero activity; segment before/after rollout.
+
+Retrieval truth is `citeguild_search_completed` with `status=succeeded` and
+`result_count>0`; `transport` identifies the caller surface. A returned source
+is not a source selection, published citation, or caused backlink. No new
+selection event is emitted. Use the existing profile distinct_id only for
+prospective consented cohort association; an agent request does not share a
+browser session merely because the profile matches. Session-entry attribution
+and cross-device joins remain unverified. Exclude staff/QA/non-production and
+known bots from reports without calling the remaining traffic proven human.

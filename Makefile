@@ -184,6 +184,7 @@ frontend-install:
 	$(NPM) ci
 
 frontend-check:
+	$(NPM) run test:analytics
 	$(NPM) run lint
 	$(NPM) run build
 

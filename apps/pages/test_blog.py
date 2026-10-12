@@ -493,3 +493,16 @@ def post_schema_json(post):
     from apps.pages.services import blog_post_schema, json_ld
 
     return json_ld(blog_post_schema(post))
+
+
+@pytest.mark.django_db
+def test_only_loaded_public_blog_exposes_content_id(client, settings):
+    settings.POSTHOG_API_KEY = "phc_test"
+    # Use the shipped repository content, not a request-supplied path or private ID.
+    settings.BLOG_POSTS_DIR = settings.BASE_DIR / "apps/pages/posts"
+    response = client.get("/blog/find-sources-ai-writing")
+    assert response.status_code == 200
+    assert b'data-posthog-public-content-id="blog:find-sources-ai-writing"' in response.content
+    for url in ("/", "/blog/", "/pricing", "/blog/not-a-published-post", "/docs/"):
+        response = client.get(url)
+        assert b"data-posthog-public-content-id=" not in response.content
