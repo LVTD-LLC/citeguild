@@ -11,6 +11,7 @@ function contextSnapshot() {
     contentGroup: dataset.posthogContentGroup || "",
     enabled: dataset.posthogPageviewEnabled === "true",
     route: dataset.posthogRoute || "",
+    publicContentId: dataset.posthogPublicContentId || "",
   };
 }
 
@@ -64,7 +65,7 @@ function capturePosthogPageview(force = false) {
   }
 
   const campaign = campaignProperties(window.location.search);
-  const captureKey = JSON.stringify([context.route, context.contentGroup, campaign]);
+  const captureKey = JSON.stringify([context.route, context.contentGroup, context.publicContentId, campaign]);
   if (force !== true && captureKey === lastCaptureKey) return false;
 
   const currentUrl = `${window.location.origin}${context.route}`;
@@ -84,6 +85,7 @@ function capturePosthogPageview(force = false) {
     content_group: context.contentGroup,
     environment: analytics.environment || "unknown",
     event_version: 1,
+    ...(context.publicContentId ? { public_content_id: context.publicContentId } : {}),
     route: context.route,
     ...campaign,
   });
@@ -103,12 +105,22 @@ function restoreContext() {
     `${window.location.origin}${window.location.pathname}`,
   );
   const dataset = document.body?.dataset;
-  if (!context || !dataset) return false;
+  if (!dataset) return false;
+  if (!context) {
+    dataset.posthogPageviewEnabled = "false";
+    delete dataset.posthogRoute;
+    delete dataset.posthogContentGroup;
+    delete dataset.posthogPublicContentId;
+    syncPrivacyContext();
+    return false;
+  }
   dataset.posthogPageviewEnabled = context.enabled ? "true" : "false";
   if (context.route) dataset.posthogRoute = context.route;
   else delete dataset.posthogRoute;
   if (context.contentGroup) dataset.posthogContentGroup = context.contentGroup;
   else delete dataset.posthogContentGroup;
+  if (context.publicContentId) dataset.posthogPublicContentId = context.publicContentId;
+  else delete dataset.posthogPublicContentId;
   syncPrivacyContext();
   return true;
 }
@@ -131,12 +143,16 @@ function updateContextFromHtmxResponse(event) {
     dataset.posthogPageviewEnabled = "true";
     dataset.posthogRoute = responseContext.posthogRoute || "";
     dataset.posthogContentGroup = responseContext.posthogContentGroup || "";
+    if (responseContext.posthogPublicContentId) {
+      dataset.posthogPublicContentId = responseContext.posthogPublicContentId;
+    } else delete dataset.posthogPublicContentId;
     syncPrivacyContext();
     return "eligible";
   }
   dataset.posthogPageviewEnabled = "false";
   delete dataset.posthogRoute;
   delete dataset.posthogContentGroup;
+  delete dataset.posthogPublicContentId;
   syncPrivacyContext();
   return "disabled";
 }

@@ -3,7 +3,12 @@ import logging
 import posthog
 from django.conf import settings
 
-from apps.core.analytics import ACCOUNT_DELETED, CHECKOUT_STARTED, SIGNUP_COMPLETED
+from apps.core.analytics import (
+    ACCOUNT_DELETED,
+    CHECKOUT_STARTED,
+    SIGNUP_COMPLETED,
+    analytics_site_host,
+)
 from apps.core.funnel_analytics import DURABLE_FUNNEL_EVENTS
 
 logger = logging.getLogger(__name__)
@@ -36,6 +41,7 @@ def track_event(
         **(properties or {}),
         "event_version": 1,
         "environment": settings.ENVIRONMENT,
+        "site_host": analytics_site_host(),
         "profile_id": profile_id,
         "current_state": current_state,
     }
@@ -74,6 +80,7 @@ def track_account_deleted_event(profile_id: int, current_state: str) -> str:
         properties={
             "event_version": 1,
             "environment": settings.ENVIRONMENT,
+            "site_host": analytics_site_host(),
             "profile_id": profile_id,
             "current_state": current_state,
         },

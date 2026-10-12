@@ -53,6 +53,7 @@ function sanitizeProperties(properties, locationProperties) {
   if (!properties) return properties;
 
   const sanitized = { ...properties };
+  delete sanitized.public_content_id;
   Object.entries(urlPropertyNames).forEach(([property, safeValue]) => {
     if (!(property in sanitized)) return;
     const value = safeValue ? locationProperties[safeValue] : "";
@@ -79,9 +80,21 @@ export function sanitizePosthogEvent(event) {
   if (!event) return event;
 
   const locationProperties = safeLocationProperties();
+  const context = window.SaasAnalytics?.pageviewContext;
+  const properties = sanitizeProperties(event.properties, locationProperties);
+  // Only the server-rendered, public blog view supplies this identifier. Never
+  // persist it as a person property or let it follow private navigation.
+  if (properties) {
+    if (
+      event.event === "$pageview" && context?.enabled &&
+      context.contentGroup === "blog" && context.route === "/blog/:slug" &&
+      event.properties?.public_content_id === context.publicContentId &&
+      /^blog:[a-z0-9][a-z0-9-]{0,119}$/.test(context.publicContentId || "")
+    ) properties.public_content_id = context.publicContentId;
+  }
   return {
     ...event,
-    properties: sanitizeProperties(event.properties, locationProperties),
+    properties,
     ...(event.$set && { $set: sanitizeProperties(event.$set, locationProperties) }),
     ...(event.$set_once && {
       $set_once: sanitizeProperties(event.$set_once, locationProperties),

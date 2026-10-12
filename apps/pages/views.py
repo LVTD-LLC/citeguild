@@ -202,6 +202,7 @@ def blog_post_view(request, slug):
         "pages/blog/blog_post.html",
         {
             "blog_post": blog_post,
+            "posthog_public_content_id": f"blog:{blog_post.slug}",
             "canonical_url": blog_post.canonical_url,
             "schema_json": json_ld(blog_post_schema(blog_post)),
         },

@@ -2,6 +2,14 @@
 
 - Keep blog comparison tables inside keyboard-accessible horizontal scroll regions, so the HARO alternatives guide fits mobile screens without hiding columns. Preserve table headings and links in server-rendered HTML.
 
+## 2026-10-12
+
+- Distinguish public guide engagement on existing consented pageviews and label
+  backend product events with the configured service hostname, without changing
+  consent, exposing private paths, or treating retrieval as a citation.
+- Cover analytics navigation/clearing and host provenance with regression tests;
+  document rollout and attribution limits.
+
 ## 2026-10-10
 
 - Publish a source-selection guide for AI writing agents with a claim-level evidence checklist, verified CLI example, HowTo schema, and homepage/blog discovery links.

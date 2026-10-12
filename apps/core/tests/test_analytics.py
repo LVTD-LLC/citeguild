@@ -90,6 +90,7 @@ def test_track_event_uses_profile_identity_without_email(profile, settings, monk
     assert kwargs["properties"] == {
         "event_version": 1,
         "environment": "test",
+        "site_host": tasks.analytics_site_host(),
         "profile_id": profile.id,
         "current_state": profile.state,
         "feature": "example",
@@ -125,3 +126,21 @@ def test_track_event_is_fail_open_when_queue_is_unavailable(
     assert result == f"Queued event {EVENT_PREFIX}_feature_completed for profile {profile.id}"
     assert records[0][0] == ("posthog.event.enqueue_failed",)
     assert "broker unavailable" not in repr(records)
+
+
+@pytest.mark.parametrize(
+    "origin, expected",
+    [
+        ("https://citeguild.com/", "citeguild.com"),
+        ("https://staging.example.test:443/", "staging.example.test"),
+        ("https://user:secret@example.test/", ""),
+        ("https://[invalid/", ""),
+        ("file:///private/path", ""),
+        ("", ""),
+    ],
+)
+def test_analytics_service_host_uses_only_valid_configured_hostname(settings, origin, expected):
+    from apps.core.analytics import analytics_site_host
+
+    settings.SITE_URL = origin
+    assert analytics_site_host() == expected

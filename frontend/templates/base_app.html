@@ -51,8 +51,7 @@
         <script defer src="{% static 'vendors/js/alpine.min.js' %}"></script>
         <script type="module" src="{% static 'js/app.js' %}"></script>
     </head>
-    <body {% if posthog_pageview_enabled %}data-posthog-pageview-enabled="true" data-posthog-route="{{ posthog_pageview_route }}" data-posthog-content-group="{{ posthog_content_group }}"{% endif %}
-          {% if request.user.is_authenticated %}data-user-settings-cache{% endif %}>
+    <body {% if posthog_pageview_enabled %}data-posthog-pageview-enabled="true" data-posthog-route="{{ posthog_pageview_route }}" data-posthog-content-group="{{ posthog_content_group }}"{% if posthog_public_content_id %} data-posthog-public-content-id="{{ posthog_public_content_id }}"{% endif %}{% endif %} {% if request.user.is_authenticated %}data-user-settings-cache{% endif %}>
         {% block default_messages %}
             {% include 'components/messages.html' with messages=messages %}
         {% endblock default_messages %}

@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.db import transaction
@@ -15,6 +16,17 @@ SIGNUP_COMPLETED = f"{EVENT_PREFIX}_signup_completed"
 USER_LOGGED_IN = f"{EVENT_PREFIX}_user_logged_in"
 ACCOUNT_DELETED = f"{EVENT_PREFIX}_account_deleted"
 CHECKOUT_STARTED = f"{EVENT_PREFIX}_checkout_started"
+
+
+def analytics_site_host() -> str:
+    """Configured service origin, never a request host or customer site."""
+    try:
+        origin = urlsplit(settings.SITE_URL)
+        if origin.scheme not in {"http", "https"} or origin.username or origin.password:
+            return ""
+        return origin.hostname or ""
+    except ValueError:
+        return ""
 
 
 def has_analytics_consent(request) -> bool:

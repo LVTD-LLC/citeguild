@@ -8,7 +8,8 @@
     "build:js": "node scripts/copy-app-js.mjs",
     "build:vendor": "node scripts/copy-vendor-assets.mjs",
     "watch": "npm run build:vendor && node scripts/watch-assets.mjs",
-    "lint": "eslint \"frontend/src/js/**/*.js\" \"scripts/**/*.mjs\""
+    "lint": "eslint \"frontend/src/js/**/*.js\" \"scripts/**/*.mjs\"",
+    "test:analytics": "node --test scripts/tests/posthog-pageviews.test.mjs"
   },
   "repository": {
     "type": "git",
