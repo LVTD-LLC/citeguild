@@ -9,5 +9,16 @@
       "https://citeguild\\.dev"
     ],
     "must_match": []
+  },
+  {
+    "claim": "Public membership claims must not retain the retired payment requirement",
+    "paths": [
+      "apps/pages/views.py",
+      "frontend/templates/pages/for/saas-link-building.html"
+    ],
+    "must_not_match": [
+      "paid member"
+    ],
+    "must_match": []
   }
 ]

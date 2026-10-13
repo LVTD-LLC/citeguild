@@ -113,6 +113,46 @@ def test_saas_link_building_page_meets_use_case_contract(client, settings):
     assert len(graph["FAQPage"]["mainEntity"]) == 5
 
 
+def test_saas_source_example_has_matching_free_membership_and_content_dates(client, settings):
+    from xml.etree import ElementTree
+
+    settings.SITE_URL = "https://testserver"
+    response = client.get(reverse("saas_link_building"))
+    content = response.content.decode()
+    match = re.search(r'<script type="application/ld\+json">(.*?)</script>', content, re.DOTALL)
+    graph = json.loads(match.group(1))["@graph"]
+    faq = next(item for item in graph if item["@type"] == "FAQPage")
+    membership = next(
+        item["acceptedAnswer"]["text"]
+        for item in faq["mainEntity"]
+        if item["name"] == "How do SaaS articles become searchable in CiteGuild?"
+    )
+    visible_html = re.sub(r"<script\b[^>]*>.*?</script>", "", content, flags=re.DOTALL)
+    visible_text = " ".join(unescape(re.sub(r"<[^>]+>", " ", visible_html)).split())
+    assert membership in visible_text
+    assert "Membership is free and invitation-only." in membership
+    assert "paid member" not in content.lower()
+    assert 'id="worked-example"' in content
+    assert "Stripe API v1 POST requests" in visible_text
+    assert "That is a test plan, not a reported result." in visible_text
+    assert "https://docs.stripe.com/api/idempotent_requests" in content
+    assert f'href="{reverse("blog_post", args=["find-sources-ai-writing"])}"' in content
+    assert faq["dateModified"] == "2026-10-13"
+    assert '<time datetime="2026-10-13">October 13, 2026</time>' in content
+
+    sitemap = client.get(reverse("django.contrib.sitemaps.views.sitemap"))
+    root = ElementTree.fromstring(sitemap.content)
+    ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    dates = {
+        item.find("sm:loc", ns).text: item.find("sm:lastmod", ns)
+        for item in root.findall("sm:url", ns)
+    }
+    target = next(url for url in dates if url.endswith("/for/saas-link-building"))
+    assert dates[target].text == "2026-10-13"
+    homepage = next(url for url in dates if url.rstrip("/").endswith("testserver"))
+    assert dates[homepage] is None
+
+
 def test_saas_link_building_page_has_two_public_inbound_links(client):
     target = reverse("saas_link_building")
 
