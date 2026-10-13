@@ -31,6 +31,7 @@
                 <p class="font-mono text-sm text-gray-500 dark:text-gray-400">for SaaS publishers</p>
                 <h1 class="mt-4 max-w-[20ch] text-5xl font-semibold tracking-tight text-balance sm:text-7xl">SaaS link building without forced swaps.</h1>
                 <p class="mt-7 max-w-[58ch] text-lg/8 text-pretty text-gray-600 dark:text-gray-300">A relevance-first SaaS link-building workflow starts when a useful article answers a real question in someone else’s draft. CiteGuild makes your sitemap-backed articles searchable to AI writing agents at that moment. It does not promise a placement, trade credits, or publish on anyone’s behalf.</p>
+                <p class="mt-5 text-sm text-gray-500 dark:text-gray-400">By CiteGuild · Updated <time datetime="{{ content_updated_at|date:'Y-m-d' }}">{{ content_updated_at|date:"F j, Y" }}</time></p>
                 <div class="mt-9 flex flex-wrap items-center gap-5 text-sm/6">
                     <a href="{% url 'account_signup' %}"
                        data-posthog-cta="signup"
@@ -146,8 +147,60 @@
                 </div>
                 <div class="border-y border-gray-950/10 py-7 dark:border-white/10">
                     <p class="font-mono text-sm/6 text-gray-500 dark:text-gray-400">Example search context</p>
-                    <p class="mt-4 text-lg/8 text-pretty text-gray-900 dark:text-gray-100">“I’m explaining why webhook handlers need idempotency. Find a current technical source with a concrete retry or duplicate-event example. Exclude our own domain.”</p>
+                    <p class="mt-4 text-lg/8 text-pretty text-gray-900 dark:text-gray-100">“I’m explaining retries for outgoing Stripe API v1 requests. Find a technical source that distinguishes a replayed response from a new operation, including the limits of idempotency keys. Exclude our own domain.”</p>
                     <p class="mt-6 text-base/7 text-pretty text-gray-600 dark:text-gray-300">CiteGuild may return a member article that matches the topic. The agent still opens it, checks the example, verifies that the source supports the sentence, and decides whether to cite it. If the result is vague, stale, promotional, or off-topic, the correct action is to reject it.</p>
+                </div>
+            </div>
+        </section>
+        <section id="worked-example"
+                 class="scroll-mt-24 border-y border-gray-950/10 py-20 dark:border-white/10 lg:py-24">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <h2 class="max-w-[28ch] text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Worked example: turn a broad claim into a useful source.</h2>
+                <p class="mt-5 max-w-[66ch] text-lg/8 text-pretty text-gray-600 dark:text-gray-300">A source-worthy SaaS article gives another writer a claim they can check, the evidence behind it, and the conditions where it stops applying. Here is an editorial example using Stripe’s published API documentation—not a CiteGuild benchmark, a tested integration, or a claim that Stripe belongs to the network.</p>
+                <figure class="mt-8 max-w-lg text-gray-700 dark:text-gray-200">
+                    <svg viewBox="0 0 480 88"
+                         role="img"
+                         aria-labelledby="saas-readiness-title saas-readiness-desc"
+                         class="h-auto w-full">
+                        <title id="saas-readiness-title">Three parts of a checkable source</title>
+                        <desc id="saas-readiness-desc">A bounded claim connects to supporting evidence and explicit limits. All three belong together in the article.</desc>
+                        <g fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="12" width="132" height="60" rx="10" />
+                        <path d="M140 42h24m-7-6 7 6-7 6" />
+                        <rect x="174" y="12" width="132" height="60" rx="10" />
+                        <path d="M312 42h24m-7-6 7 6-7 6" />
+                        <rect x="346" y="12" width="132" height="60" rx="10" />
+                        </g>
+                        <g fill="currentColor" text-anchor="middle" font-size="24">
+                        <text x="68" y="50">Claim</text>
+                        <text x="240" y="50">Evidence</text>
+                        <text x="412" y="50">Limits</text>
+                        </g>
+                    </svg>
+                    <figcaption class="mt-2 text-sm/6 text-gray-600 dark:text-gray-300">Keep the boundary beside the claim, not hidden in a footnote.</figcaption>
+                </figure>
+                <div class="mt-10 max-w-4xl space-y-8 text-base/7 text-gray-600 dark:text-gray-300">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-950 dark:text-gray-100">Start with the sentence that cannot be checked.</h3>
+                        <p class="mt-3">“Idempotency makes retries safe” leaves the writer guessing: which API, which request, and safe from what? A generic definition is not enough to support a claim about a particular implementation.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-950 dark:text-gray-100">Replace it with a bounded claim.</h3>
+                        <p class="mt-3">For Stripe API v1 POST requests, retrying an executed request with the same idempotency key returns the saved status and body, including a saved 500 error. That statement depends on matching parameters and the key still being retained. Stripe’s <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://docs.stripe.com/api/idempotent_requests">idempotent-request documentation</a>, checked October 13, 2026, is the primary source—not an uncited reliability claim.</p>
+                        <p class="mt-3">Keep its limits alongside the statement: changing parameters causes an error; keys may be removed once at least 24 hours old; validation failures and concurrent-request conflicts do not save a result before execution begins. The same page distinguishes API v2 behavior. None of this establishes how an incoming webhook handler deduplicates events.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-950 dark:text-gray-100">Show what your article would add.</h3>
+                        <p class="mt-3">Repeating the documentation gives a writer little reason to cite your SaaS site instead. Add a worked implementation or a reproducible test of one narrow question. A proposed test could submit identical parameters twice with one key in an isolated sandbox, then compare the status, response body, and resource identity. Record the endpoint, API version, test date, and setup so someone else can repeat it.</p>
+                        <p class="mt-3">That is a test plan, not a reported result. Publish observations only after running it. Separate what the documentation promises from what you observed, and remove credentials and customer data from any example. A successful retry in one setup would not establish universal reliability or a backlink gain.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-950 dark:text-gray-100">Give the next writer an honest decision.</h3>
+                        <p class="mt-3">A writer explaining Stripe API v1 response replay can evaluate this narrow evidence. A writer claiming that every payment system prevents duplicate charges cannot use it to support that broader sentence. They should narrow the claim, find a different source, or leave it out.</p>
+                        <p class="mt-3">Before submitting your sitemap, check one article: does it name the question, link its primary evidence, explain its own contribution, and state its limits? If not, improve that article first. When an agent retrieves it, use the <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'blog_post' 'find-sources-ai-writing' %}">claim-level source-selection checklist</a> to decide whether it actually helps the draft. Searchability is an opportunity for evaluation, not a promise of a citation.</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -200,7 +253,7 @@
                     <div class="py-6">
                         <dt class="text-lg font-semibold">How do SaaS articles become searchable in CiteGuild?</dt>
                         <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
-                            A member submits a public sitemap. CiteGuild indexes eligible articles and exposes relevance-ranked retrieval through MCP, CLI, and API.
+                            Membership is free and invitation-only. A member submits a public sitemap. CiteGuild indexes eligible articles and exposes relevance-ranked retrieval through MCP, CLI, and API.
                         </dd>
                     </div>
                     <div class="py-6">

@@ -22,6 +22,7 @@ from apps.pages.services import (
     BLOG_DEFAULT_IMAGE_URL,
     BLOG_DESCRIPTION,
     BLOG_TITLE,
+    SAAS_LINK_BUILDING_UPDATED_AT,
     BlogPostNotFound,
     BlogPostValidationError,
     blog_index_schema,
@@ -143,7 +144,8 @@ class SaasLinkBuildingView(TemplateView):
         ),
         (
             "How do SaaS articles become searchable in CiteGuild?",
-            "A paid member submits a public sitemap. CiteGuild indexes eligible "
+            "Membership is free and invitation-only. A member submits a public "
+            "sitemap. CiteGuild indexes eligible "
             "articles and exposes relevance-ranked retrieval through MCP, CLI, "
             "and API.",
         ),
@@ -157,11 +159,13 @@ class SaasLinkBuildingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["content_updated_at"] = SAAS_LINK_BUILDING_UPDATED_AT
         context["schema_json"] = json_ld(
             use_case_page_schema(
                 name="SaaS link building",
                 path=reverse("saas_link_building"),
                 questions_and_answers=self.faqs,
+                date_modified=SAAS_LINK_BUILDING_UPDATED_AT,
             )
         )
         return context

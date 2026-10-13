@@ -20,6 +20,8 @@ from apps.pages.markdown import ScrollableTablesExtension
 
 logger = logging.getLogger(__name__)
 
+SAAS_LINK_BUILDING_UPDATED_AT = date(2026, 10, 13)
+
 BLOG_TITLE = "CiteGuild Blog"
 BLOG_DESCRIPTION = "AI-native editorial source network for relevant agent-discovered citations"
 BLOG_DEFAULT_AUTHOR = "LVTD LLC"
@@ -363,6 +365,7 @@ def use_case_page_schema(
     name: str,
     path: str,
     questions_and_answers: list[tuple[str, str]],
+    date_modified: date | None = None,
 ) -> dict:
     software = software_application_schema()
     software["url"] = build_absolute_public_url(path)
@@ -371,6 +374,8 @@ def use_case_page_schema(
     breadcrumbs.pop("@context")
     faq = faq_page_schema(questions_and_answers)
     faq.pop("@context")
+    if date_modified is not None:
+        faq["dateModified"] = date_modified.isoformat()
     return {
         "@context": "https://schema.org",
         "@graph": [software, breadcrumbs, faq],

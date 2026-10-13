@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import sitemaps
 from django.urls import reverse
 
-from apps.pages.services import list_blog_posts
+from apps.pages.services import SAAS_LINK_BUILDING_UPDATED_AT, list_blog_posts
 
 
 def public_site_url():
@@ -55,6 +55,9 @@ class StaticViewSitemap(ConfiguredSitemapMixin, sitemaps.Sitemap):
             "saas_link_building",
             "blog_posts",
         ]
+
+    def lastmod(self, item):
+        return SAAS_LINK_BUILDING_UPDATED_AT if item == "saas_link_building" else None
 
     def location(self, item):
         """Get location for each item in the Sitemap
