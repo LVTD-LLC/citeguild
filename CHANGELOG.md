@@ -3,6 +3,11 @@
 - Expand the SaaS source-readiness page with a documented, bounded API-retry example and an evidence/limits checklist; distinguish proposed tests from observed results.
 - Correct retired paid-membership wording in FAQ structured data and align the visible FAQ. Add content-date metadata, sitemap freshness, and regression coverage.
 
+## 2026-10-15
+
+- Add a source-checked MCP first-search walkthrough to the AI-writing source guide, with invitation-aware setup links, exact-host exclusions, and clear failure handling.
+- Correct the member MCP guide to match dashboard access: active accounts can connect an agent without first submitting a site.
+
 ## 2026-10-11
 
 - Keep blog comparison tables inside keyboard-accessible horizontal scroll regions, so the HARO alternatives guide fits mobile screens without hiding columns. Preserve table headings and links in server-rendered HTML.

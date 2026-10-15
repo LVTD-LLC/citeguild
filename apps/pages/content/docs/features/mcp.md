@@ -34,7 +34,7 @@ codex plugin add citeguild@citeguild-skills
 For Codex, copy the protected dashboard prompt. It provides the skills repository and account API key so the agent can follow the repository's current installation instructions. For Claude Code and ChatGPT, start a new conversation after installation and complete the CiteGuild OAuth flow on the first tool call. The plugin searches opted-in member articles; it does not turn CiteGuild into broad web search or promise reciprocal placement.
 
 New accounts receive an API key automatically. The dashboard reveals the
-**Connect an AI agent** prompt after the first site is submitted, but redacts the
+**Connect an AI agent** prompt for active accounts, but redacts the
 key from the page and its HTML. The authenticated **Copy prompt** action fetches
 the full prompt, including the key, from a private non-cacheable endpoint. Share
 that copied prompt only with an agent you trust.
