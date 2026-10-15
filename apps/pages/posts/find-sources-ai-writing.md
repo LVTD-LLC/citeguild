@@ -2,7 +2,7 @@
 title: "Find Sources for AI Writing"
 description: "Find sources for AI writing, check what each article supports, and give your agent a practical evidence checklist before it adds a citation."
 published_at: "2026-10-10"
-updated_at: "2026-10-10"
+updated_at: "2026-10-15"
 author: "CiteGuild"
 keywords: ["find sources for AI writing", "AI source verification", "editorial source discovery"]
 topics: ["AI writing agents", "source selection", "editorial workflows"]
@@ -28,7 +28,7 @@ faqs:
 
 To find sources for AI writing, start with the claim you need to support. Choose the right kind of source, retrieve candidates, and read the original passage before citing it. Give your agent the source URL, relevant context, and limits of the evidence, not a list of links to decorate a finished draft.
 
-This workflow is for agents writing technical articles, SaaS guides, and other editorial content. You can use it with ordinary web research. The CiteGuild example requires an installed CLI and an existing member account; the source-selection method does not.
+This workflow is for agents writing technical articles, SaaS guides, and other editorial content. You can use it with ordinary web research. The CiteGuild examples require an existing member account and either a connected MCP client or an installed CLI; the source-selection method does not.
 
 **The short version:**
 
@@ -38,7 +38,7 @@ This workflow is for agents writing technical articles, SaaS guides, and other e
 4. Accept, narrow, or reject the claim based on what you read.
 5. Keep that decision beside the citation through the final edit.
 
-On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [search with an agent](#search-with-an-agent), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
+On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp) or the [CLI](#search-with-cli), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
 
 <h2 id="frame-the-claim">1. Write the claim before the search query</h2>
 
@@ -88,7 +88,32 @@ This also gives publishers a concrete goal: write something worth consulting. A 
 
 <h2 id="search-with-an-agent">3. Retrieve candidates without treating the results as proof</h2>
 
-For a CiteGuild member using a shell-based agent, this is a focused search example. Have your environment supply `CITEGUILD_API_KEY` securely; do not put a real key into a prompt, command history, or published example.
+Choose the interface your agent already uses. CiteGuild recommends MCP for Codex and Claude Code, and the CLI for OpenClaw, Hermes, and shell workflows. Both retrieve candidates from the same member article corpus; neither decides what deserves a citation.
+
+<h3 id="search-with-mcp">Run a first search through MCP</h3>
+
+Already a member? Sign in to your [dashboard](/home) and use **Copy prompt** under **Connect an AI agent**. The copied setup prompt contains your account API key: share it only with a trusted agent, never in a public issue or chat. Follow the linked installation instructions for your client rather than adding a second connection to an already configured agent. The [member MCP setup guide](/docs/features/mcp/) requires sign-in.
+
+Once connected, ask the agent to call `search_member_articles` with these arguments. This is a tool call, not text to paste into a terminal:
+
+```json
+{
+  "query": "How do Django transaction commit hooks work?",
+  "limit": 10,
+  "language": "en",
+  "excluded_domains": ["your-site.example"]
+}
+```
+
+Replace the example question with your research question. Replace `your-site.example` with the exact hostname you want to exclude, or omit `excluded_domains` if you need no exclusion. Excluding `example.com` does not also exclude `blog.example.com`; list both when needed.
+
+The arguments follow [CiteGuild's MCP search implementation](https://github.com/LVTD-LLC/citeguild/blob/9279ee50f7a57cc91dbf4ede9b6ac24098736e26/apps/mcp_server/server.py#L108) and its v1 search contract, checked October 15, 2026. The JSON is a usage example, not a claimed search result. A successful call returns `contract_version: "v1"` and a `results` list. If the tool is unavailable or authentication fails, finish the connection setup before asking the agent to search again. Do not let it substitute remembered titles for retrieved sources.
+
+No account yet? [Membership is free and invitation-only](/pricing); ask an existing member for an invitation. You can still apply this article's source-checking method to ordinary web research.
+
+<h3 id="search-with-cli">Run the same search from a shell</h3>
+
+For a CiteGuild member using a shell-based agent, this is a focused search example. Have your environment supply `CITEGUILD_API_KEY` securely; do not put a real key into a search prompt, command history, or published example.
 
 ```bash
 citeguild search --api-base https://citeguild.com/api \
@@ -100,6 +125,8 @@ citeguild search --api-base https://citeguild.com/api \
 Replace `your-site.example` with your own site's hostname if you want to exclude it. Put options before the query. The explicit API address makes the destination clear instead of relying on the default in your installed CLI version.
 
 The command follows the [official CiteGuild CLI contract](https://github.com/LVTD-LLC/citeguild/blob/3f92cd8be7ebf29d948a0f7fb82f7cb741e1d8a3/cli/README.md), checked against that repository revision on October 10, 2026. It is a source-checked usage example, not a transcript of a live member search. [Member CLI setup](/docs/features/cli/) requires sign-in. MCP and API clients expose the same v1 search contract, so the review below applies to them too.
+
+### Read the response from either interface
 
 Use the returned fields for their intended jobs:
 
