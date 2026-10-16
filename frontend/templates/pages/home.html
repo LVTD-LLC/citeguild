@@ -47,9 +47,16 @@
                        class="text-sm font-semibold text-green-700 dark:text-green-300">Agent instructions</a>
                     <a href="{{ agent_docs_url }}"
                        class="text-sm font-semibold text-green-700 dark:text-green-300">MCP and API setup</a>
+                    <a href="{% url 'docs_page' category='features' page='cli' %}"
+                       class="app-focus text-sm font-semibold text-green-700 dark:text-green-300">CLI setup</a>
                     <a href="{% url 'settings' %}#api-key-settings-heading"
                        class="text-sm font-semibold text-green-700 dark:text-green-300">Manage API key</a>
                 </div>
+                <p class="app-text-muted mt-4 max-w-[58ch] text-base/7 text-pretty">
+                    Once connected,
+                    <a href="{% url 'blog_post' slug='find-sources-ai-writing' %}#search-with-an-agent"
+                       class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200">run your first source search</a> and check what the results support. You can search member articles without adding a site of your own.
+                </p>
             </section>
         {% endif %}
         {% if has_product_access %}

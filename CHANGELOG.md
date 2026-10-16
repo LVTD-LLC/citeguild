@@ -1,3 +1,7 @@
+## 2026-10-16
+
+- Link the member dashboard to CLI setup and the first-source-search walkthrough, so connecting an agent has a concrete next step. Clarify that searching does not require submitting a site; retain protected credential handling.
+
 ## 2026-10-13
 
 - Expand the SaaS source-readiness page with a documented, bounded API-retry example and an evidence/limits checklist; distinguish proposed tests from observed results.
