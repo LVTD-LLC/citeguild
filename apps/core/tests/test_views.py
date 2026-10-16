@@ -187,6 +187,15 @@ class TestHomeView:
         assert "Your sites" in content
         assert "Subscribe for $10/month" not in content
         assert 'x-ref="addSiteDialog"' in content
+        guide_url = reverse("blog_post", kwargs={"slug": "find-sources-ai-writing"})
+        cli_url = reverse("docs_page", kwargs={"category": "features", "page": "cli"})
+        assert f'href="{guide_url}#search-with-an-agent"' in content
+        assert f'href="{cli_url}"' in content
+        assert "without adding a site of your own" in content
+        guide = auth_client.get(guide_url)
+        assert guide.status_code == 200
+        assert 'id="search-with-an-agent"' in guide.content.decode()
+        assert auth_client.get(cli_url).status_code == 200
 
     def test_legacy_checkout_return_does_not_gate_access(self, auth_client):
         response = auth_client.get(reverse("home"), {"payment": "success"})

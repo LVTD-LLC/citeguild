@@ -42,3 +42,10 @@ Structured data does not guarantee a search feature or rich result.
 
 Use lowercase filename slugs such as `agent-managed-workflows.md`. There is no
 draft status or database sync path; keep unfinished posts outside this folder.
+
+## Member first-search path
+
+The dashboard connection section links to protected MCP/API and CLI setup, then
+to the public source guide at `/blog/find-sources-ai-writing#search-with-an-agent`.
+Active members can search without first submitting a site. Copying the setup
+prompt is not evidence of a completed connection or successful search.
