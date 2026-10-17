@@ -1,3 +1,7 @@
+## 2026-10-17
+
+- Preserve retryable status for SDK-wrapped embedding connection failures and timeouts, so source-search clients and existing indexing retries can recover. Keep authentication and other permanent provider errors nonretryable; add network-free real-SDK regression tests.
+
 ## 2026-10-16
 
 - Update the locked MCP SDK and Pydantic AI dependencies to patched releases after the required security audit reported vulnerabilities; retain the audit gate and verify search, embeddings, and authentication compatibility.
