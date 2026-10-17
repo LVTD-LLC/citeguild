@@ -14,6 +14,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django_q.tasks import async_task
+from openai import APIConnectionError
 from pydantic_ai import Embedder
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 
@@ -66,6 +67,10 @@ class PydanticEmbeddingClient:
         except (httpx.TimeoutException, httpx.TransportError) as error:
             raise EmbeddingError("provider_unavailable", retryable=True) from error
         except ModelAPIError as error:
+            # Pydantic AI wraps OpenAI connection errors (including timeouts).
+            # Preserve their recoverability without retrying unknown model errors.
+            if isinstance(error.__cause__, APIConnectionError):
+                raise EmbeddingError("provider_unavailable", retryable=True) from error
             raise EmbeddingError("provider_error") from error
         except Exception as error:
             raise EmbeddingError("provider_error") from error
