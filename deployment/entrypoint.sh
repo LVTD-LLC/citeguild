@@ -79,7 +79,7 @@ case "$process_type" in
     worker)
         echo "Starting CiteGuild workers..."
         uv run --no-sync python manage.py ensure_crawl_schedules
-        exec uv run --no-sync python manage.py qcluster
+        exec uv run --no-sync python manage.py run_worker
         ;;
     *)
         echo "Invalid APP_PROCESS_TYPE: $process_type. Expected 'server' or 'worker'." >&2

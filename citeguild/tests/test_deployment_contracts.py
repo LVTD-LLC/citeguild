@@ -44,7 +44,7 @@ def test_production_roles_share_one_required_immutable_image():
         }
 
 
-def test_deploy_workflow_publishes_and_deploys_only_the_git_sha_tag():
+def test_deploy_workflow_publishes_and_deploys_one_attempt_specific_image():
     workflow = _yaml(".github/workflows/deploy.yml")
     steps = workflow["jobs"]["build-and-deploy"]["steps"]
     build = next(step for step in steps if step.get("name") == "Build and push")
@@ -56,30 +56,38 @@ def test_deploy_workflow_publishes_and_deploys_only_the_git_sha_tag():
         if step.get("name") in {"Deploy server to CapRover", "Deploy workers to CapRover"}
     ]
 
-    assert tags == "${{ steps.image.outputs.image_name }}:${{ github.sha }}"
-    assert build["with"]["build-args"] == "CITEGUILD_RELEASE=${{ github.sha }}"
+    image_tag = "${{ github.sha }}-${{ env.EXPECTED_DEPLOYMENT }}"
+    assert tags == "${{ steps.image.outputs.image_name }}:" + image_tag
+    assert build["with"]["build-args"].splitlines() == [
+        "CITEGUILD_RELEASE=${{ github.sha }}",
+        "CITEGUILD_DEPLOYMENT_ID=${{ env.EXPECTED_DEPLOYMENT }}",
+    ]
     assert install["run"] == "npm install --global caprover@2.3.1"
     assert len(deployments) == 2
     assert all(
         step["env"]["IMAGE_NAME"] == "${{ steps.image.outputs.image_name }}" for step in deployments
     )
     assert all("caprover deploy" in step["run"] for step in deployments)
-    assert all('--imageName "${IMAGE_NAME}:${GITHUB_SHA}"' in step["run"] for step in deployments)
+    assert all(step["env"]["IMAGE_TAG"] == image_tag for step in deployments)
+    assert all('--imageName "${IMAGE_NAME}:${IMAGE_TAG}"' in step["run"] for step in deployments)
 
 
 def test_deploy_workflow_gates_workers_on_aggregate_production_health():
     workflow = _yaml(".github/workflows/deploy.yml")
-    steps = workflow["jobs"]["build-and-deploy"]["steps"]
+    job = workflow["jobs"]["build-and-deploy"]
+    steps = job["steps"]
     names = [step.get("name") for step in steps]
     health = next(step for step in steps if step.get("name") == "Verify production health")
-    script = health["run"]
+    worker_health = next(
+        step for step in steps if step.get("name") == "Verify web and worker deployment readiness"
+    )
 
     assert workflow["env"]["PRODUCTION_HEALTHCHECK_URL"] == "${{ vars.PRODUCTION_HEALTHCHECK_URL }}"
     assert names.index("Deploy server to CapRover") < names.index("Verify production health")
     assert names.index("Verify production health") < names.index("Deploy workers to CapRover")
-    assert "curl --fail" in script
-    assert health["env"]["EXPECTED_RELEASE"] == "${{ github.sha }}"
-    assert 'payload.get("release") != os.environ["EXPECTED_RELEASE"]' in script
-    assert 'payload.get("healthy") is not True' in script
-    assert '("database", "redis", "qdrant")' in script
-    assert "sleep 5" in script
+    assert names.index("Deploy workers to CapRover") < names.index(worker_health["name"])
+    assert workflow["concurrency"] == {"group": "citeguild-production", "cancel-in-progress": False}
+    assert job["env"]["EXPECTED_RELEASE"] == "${{ github.sha }}"
+    assert job["env"]["EXPECTED_DEPLOYMENT"] == "${{ github.run_id }}-${{ github.run_attempt }}"
+    assert health["run"] == "python3 deployment/wait_ready.py"
+    assert worker_health["run"] == "python3 deployment/wait_ready.py --worker"

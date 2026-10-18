@@ -13,10 +13,18 @@ permissions:
   contents: read
   packages: write
 
+concurrency:
+  group: citeguild-production
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      EXPECTED_RELEASE: ${{ github.sha }}
+      EXPECTED_DEPLOYMENT: ${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,8 +68,10 @@ jobs:
           context: .
           push: true
           file: deployment/Dockerfile
-          build-args: CITEGUILD_RELEASE=${{ github.sha }}
-          tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
+          build-args: |
+            CITEGUILD_RELEASE=${{ github.sha }}
+            CITEGUILD_DEPLOYMENT_ID=${{ env.EXPECTED_DEPLOYMENT }}
+          tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}-${{ env.EXPECTED_DEPLOYMENT }}
 
       # CapRover CLI 2.4.0 has conflicting -t flags and cannot start.
       - name: Install CapRover CLI
@@ -72,50 +82,29 @@ jobs:
           CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
           CAPROVER_APP_TOKEN: ${{ secrets.APP_TOKEN }}
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}
+          IMAGE_TAG: ${{ github.sha }}-${{ env.EXPECTED_DEPLOYMENT }}
         run: >-
           caprover deploy
           --caproverUrl "$CAPROVER_SERVER"
           --appToken "$CAPROVER_APP_TOKEN"
           --appName "$CAPROVER_APP_NAME"
-          --imageName "${IMAGE_NAME}:${GITHUB_SHA}"
+          --imageName "${IMAGE_NAME}:${IMAGE_TAG}"
 
       - name: Verify production health
-        shell: bash
-        env:
-          EXPECTED_RELEASE: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          for attempt in {1..24}; do
-            if curl --fail --silent --show-error --max-time 10 \
-              "$PRODUCTION_HEALTHCHECK_URL" | python -c '
-          import json
-          import os
-          import sys
-
-          payload = json.load(sys.stdin)
-          checks = payload.get("checks", {})
-          expected = ("database", "redis", "qdrant")
-          if payload.get("release") != os.environ["EXPECTED_RELEASE"]:
-              raise SystemExit(1)
-          if payload.get("healthy") is not True or not all(checks.get(name) is True for name in expected):
-              raise SystemExit(1)
-          '; then
-              exit 0
-            fi
-            echo "Production is not ready yet (attempt $attempt/24)."
-            sleep 5
-          done
-          echo "::error::Production health did not become ready within two minutes."
-          exit 1
+        run: python3 deployment/wait_ready.py
 
       - name: Deploy workers to CapRover
         env:
           CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
           CAPROVER_APP_TOKEN: ${{ secrets.WORKERS_APP_TOKEN }}
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}
+          IMAGE_TAG: ${{ github.sha }}-${{ env.EXPECTED_DEPLOYMENT }}
         run: >-
           caprover deploy
           --caproverUrl "$CAPROVER_SERVER"
           --appToken "$CAPROVER_APP_TOKEN"
           --appName "${CAPROVER_APP_NAME}-workers"
-          --imageName "${IMAGE_NAME}:${GITHUB_SHA}"
+          --imageName "${IMAGE_NAME}:${IMAGE_TAG}"
+
+      - name: Verify web and worker deployment readiness
+        run: python3 deployment/wait_ready.py --worker
