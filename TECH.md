@@ -133,7 +133,8 @@ MVP production is not complete until these CapRover components are healthy:
 The current `.github/workflows/deploy.yml` builds one image and deploys app and
 workers. Production runs share a non-canceling concurrency group. Each image
 contains both its commit SHA and a unique workflow-run/attempt deployment ID,
-so a rerun cannot pass against an older instance of the same commit. The workflow
+and uses an attempt-specific image tag, so reruns neither overwrite the previous
+artifact nor pass against an older instance of the same commit. The workflow
 waits up to ten minutes per phase for six consecutive healthy observations,
 first for web, then for the matching worker after its deployment. This verifies
 readiness; it does not promise a zero-downtime rollout or strict FIFO queuing.

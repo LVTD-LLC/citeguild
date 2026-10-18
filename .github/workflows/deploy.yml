@@ -71,7 +71,7 @@ jobs:
           build-args: |
             CITEGUILD_RELEASE=${{ github.sha }}
             CITEGUILD_DEPLOYMENT_ID=${{ env.EXPECTED_DEPLOYMENT }}
-          tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
+          tags: ${{ steps.image.outputs.image_name }}:${{ github.sha }}-${{ env.EXPECTED_DEPLOYMENT }}
 
       # CapRover CLI 2.4.0 has conflicting -t flags and cannot start.
       - name: Install CapRover CLI
@@ -82,12 +82,13 @@ jobs:
           CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
           CAPROVER_APP_TOKEN: ${{ secrets.APP_TOKEN }}
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}
+          IMAGE_TAG: ${{ github.sha }}-${{ env.EXPECTED_DEPLOYMENT }}
         run: >-
           caprover deploy
           --caproverUrl "$CAPROVER_SERVER"
           --appToken "$CAPROVER_APP_TOKEN"
           --appName "$CAPROVER_APP_NAME"
-          --imageName "${IMAGE_NAME}:${GITHUB_SHA}"
+          --imageName "${IMAGE_NAME}:${IMAGE_TAG}"
 
       - name: Verify production health
         run: python3 deployment/wait_ready.py
@@ -97,12 +98,13 @@ jobs:
           CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
           CAPROVER_APP_TOKEN: ${{ secrets.WORKERS_APP_TOKEN }}
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}
+          IMAGE_TAG: ${{ github.sha }}-${{ env.EXPECTED_DEPLOYMENT }}
         run: >-
           caprover deploy
           --caproverUrl "$CAPROVER_SERVER"
           --appToken "$CAPROVER_APP_TOKEN"
           --appName "${CAPROVER_APP_NAME}-workers"
-          --imageName "${IMAGE_NAME}:${GITHUB_SHA}"
+          --imageName "${IMAGE_NAME}:${IMAGE_TAG}"
 
       - name: Verify web and worker deployment readiness
         run: python3 deployment/wait_ready.py --worker
