@@ -131,7 +131,27 @@ MVP production is not complete until these CapRover components are healthy:
 - Qdrant with durable storage and non-public access
 
 The current `.github/workflows/deploy.yml` builds one image and deploys app and
-workers. Production Qdrant is provisioned as the private
+workers. Production runs share a non-canceling concurrency group. Each image
+contains both its commit SHA and a unique workflow-run/attempt deployment ID,
+so a rerun cannot pass against an older instance of the same commit. The workflow
+waits up to ten minutes per phase for six consecutive healthy observations,
+first for web, then for the matching worker after its deployment. This verifies
+readiness; it does not promise a zero-downtime rollout or strict FIFO queuing.
+
+The production worker uses `manage.py run_worker`, a thin wrapper around the
+default Django Q2 cluster. After startup it registers its release, deployment
+ID, configuration fingerprint, and cluster locator in the existing shared cache.
+`/api/healthcheck` exposes only the deployment ID and a `worker_ready` boolean,
+never worker identities or task data. Readiness requires matching registration
+and a fresh, running Q2 status with the configured worker pool, monitor, and
+pusher. A stopped/stale worker or broker failure cannot pass. The registration
+uses one cache key, overwritten at the next worker start; Q2's short-lived
+signed status supplies liveness. Ordinary `healthy`/HTTP status continues to
+cover web dependencies only, avoiding a load-balancer/deployment deadlock while
+the worker is being replaced. Local `qcluster` remains available but does not
+register production deployment readiness. No probe jobs or schedules are added.
+
+Production Qdrant is provisioned as the private
 `citeguild-qdrant` CapRover service on port 6333, pinned to Qdrant 1.18.3 with
 the persistent `citeguild-qdrant-data` volume and API-key authentication.
 Server startup and `/api/healthcheck` validate the authenticated article

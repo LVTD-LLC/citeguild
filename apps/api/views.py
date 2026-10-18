@@ -255,6 +255,12 @@ def healthcheck(request: HttpRequest):
         "configuration_fingerprint": settings.CITEGUILD_CONFIG_FINGERPRINT,
         "release": settings.CITEGUILD_RELEASE,
     }
+    from apps.core.worker_readiness import worker_ready
+
+    # Workers are a deployment gate, not a web load-balancer dependency: web
+    # must become available before the worker rollout starts.
+    payload["deployment"] = settings.CITEGUILD_DEPLOYMENT_ID
+    payload["worker_ready"] = worker_ready()
 
     if healthy:
         return payload

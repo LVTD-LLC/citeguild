@@ -1,3 +1,7 @@
+## 2026-10-18
+
+- Serialize production releases and require stable health from the current deployment attempt, including a matching live worker, before reporting deployment success. Keep web load-balancer health independent of worker rollout readiness.
+
 ## 2026-10-17
 
 - Preserve retryable status for SDK-wrapped embedding connection failures and timeouts, so source-search clients and existing indexing retries can recover. Keep authentication and other permanent provider errors nonretryable; add network-free real-SDK regression tests.
