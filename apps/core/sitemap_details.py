@@ -47,7 +47,7 @@ class SitemapDetailsService:
             "otherwise review the page's noindex directive."
         ),
         "empty": (
-            "No readable article text was extracted. Check that the public page "
+            "Not enough readable article text was extracted. Check that the public page "
             "serves its main article as HTML."
         ),
         "sitemap_removed": (

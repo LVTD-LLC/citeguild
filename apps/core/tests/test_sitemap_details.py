@@ -32,7 +32,7 @@ def subscribe(profile):
         (ArticleStates.ACTIVE, True, "", "Indexed in CiteGuild"),
         (ArticleStates.DISCOVERED, False, "", "Not searchable yet"),
         (ArticleStates.INACTIVE, False, "noindex", "Keep that setting if intentional"),
-        (ArticleStates.INACTIVE, False, "empty", "No readable article text"),
+        (ArticleStates.INACTIVE, False, "empty", "Not enough readable article text"),
         (ArticleStates.INACTIVE, False, "sitemap_removed", "active sitemap inventory"),
         (ArticleStates.INACTIVE, False, "http_404", "returned 404"),
         (ArticleStates.INACTIVE, False, "http_410", "returned 410"),
