@@ -7,3 +7,5 @@
 - OpenSEO GSC binding is sc-domain:citeguild.com, verified 2026-10-10 with final comparable page windows. Both returned no rows; this is not a property-total or absent-demand claim. Historical .dev data stays separate. Do not infer ranking gains from live crawl success.
 
 Recheck when product or domain changes. Competitor prices in the HARO guide remain dated August 5; this canonical repair is not a fresh competitor review.
+
+- Checked 2026-10-19: the owner-scoped page list includes discovered and inactive article records as well as active articles; finding a page is not proof it is indexed. CiteGuild indexing is separate from Google indexing and does not guarantee retrieval or citation. Sources: apps/core/sitemap_details.py, apps/core/article_ingestion.py, apps/search/qdrant.py and PRODUCT.md. Page-status guidance is read-only; it does not resubmit, reactivate or change indexing directives.
