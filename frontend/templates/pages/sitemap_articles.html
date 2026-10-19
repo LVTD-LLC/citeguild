@@ -1,5 +1,5 @@
 {% extends "base_app.html" %}
-{% block title %}Indexed pages · {{ project.name }} · {{ block.super }}{% endblock title %}
+{% block title %}Pages and indexing · {{ project.name }} · {{ block.super }}{% endblock title %}
 {% block content %}
     <div class="mx-auto w-full max-w-6xl px-6 py-10 lg:px-8">
         <nav aria-label="Breadcrumb"
@@ -10,13 +10,26 @@
         <header class="mt-6 border-b border-gray-950/10 pb-7 dark:border-white/10">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="font-semibold text-green-700 dark:text-green-300">Indexed pages</p>
+                    <p class="font-semibold text-green-700 dark:text-green-300">Pages and indexing</p>
                     <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{{ project.name }}</h1>
-                    <p class="mt-2 text-base text-gray-600 sm:text-sm dark:text-gray-300">Pages CiteGuild can retrieve as sources.</p>
+                    <p class="mt-2 text-base text-gray-600 sm:text-sm dark:text-gray-300">Found pages, including those still processing or no longer searchable.</p>
                 </div>
                 <p class="text-base tabular-nums text-gray-500 sm:text-sm dark:text-gray-400">{{ details.articles.paginator.count }} total</p>
             </div>
         </header>
+        <section class="mt-6 border-b border-gray-950/10 pb-6 dark:border-white/10"
+                 aria-labelledby="source-readiness-heading">
+            <h2 id="source-readiness-heading" class="text-lg font-semibold">From a found page to a useful source</h2>
+            <p class="mt-2 max-w-3xl text-base text-gray-600 sm:text-sm dark:text-gray-300">CiteGuild indexing is separate from Google indexing. A found page is not necessarily ready for agents to retrieve, and an indexed article is not guaranteed to appear for every query.</p>
+            <p class="mt-3 text-base text-gray-600 sm:text-sm dark:text-gray-300">
+                Check the status below, then
+                <a href="{% url 'blog_post' slug='find-sources-ai-writing' %}#search-with-an-agent"
+                   class="app-focus font-semibold text-green-700 underline dark:text-green-300">try a relevant source search</a>.
+                For the evidence an article should offer, see
+                <a href="{% url 'saas_link_building' %}#worked-example"
+                   class="app-focus font-semibold text-green-700 underline dark:text-green-300">the source-worthy article example</a>.
+            </p>
+        </section>
         {% if details.articles %}
             <ul class="divide-y divide-gray-950/10 dark:divide-white/10" role="list">
                 {% for article in details.articles %}
@@ -29,6 +42,7 @@
                                    target="_blank"
                                    rel="noopener noreferrer">{{ article.normalized_canonical_url }}</a>
                                 <p class="mt-2 text-base text-gray-500 sm:text-sm dark:text-gray-400">Last seen {{ article.last_seen_at|date:"M j, Y" }}</p>
+                                <p class="mt-3 max-w-3xl text-base text-gray-600 sm:text-sm dark:text-gray-300">{{ article.indexing_guidance }}</p>
                             </div>
                             <span class="shrink-0 rounded-full px-3 py-1 text-sm font-semibold {% if article.is_active %}bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-200{% else %}bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200{% endif %}">{{ article.get_state_display }}</span>
                         </div>
@@ -37,7 +51,7 @@
             </ul>
             {% if details.articles.paginator.num_pages > 1 %}
                 <nav class="mt-6 flex items-center justify-between gap-4 border-t border-gray-950/10 pt-6 text-base sm:text-sm dark:border-white/10"
-                     aria-label="Indexed pages pagination">
+                     aria-label="Pages and indexing pagination">
                     {% if details.articles.has_previous %}
                         <a href="?page={{ details.articles.previous_page_number }}"
                            class="app-button-secondary">Previous</a>
@@ -54,7 +68,7 @@
                 </nav>
             {% endif %}
         {% else %}
-            <p class="mt-8 border-y border-gray-950/10 py-8 text-base text-gray-600 dark:border-white/10 dark:text-gray-300">No pages have been indexed for this site yet.</p>
+            <p class="mt-8 border-y border-gray-950/10 py-8 text-base text-gray-600 dark:border-white/10 dark:text-gray-300">No article records yet. Check the site's latest sync on the dashboard and confirm that the submitted sitemap lists your public article URLs. You can still search other members' articles while your site is processing.</p>
         {% endif %}
     </div>
 {% endblock content %}

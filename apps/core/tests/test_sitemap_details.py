@@ -7,10 +7,11 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.core.choices import ProjectSyncStates
-from apps.core.models import DetectedNetworkLink, OutboundLinkObservation, Project
+from apps.core.choices import ArticleStates, ProjectSyncStates
+from apps.core.models import Article, DetectedNetworkLink, OutboundLinkObservation, Project
 from apps.core.network_graph import DetectedNetworkLinkService
 from apps.core.projects import ProjectService
+from apps.core.sitemap_details import SitemapDetailsService
 
 from .test_network_graph import (
     create_article,
@@ -23,6 +24,30 @@ from .test_network_graph import (
 def subscribe(profile):
     profile.stripe_subscription_status = "active"
     profile.save(update_fields=["stripe_subscription_status", "updated_at"])
+
+
+@pytest.mark.parametrize(
+    ("state", "active", "reason", "expected"),
+    [
+        (ArticleStates.ACTIVE, True, "", "Indexed in CiteGuild"),
+        (ArticleStates.DISCOVERED, False, "", "Not searchable yet"),
+        (ArticleStates.INACTIVE, False, "noindex", "Keep that setting if intentional"),
+        (ArticleStates.INACTIVE, False, "empty", "Not enough readable article text"),
+        (ArticleStates.INACTIVE, False, "sitemap_removed", "active sitemap inventory"),
+        (ArticleStates.INACTIVE, False, "http_404", "returned 404"),
+        (ArticleStates.INACTIVE, False, "http_410", "returned 410"),
+        (ArticleStates.INACTIVE, False, "unknown-private-detail", "ask the site operator"),
+    ],
+)
+def test_article_guidance_matches_lifecycle_without_exposing_raw_reasons(
+    state, active, reason, expected
+):
+    article = Article(state=state, is_active=active, inactivity_reason=reason)
+
+    guidance = SitemapDetailsService.article_guidance(article)
+
+    assert expected in guidance
+    assert "unknown-private-detail" not in guidance
 
 
 def test_link_pagination_renders_valid_multi_parameter_query_string():
@@ -179,6 +204,13 @@ def test_indexed_pages_view_is_owner_scoped_and_paginated(auth_client, profile):
     assert response.context["details"].articles.paginator.count == 26
     assert response.context["details"].articles.paginator.per_page == 25
     assert reverse("sitemap_details", args=[first.project.uuid]) in response.content.decode()
+    assert all(article.indexing_guidance for article in response.context["details"].articles)
+    content = response.content.decode()
+    assert "Pages and indexing" in content
+    assert "CiteGuild indexing is separate from Google indexing" in content
+    assert "Indexed in CiteGuild" in content
+    assert reverse("blog_post", args=["find-sources-ai-writing"]) in content
+    assert reverse("saas_link_building") + "#worked-example" in content
 
     other_project = create_article(
         create_other_profile("indexed-pages-private"),

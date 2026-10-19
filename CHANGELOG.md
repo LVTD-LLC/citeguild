@@ -1,3 +1,7 @@
+## 2026-10-19
+
+- Clarify publisher page indexing states with lifecycle-specific recovery guidance, distinguish CiteGuild from Google indexing, and link to source-search and source-quality walkthroughs.
+
 ## 2026-10-18
 
 - Serialize production releases and require stable health from the current deployment attempt, including a matching live worker, before reporting deployment success. Keep web load-balancer health independent of worker rollout readiness.

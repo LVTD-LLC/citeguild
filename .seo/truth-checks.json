@@ -20,5 +20,11 @@
       "paid member"
     ],
     "must_match": []
+  },
+  {
+    "claim": "The all-state article list must not claim every found page is retrievable",
+    "paths": ["frontend/templates/pages/sitemap_articles.html"],
+    "must_not_match": ["Pages CiteGuild can retrieve as sources\\."],
+    "must_match": ["CiteGuild indexing is separate from Google indexing"]
   }
 ]

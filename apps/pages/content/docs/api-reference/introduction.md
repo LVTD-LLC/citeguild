@@ -63,3 +63,16 @@ limit; a `429` response includes `Retry-After` and rate-limit headers.
 ## Sections
 
 - **Version 1 API** — account status, owner-scoped sites, and shared semantic search.
+
+## Check whether your own pages are ready
+
+In the dashboard, open a site's **Pages** view. **Pages and indexing** includes
+found pages that are still processing or inactive, not only indexed sources.
+Each page shows its current state and the next useful check. Review the site's
+latest sync on the dashboard if processing does not complete. Keep intentional
+`noindex` directives; only change them when the page should be publicly indexed.
+
+CiteGuild indexing is separate from Google indexing. An indexed article can be
+considered for relevant source searches, but indexing does not promise a result
+for every query or a citation. You can search other members' articles even
+before your own site finishes processing.

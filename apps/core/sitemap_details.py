@@ -41,6 +41,40 @@ class SitemapDetailsService:
     LINK_PAGE_SIZE = 20
     ARTICLE_PAGE_SIZE = 25
     DOMAIN_SUMMARY_SIZE = 5
+    INACTIVE_ARTICLE_GUIDANCE = {
+        "noindex": (
+            "This page asks crawlers not to index it. Keep that setting if intentional; "
+            "otherwise review the page's noindex directive."
+        ),
+        "empty": (
+            "Not enough readable article text was extracted. Check that the public page "
+            "serves its main article as HTML."
+        ),
+        "sitemap_removed": (
+            "This page is no longer in the active sitemap inventory. "
+            "If you want it included, check that it is still in your sitemap."
+        ),
+        "http_404": "The page returned 404. Restore it only if it should still be available.",
+        "http_410": "The page returned 410. Restore it only if it should still be available.",
+    }
+
+    @classmethod
+    def article_guidance(cls, article: Article) -> str:
+        if article.is_active:
+            return (
+                "Indexed in CiteGuild. Retrieval still depends on site and account "
+                "eligibility, the query and relevance; a citation is not guaranteed."
+            )
+        if article.state == ArticleStates.DISCOVERED:
+            return (
+                "Not searchable yet. Processing may still be running; check the "
+                "latest site sync and check back later."
+            )
+        return cls.INACTIVE_ARTICLE_GUIDANCE.get(
+            article.inactivity_reason,
+            "Not currently available to source search. Review the public page "
+            "and the latest site sync; ask the site operator if this persists.",
+        )
 
     @staticmethod
     def _cross_site_links():
@@ -111,9 +145,12 @@ class SitemapDetailsService:
     ) -> SitemapArticlesData:
         project = ProjectService.get_for_owner(owner, project_uuid)
         articles = Article.objects.filter(project=project).order_by("-last_seen_at", "-id")
+        article_page = Paginator(articles, cls.ARTICLE_PAGE_SIZE).get_page(page or 1)
+        for article in article_page:
+            article.indexing_guidance = cls.article_guidance(article)
         return SitemapArticlesData(
             project=project,
-            articles=Paginator(articles, cls.ARTICLE_PAGE_SIZE).get_page(page or 1),
+            articles=article_page,
         )
 
     @classmethod
