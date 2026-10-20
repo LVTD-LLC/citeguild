@@ -1,3 +1,7 @@
+## 2026-10-20
+
+- Add a claim-by-claim source-routing table and worked research plan to the AI-writing guide, distinguishing primary documentation, web-search APIs, and CiteGuild member articles without claiming they are interchangeable.
+
 ## 2026-10-19
 
 - Clarify publisher page indexing states with lifecycle-specific recovery guidance, distinguish CiteGuild from Google indexing, and link to source-search and source-quality walkthroughs.

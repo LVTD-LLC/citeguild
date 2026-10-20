@@ -472,6 +472,12 @@ def test_source_selection_guide_renders_indexable_metadata(settings, client, sit
     assert article["url"] == expected_url
     assert article["mainEntityOfPage"]["@id"] == expected_url
     assert article["datePublished"].startswith("2026-10-10")
+    assert article["dateModified"].startswith("2026-10-20")
+    assert 'id="choose-search-route"' in rendered
+    assert 'class="blog-table-scroll app-focus"' in rendered
+    assert '<th scope="col">Where to start</th>' in rendered
+    faq = next(item for item in schema["@graph"] if item["@type"] == "FAQPage")
+    assert all(question["name"] in post.html for question in faq["mainEntity"])
 
 
 def test_source_selection_guide_is_discoverable_from_home_blog_and_sitemap(settings, client):

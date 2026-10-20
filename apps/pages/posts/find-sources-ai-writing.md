@@ -2,7 +2,7 @@
 title: "Find Sources for AI Writing"
 description: "Find sources for AI writing, check what each article supports, and give your agent a practical evidence checklist before it adds a citation."
 published_at: "2026-10-10"
-updated_at: "2026-10-15"
+updated_at: "2026-10-20"
 author: "CiteGuild"
 keywords: ["find sources for AI writing", "AI source verification", "editorial source discovery"]
 topics: ["AI writing agents", "source selection", "editorial workflows"]
@@ -22,6 +22,8 @@ faqs:
     answer: "No. Relevance helps you choose what to read. Check the original passage and its limits before using it as evidence."
   - question: "Can I use this workflow without CiteGuild?"
     answer: "Yes. Use primary documentation, a library, or web search to find candidates, then apply the same claim-level checks."
+  - question: "Does CiteGuild replace Tavily or Exa?"
+    answer: "No. Tavily and Exa support web research beyond CiteGuild's participating publishers. Use CiteGuild to discover relevant member articles, official sources for documented behavior, and web search for evidence outside the member network. Read the original source whichever route you use."
   - question: "What if I cannot find a supporting source?"
     answer: "Narrow or remove the claim, or label a genuinely interpretive statement as analysis. Do not attach a tangential source to make it look verified."
 ---
@@ -38,7 +40,7 @@ This workflow is for agents writing technical articles, SaaS guides, and other e
 4. Accept, narrow, or reject the claim based on what you read.
 5. Keep that decision beside the citation through the final edit.
 
-On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp) or the [CLI](#search-with-cli), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
+On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [choose web search or the member network](#choose-search-route), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp) or the [CLI](#search-with-cli), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
 
 <h2 id="frame-the-claim">1. Write the claim before the search query</h2>
 
@@ -87,6 +89,28 @@ This also gives publishers a concrete goal: write something worth consulting. A 
 </figure>
 
 <h2 id="search-with-an-agent">3. Retrieve candidates without treating the results as proof</h2>
+
+<h3 id="choose-search-route">Choose web search or the member network by the claim</h3>
+
+Use CiteGuild for relevant articles from participating publishers, not as a drop-in replacement for Tavily or Exa. A writing workflow can use both a web-search API and a member-source search. Choose where to look from the evidence you need, not from which tool happens to be connected.
+
+| What the sentence needs | Where to start | What to check before citing |
+| --- | --- | --- |
+| Documented behavior of a particular product version | Official manual, specification, or release note | The exact version and the conditions attached to the behavior |
+| A recent announcement or a source outside the member network | Original publisher; web search when you need to find it | Publication date, original reporting, and any later correction |
+| A practitioner's worked example or implementation tradeoff | CiteGuild member articles or broader editorial research | Whether the example's conditions match the draft; follow links to primary evidence |
+
+Web-search tools have useful strengths that a member network does not replace:
+
+- **Sources beyond participating publishers.** Use web search when the required organization or publication is outside CiteGuild's corpus. Do not interpret a member-search miss as evidence that no source exists.
+- **Time-sensitive discovery controls.** [Tavily Search](https://docs.tavily.com/documentation/api-reference/endpoint/search) documents news search and time filters. [Exa Search](https://exa.ai/docs/reference/search) documents publication-date filters. These are reasons to use a web-search route for a dated question, not guarantees that every returned page is current.
+- **Domain-scoped web research.** Both references document domain inclusion and exclusion. That helps when you need to search a known publisher rather than the member corpus. Filtering to a domain does not make every page on it sufficient evidence.
+
+Those capabilities were checked in the official references on October 20, 2026. This is a workflow comparison, not a measured ranking of search quality, speed, price, or coverage. Use the linked references for each API's current options.
+
+For example, suppose an article needs to explain a Django transaction hook, mention a recent release, and show a deployment lesson. Treat those as three research tasks: open the versioned Django manual for the hook, find the release announcement on the project's own site, and retrieve a relevant implementation article for the lesson. One source might help with more than one task, but a shared topic alone does not establish that it supports all three.
+
+Keep the supporting passage and its limits beside each claim. If the member search returns nothing useful, continue with the primary source or broader research; if the manual already answers the question, you do not need an extra citation. Members ready to try the editorial route can use the [MCP walkthrough](#search-with-mcp) or [CLI walkthrough](#search-with-cli) below. Check [membership access](/pricing) before planning an integration: it is free and invitation-only.
 
 Choose the interface your agent already uses. CiteGuild recommends MCP for Codex and Claude Code, and the CLI for OpenClaw, Hermes, and shell workflows. Both retrieve candidates from the same member article corpus; neither decides what deserves a citation.
 
@@ -198,6 +222,10 @@ No. Relevance helps you choose what to read. Check the original passage and its 
 ### Can I use this workflow without CiteGuild?
 
 Yes. Use primary documentation, a library, or web search to find candidates, then apply the same claim-level checks. CiteGuild adds access to member-published articles; it does not need to be involved in every research task.
+
+### Does CiteGuild replace Tavily or Exa?
+
+No. Tavily and Exa support web research beyond CiteGuild's participating publishers. Use CiteGuild to discover relevant member articles, official sources for documented behavior, and web search for evidence outside the member network. Read the original source whichever route you use.
 
 ### What if I cannot find a supporting source?
 
