@@ -9,7 +9,7 @@
 | Slug | URL | Title / anchor candidate | Used by patterns |
 |---|---|---|---|
 | `/` | https://citeguild.com/ | Find and cite relevant member articles | All |
-| `/pricing` | https://citeguild.com/pricing | CiteGuild pricing — $10/month | Compare, playbooks |
+| `/pricing` | https://citeguild.com/pricing | Free invitation-only CiteGuild membership | Compare, playbooks |
 | `/blog/` | https://citeguild.com/blog/ | CiteGuild journal | Playbooks |
 | `/privacy-policy` | https://citeguild.com/privacy-policy | Privacy policy | Trust/legal only |
 | `/terms-of-service` | https://citeguild.com/terms-of-service | Terms of service | Trust/legal only |
@@ -23,7 +23,7 @@ There is no public `/about` page. Do not invent one or link authenticated docs a
 | `/#article-indexing` | https://citeguild.com/#article-indexing | Sitemap-backed article indexing | Alternatives, use cases, playbooks |
 | `/#agent-retrieval` | https://citeguild.com/#agent-retrieval | Relevance-ranked retrieval for writing agents | Alternatives, compare, use cases |
 | `/#citation-observation` | https://citeguild.com/#citation-observation | Detected member-to-member citations | Compare, use cases, playbooks |
-| `/#membership` | https://citeguild.com/#membership | One $10 monthly membership | Alternatives, compare, use cases |
+| `/#membership` | https://citeguild.com/#membership | Free invitation-only membership | Alternatives, compare, use cases |
 
 `/uses` remains publicly accessible for transparency but is `noindex` and excluded from the sitemap because its generic technology-stack intent does not support the product's search strategy.
 
@@ -83,3 +83,5 @@ Vary anchors naturally. Useful families include:
 Never use anchors that promise guaranteed links, rankings, placement, or reciprocity.
 
 - `/blog/find-sources-ai-writing` — Find Sources for AI Writing; find and verify sources for AI writing; source-selection workflow; claim-level evidence checklist; agent source review. Inbound: homepage and blog index.
+
+- `/blog/original-research-methods-template` — Original Research Methods Template; publisher research methods worksheet; document research methods; report missing observations; inspectable study methods. Inbound: homepage and blog index. Owns publisher methods production, not writer source selection or generic SaaS link building.
