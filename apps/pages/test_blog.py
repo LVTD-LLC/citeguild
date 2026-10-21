@@ -501,6 +501,38 @@ def post_schema_json(post):
     return json_ld(blog_post_schema(post))
 
 
+def test_publisher_methods_worksheet_is_rendered_and_discoverable(settings, client):
+    settings.SITE_URL = "https://citeguild.com"
+    settings.BLOG_POSTS_DIR = Path(__file__).parent / "posts"
+    path = reverse("blog_post", kwargs={"slug": "original-research-methods-template"})
+    response = client.get(path)
+
+    assert response.status_code == 200
+    rendered = response.content.decode()
+    assert f'<link rel="canonical" href="https://citeguild.com{path}"' in rendered
+    assert '<meta name="robots" content="index, follow"' in rendered
+    assert 'id="methods-template"' in rendered
+    assert "entirely fictional teaching material" in rendered
+    assert '<th scope="col">Inclusion decision</th>' in rendered
+    schema = json.loads(response.context["schema_json"])
+    assert {item["@type"] for item in schema["@graph"]} == {
+        "BlogPosting",
+        "BreadcrumbList",
+        "FAQPage",
+        "HowTo",
+    }
+    article = next(item for item in schema["@graph"] if item["@type"] == "BlogPosting")
+    assert article["url"] == f"https://citeguild.com{path}"
+    assert article["datePublished"] == article["dateModified"]
+    faq = next(item for item in schema["@graph"] if item["@type"] == "FAQPage")
+    assert all(question["name"] in rendered for question in faq["mainEntity"])
+    for route in ("landing", "blog_posts"):
+        assert f'href="{path}"' in client.get(reverse(route)).content.decode()
+    sitemap = client.get("/sitemap.xml")
+    assert sitemap.status_code == 200
+    assert f"<loc>https://citeguild.com{path}</loc>" in sitemap.content.decode()
+
+
 @pytest.mark.django_db
 def test_only_loaded_public_blog_exposes_content_id(client, settings):
     settings.POSTHOG_API_KEY = "phc_test"

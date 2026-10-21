@@ -1,3 +1,7 @@
+## 2026-10-21
+
+- Added a publisher research methods worksheet with a complete fictional audit, explicit exclusions and missing-observation arithmetic, primary-methodology references, and honest publication limits. Linked it from the homepage and blog, with dated sitemap and instructional/FAQ schema.
+
 ## 2026-10-20
 
 - Add a claim-by-claim source-routing table and worked research plan to the AI-writing guide, distinguishing primary documentation, web-search APIs, and CiteGuild member articles without claiming they are interchangeable.
