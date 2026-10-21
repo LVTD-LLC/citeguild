@@ -1,5 +1,6 @@
 ## 2026-10-21
 
+- Update locked Pillow and certifi releases to resolve the security findings that blocked CI; retain the existing security gate.
 - Added a publisher research methods worksheet with a complete fictional audit, explicit exclusions and missing-observation arithmetic, primary-methodology references, and honest publication limits. Linked it from the homepage and blog, with dated sitemap and instructional/FAQ schema.
 
 ## 2026-10-20

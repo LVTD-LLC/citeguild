@@ -37,7 +37,7 @@ The workflow:
 
 On this page: [define the question](#define-the-question), [keep the record](#keep-the-record), [work through the example](#worked-example), [copy the methods template](#methods-template), [adapt for a survey](#survey-branch), [publish and correct](#publish-and-correct), and [questions](#questions).
 
-<h2 id="define-the-question">1. Define the question and counting rules</h2>
+<h2 class="scroll-mt-24" id="define-the-question">1. Define the question and counting rules</h2>
 
 Start with a decision your reader needs to make. “What does this selected set of product documentation say about export formats?” is inspectable. “Which products are best?” needs a different design, criteria and evidence. A page audit can describe documentation; it cannot establish that an export succeeds inside an account.
 
@@ -49,7 +49,7 @@ This is an editorial planning aid, not an official research standard. For formal
 
 **Done looks like:** another person can tell what one record represents, why it belongs in the study, and which observation would count as yes, no or unknown.
 
-<h2 id="keep-the-record">2. Keep an inspectable record</h2>
+<h2 class="scroll-mt-24" id="keep-the-record">2. Keep an inspectable record</h2>
 
 For each observation, keep the evidence reference, collection date, inclusion decision, observed value and any limitation. Preserve the difference between the source saying something and your interpretation of it. If a page says “CSV export,” your observation can record that text; it cannot become “all account data exports correctly.”
 
@@ -80,7 +80,7 @@ Separate the research record from the public evidence bundle. The first may cont
 <figcaption>CiteGuild's publisher worksheet, October 2026: a finding should travel with the rules that produced it.</figcaption>
 </figure>
 
-<h2 id="worked-example">Worked example: the same records support different sentences</h2>
+<h2 class="scroll-mt-24" id="worked-example">Worked example: the same records support different sentences</h2>
 
 Here is the complete fictional input for a documentation audit. The row labels identify invented records only. There are no real products, URLs or collected observations behind them. We use the example to check the arithmetic and wording, not to estimate a market rate.
 
@@ -110,7 +110,7 @@ Do not choose the second sentence just because its percentage is larger. Choose 
 
 The arithmetic can also reveal mistakes before publication. Counting all eight candidates would ignore the eligibility rules. Counting the unknown as no would claim knowledge the audit does not have. Publishing only “60%” would hide both the small selected set and the unobserved page. This is why a chart alone is not a sufficient evidence record.
 
-<h2 id="methods-template">3. Copy the publisher methods template</h2>
+<h2 class="scroll-mt-24" id="methods-template">3. Copy the publisher methods template</h2>
 
 Replace every bracketed field with what you actually did. If a field does not apply, say why rather than inventing a value. This is CiteGuild's editorial worksheet, not an AAPOR certification or a claim that the study is statistically valid.
 
@@ -132,7 +132,7 @@ For the fictional audit, the calculation section would say: “Eight candidates 
 
 For a real article, put the short method near the finding and link to fuller permitted supporting material. Use the [writer-side source-selection checklist](/blog/find-sources-ai-writing) to check whether someone quoting your result could keep its scope intact. That guide evaluates sources; this worksheet documents how a publisher produced a finding.
 
-<h2 id="survey-branch">Adapt the record for a reader survey</h2>
+<h2 class="scroll-mt-24" id="survey-branch">Adapt the record for a reader survey</h2>
 
 A survey needs more than replacing “records” with “respondents.” Name the recruitment channels, eligibility, collection dates, survey mode and any incentive. Preserve the exact question, response options and relevant questionnaire context. Explain weighting, if used, and keep the number answering each question separate from total completions.
 
@@ -144,7 +144,7 @@ An opt-in reader poll does not automatically describe the wider industry. Do not
 
 **Done looks like:** the published statement identifies the actual respondent group, the question's counting base and the limits of recruitment. A large response count is not permission to omit those details.
 
-<h2 id="publish-and-correct">4. Review and publish the bounded claim</h2>
+<h2 class="scroll-mt-24" id="publish-and-correct">4. Review and publish the bounded claim</h2>
 
 Before publishing, ask someone to reconstruct one finding from the permitted evidence. They should recover the included count, missing observations and calculation without guessing. Also have them read the proposed headline without the methods section: does it imply a population, tested behavior or causal effect that the design never measured?
 
@@ -154,7 +154,7 @@ Publish the finding, date, method and appropriate supporting material together. 
 
 Once you have a useful public article, the [publisher source-readiness workflow](/for/saas-link-building) explains how it can fit into CiteGuild's sitemap-backed article network. [Membership is free and invitation-only](/pricing). Eligible member articles can be discovered by writing agents, but this template does not validate a study, guarantee retrieval or promise that anyone will cite it. Publish something worth checking first.
 
-<h2 id="questions">Questions about using the template</h2>
+<h2 class="scroll-mt-24" id="questions">Questions about using the template</h2>
 
 ### Does completing this template validate my study?
 
