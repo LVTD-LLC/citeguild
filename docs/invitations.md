@@ -21,3 +21,11 @@ facts, not membership/access flags. Stripe webhooks and the billing portal remai
 for legacy subscriptions; new checkout attempts redirect to the dashboard without
 calling Stripe. This deployment does not itself cancel subscriptions or issue
 refunds. Such billing changes require a separate operator action.
+## First source search
+
+The membership page and password/passkey signup pages link to the public
+[first-search walkthrough](https://citeguild.com/blog/find-sources-ai-writing#search-with-mcp).
+Reading it does not require an account. Running a search requires membership;
+after joining and verifying their email, members can connect an agent from the
+dashboard without first submitting a site. Publisher sitemap submission is a
+separate path and does not guarantee a citation.
