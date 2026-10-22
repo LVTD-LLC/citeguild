@@ -1,3 +1,7 @@
+## 2026-10-22
+
+- Link membership and both signup options to the public first-search walkthrough. Distinguish member source search from optional publisher sitemap submission, without changing invitation, authentication, or consent requirements.
+
 ## 2026-10-21
 
 - Update locked Pillow and certifi releases to resolve the security findings that blocked CI; retain the existing security gate.

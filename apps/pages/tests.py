@@ -831,3 +831,31 @@ def test_mailgun_sender_defaults_are_configurable():
     assert settings.DEFAULT_FROM_EMAIL == "CiteGuild <rasul@citeguild.com>"
     assert settings.SERVER_EMAIL == expected_server_email
     assert settings.ANYMAIL["MAILGUN_SENDER_DOMAIN"] == "mg.citeguild.com"
+
+
+@pytest.mark.parametrize("route", ["pricing", "account_signup", "account_signup_by_passkey"])
+def test_membership_entry_reaches_public_first_search_without_an_account(client, route):
+    from html.parser import HTMLParser
+    from urllib.parse import urlsplit
+
+    class WalkthroughLink(HTMLParser):
+        target = None
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "a" and attrs.get("href", "").endswith("#search-with-mcp"):
+                self.target = attrs["href"]
+
+    response = client.get(reverse(route))
+    assert response.status_code == 200
+    parser = WalkthroughLink()
+    parser.feed(response.content.decode())
+    assert parser.target is not None
+    target = urlsplit(parser.target)
+    guide = client.get(target.path)
+    assert guide.status_code == 200
+    assert f'id="{target.fragment}"' in guide.content.decode()
+    assert "Copy prompt" in guide.content.decode()
+    if route != "pricing":
+        assert 'name="invitation_code"' in response.content.decode()
+        assert 'content="noindex, nofollow"' in response.content.decode()
