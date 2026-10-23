@@ -1,3 +1,7 @@
+## 2026-10-23
+
+- Re-verify Qwoted pricing in the HARO alternatives guide, link the current official pricing page, and remove the unverified annual-price claim while preserving other vendors’ original check dates.
+
 ## 2026-10-22
 
 - Link membership and both signup options to the public first-search walkthrough. Distinguish member source search from optional publisher sitemap submission, without changing invitation, authentication, or consent requirements.

@@ -416,7 +416,7 @@ def test_checked_in_haro_alternatives_article_meets_content_contract(settings, c
     assert article["url"] == expected_url
     assert article["mainEntityOfPage"]["@id"] == expected_url
     assert article["datePublished"].startswith("2026-08-05")
-    assert article["dateModified"].startswith("2026-10-11")
+    assert article["dateModified"].startswith("2026-10-23")
     settings.BLOG_POSTS_DIR = path.parent
     response = client.get(reverse("blog_post", kwargs={"slug": post.slug}))
     assert response.status_code == 200

@@ -2,7 +2,7 @@
 title: "7 Best HARO Alternatives for 2026"
 description: "Compare seven current HARO alternatives by workflow, audience, pricing, and limitations—including when persistent agent retrieval fits better."
 published_at: 2026-08-05
-updated_at: 2026-10-11
+updated_at: 2026-10-23
 author: "LVTD LLC"
 keywords: [HARO alternatives, Help a Reporter Out alternatives, journalist request platforms]
 topics: [digital PR, source discovery, editorial citations, AI writing agents]
@@ -46,14 +46,14 @@ This guide compares seven current options using the same criteria: who sends the
 | Option | Best for | Workflow | Public starting price | Main limitation |
 | --- | --- | --- | --- | --- |
 | Source of Sources | A free, classic HARO-style digest | Journalist query → email → direct reply | Free | Email-only and reactive |
-| Qwoted | Experts and PR teams that want a dashboard | Vetted request → alert → tracked pitch | Free; Pro $149/month or $99/month annually | Free plan has two pitches monthly and a two-hour delay |
+| Qwoted | Experts and PR teams that want a dashboard | Vetted request → alert → tracked pitch | Free; Pro $149/month | Free plan has two pitches monthly and a two-hour delay |
 | Connectively | Early access to HARO queries | HARO query → real-time dashboard → tracked pitch | Free to join | Still depends on a relevant query appearing |
 | MentionMatch | B2B and SaaS expertise | Writer request → expertise matching → email response | Free | Narrower subject coverage than general media services |
 | SourceBottle | Regional and lifestyle call-outs | Public call-out → targeted email alert → response | Free for call-outs and general subscribers | Interface and opportunity mix may not suit every beat |
 | ResponseSource | UK PR and communications teams | Verified enquiry → category feed → response | From £625 per category/year, excluding VAT | Paid annual category subscriptions |
 | CiteGuild | Publishers who want agents to discover existing articles | Sitemap → persistent index → agent retrieval | Free, invitation-only | Not a journalist-request or pitching service |
 
-Pricing and product details were checked against official pages on August 5, 2026. Plans change; verify the linked pricing page before buying.
+Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing, rechecked October 23, 2026. Plans change; verify the linked pricing page before buying.
 
 ## First, HARO is back—and Featured now owns it
 
@@ -96,7 +96,7 @@ These jobs can complement each other. A founder might answer a Qwoted request pe
 
 **Best for:** Experts and PR teams that want alerts, profiles, media information, and tracked pitches in one place.
 
-**Pricing:** Qwoted's [official pricing page](https://www.qwoted.com/pricing-toggle/) lists Basic as free with two pitches per month and a two-hour delay. Pro is $149 monthly or $99 per month when billed annually, with 35 monthly pitch credits and no delay. Team and managed plans use custom pricing.
+**Pricing:** Qwoted's [official pricing page](https://www.qwoted.com/pricing/), checked October 23, 2026, lists Basic as free with two pitches per month and a two-hour delay. Pro is listed at $149 per month, with 35 monthly pitches and no delay. Teams use custom pricing. Confirm any annual billing terms directly with Qwoted; the current public comparison does not specify an annual price.
 
 **Why choose it:** Qwoted offers more operational structure than an email digest. The free plan is enough to inspect the workflow; Pro is designed for people who pitch regularly and care about speed.
 
