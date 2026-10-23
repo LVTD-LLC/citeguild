@@ -26,5 +26,20 @@
     "paths": ["frontend/templates/pages/sitemap_articles.html"],
     "must_not_match": ["Pages CiteGuild can retrieve as sources\\."],
     "must_match": ["CiteGuild indexing is separate from Google indexing"]
+  },
+  {
+    "claim": "HARO comparison uses Qwoted’s current official pricing source and does not advertise the unverified historical annual offer (checked 2026-10-23)",
+    "paths": [
+      "apps/pages/posts/haro-alternatives.md"
+    ],
+    "must_not_match": [
+      "qwoted\\.com/pricing-toggle/",
+      "\\$99(?:/month| per month)"
+    ],
+    "must_match": [
+      "https://www\\.qwoted\\.com/pricing/",
+      "checked October 23, 2026",
+      "Confirm any annual billing terms directly with Qwoted"
+    ]
   }
 ]
