@@ -1,5 +1,6 @@
 ## 2026-10-23
 
+- Upgrade the existing OpenTelemetry dependency family to 1.45.1/0.66b1 to clear the newly reported tracestate-parsing vulnerability; keep the dependency security gate unchanged.
 - Re-verify Qwoted pricing in the HARO alternatives guide, link the current official pricing page, and remove the unverified annual-price claim while preserving other vendors’ original check dates.
 
 ## 2026-10-22
