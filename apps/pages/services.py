@@ -20,7 +20,7 @@ from apps.pages.markdown import ScrollableTablesExtension
 
 logger = logging.getLogger(__name__)
 
-SAAS_LINK_BUILDING_UPDATED_AT = date(2026, 10, 13)
+SAAS_LINK_BUILDING_UPDATED_AT = date(2026, 10, 24)
 
 BLOG_TITLE = "CiteGuild Blog"
 BLOG_DESCRIPTION = "AI-native editorial source network for relevant agent-discovered citations"

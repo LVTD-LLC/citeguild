@@ -43,6 +43,13 @@ Structured data does not guarantee a search feature or rich result.
 Use lowercase filename slugs such as `agent-managed-workflows.md`. There is no
 draft status or database sync path; keep unfinished posts outside this folder.
 
+## Publisher research path
+
+The SaaS source-readiness workflow at `/for/saas-link-building` links its
+original-research step directly to the existing publisher methods worksheet at
+`/blog/original-research-methods-template#methods-template`. Keep that anchor
+usable and the worksheet's fictional-example and study-validation limits clear.
+
 ## Member first-search path
 
 The dashboard connection section links to protected MCP/API and CLI setup, then

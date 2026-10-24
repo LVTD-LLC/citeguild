@@ -137,8 +137,13 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
     assert "That is a test plan, not a reported result." in visible_text
     assert "https://docs.stripe.com/api/idempotent_requests" in content
     assert f'href="{reverse("blog_post", args=["find-sources-ai-writing"])}"' in content
-    assert faq["dateModified"] == "2026-10-13"
-    assert '<time datetime="2026-10-13">October 13, 2026</time>' in content
+    worksheet_path = reverse("blog_post", args=["original-research-methods-template"])
+    assert f'href="{worksheet_path}#methods-template"' in content
+    worksheet = client.get(worksheet_path)
+    assert worksheet.status_code == 200
+    assert 'id="methods-template"' in worksheet.content.decode()
+    assert faq["dateModified"] == "2026-10-24"
+    assert '<time datetime="2026-10-24">October 24, 2026</time>' in content
 
     sitemap = client.get(reverse("django.contrib.sitemaps.views.sitemap"))
     root = ElementTree.fromstring(sitemap.content)
@@ -148,7 +153,7 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
         for item in root.findall("sm:url", ns)
     }
     target = next(url for url in dates if url.endswith("/for/saas-link-building"))
-    assert dates[target].text == "2026-10-13"
+    assert dates[target].text == "2026-10-24"
     homepage = next(url for url in dates if url.rstrip("/").endswith("testserver"))
     assert dates[homepage] is None
 
