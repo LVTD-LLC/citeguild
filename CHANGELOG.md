@@ -1,3 +1,9 @@
+## 2026-10-24
+
+- Patch the existing FastMCP dependency to 3.4.10 to resolve the security finding that blocked CI; retain the audit gate and verify MCP/authentication compatibility.
+
+- Connect the SaaS publisher source-readiness workflow to the existing research methods worksheet, explaining what to record and the limits of the fictional example. Align the page's visible update date, schema, and sitemap content date.
+
 ## 2026-10-23
 
 - Upgrade the existing OpenTelemetry dependency family to 1.45.1/0.66b1 to clear the newly reported tracestate-parsing vulnerability; keep the dependency security gate unchanged.
