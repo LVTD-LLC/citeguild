@@ -41,5 +41,21 @@
       "checked October 23, 2026",
       "Confirm any annual billing terms directly with Qwoted"
     ]
+  },
+  {
+    "claim": "HARO comparison distinguishes early query access from Connectively free answer and daily-alert limits (checked 2026-10-27)",
+    "paths": [
+      "apps/pages/posts/haro-alternatives.md"
+    ],
+    "must_not_match": [
+      "prefer real-time alerts",
+      "Free to join \\| Still depends"
+    ],
+    "must_match": [
+      "https://www\\.connectively\\.us/pricing",
+      "three answers per month",
+      "three keyword alerts sent daily",
+      "Featured is a separate AI-powered PR product"
+    ]
   }
 ]
