@@ -1,3 +1,7 @@
+## 2026-10-27
+
+- Clarify HARO email, Connectively direct answers, and Featured PR workflows in the HARO alternatives guide; disclose Connectively’s free answer and daily-alert limits with current official sources. Preserve the article’s original publication date and title.
+
 ## 2026-10-24
 
 - Patch the existing FastMCP dependency to 3.4.10 to resolve the security finding that blocked CI; retain the audit gate and verify MCP/authentication compatibility.

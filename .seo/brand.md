@@ -30,7 +30,7 @@ These are direct and adjacent alternatives. Their category differences must rema
 | LinkSwarm | `linkswarm` | https://linkswarm.ai/ | direct | AI-visibility network built around automated link partnerships, circular exchanges, and credits; conflicts with CiteGuild's no-reciprocity position. |
 | Backlinker AI | `backlinker-ai` | https://www.backlinker.ai/ | adjacent | AI-assisted reporter outreach with guaranteed-link claims; CiteGuild does not run outreach or guarantee links. |
 | BacklinkGPT | `backlinkgpt` | https://backlinkgpt.com/en | adjacent | Automates prospecting and outreach; CiteGuild indexes member articles for relevance-based retrieval. |
-| Featured | `featured` | https://www.featured.com/ | adjacent | Journalist, podcast, and speaking-request marketplace; CiteGuild is an always-on source index for writing agents. |
+| Featured | `featured` | https://www.featured.com/ | adjacent | Separate AI-powered PR discovery, monitoring and outreach workflow; Connectively handles direct source-request answers. Official help center checked 2026-10-27; CiteGuild retrieves opted-in published articles, not media requests. |
 | Tavily | `tavily` | https://www.tavily.com/ | adjacent | Broad real-time web search and extraction API for agents; CiteGuild is a narrower member editorial corpus. |
 | Exa | `exa` | https://exa.ai/ | adjacent | Broad neural web search and content retrieval; CiteGuild focuses on opted-in sitemap-backed publishers. |
 | Qwoted | `qwoted` | https://www.qwoted.com/ | adjacent | PR and journalist-source requests rather than agent-native article retrieval. |

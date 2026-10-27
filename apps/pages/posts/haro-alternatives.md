@@ -2,7 +2,7 @@
 title: "7 Best HARO Alternatives for 2026"
 description: "Compare seven current HARO alternatives by workflow, audience, pricing, and limitations—including when persistent agent retrieval fits better."
 published_at: 2026-08-05
-updated_at: 2026-10-23
+updated_at: 2026-10-27
 author: "LVTD LLC"
 keywords: [HARO alternatives, Help a Reporter Out alternatives, journalist request platforms]
 topics: [digital PR, source discovery, editorial citations, AI writing agents]
@@ -47,13 +47,13 @@ This guide compares seven current options using the same criteria: who sends the
 | --- | --- | --- | --- | --- |
 | Source of Sources | A free, classic HARO-style digest | Journalist query → email → direct reply | Free | Email-only and reactive |
 | Qwoted | Experts and PR teams that want a dashboard | Vetted request → alert → tracked pitch | Free; Pro $149/month | Free plan has two pitches monthly and a two-hour delay |
-| Connectively | Early access to HARO queries | HARO query → real-time dashboard → tracked pitch | Free to join | Still depends on a relevant query appearing |
+| Connectively | Early HARO access and direct expert answers | Posted query → dashboard → tracked answer | Free: three answers/month; paid plans available | Free keyword alerts are daily, not real-time |
 | MentionMatch | B2B and SaaS expertise | Writer request → expertise matching → email response | Free | Narrower subject coverage than general media services |
 | SourceBottle | Regional and lifestyle call-outs | Public call-out → targeted email alert → response | Free for call-outs and general subscribers | Interface and opportunity mix may not suit every beat |
 | ResponseSource | UK PR and communications teams | Verified enquiry → category feed → response | From £625 per category/year, excluding VAT | Paid annual category subscriptions |
 | CiteGuild | Publishers who want agents to discover existing articles | Sitemap → persistent index → agent retrieval | Free, invitation-only | Not a journalist-request or pitching service |
 
-Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing, rechecked October 23, 2026. Plans change; verify the linked pricing page before buying.
+Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing, rechecked October 23, 2026, and the HARO/Connectively/Featured workflow and Connectively free-plan limits, checked October 27, 2026. Plans change; verify the linked pricing page before buying.
 
 ## First, HARO is back—and Featured now owns it
 
@@ -61,7 +61,15 @@ The short timeline matters because many comparison pages still describe HARO as 
 
 Cision discontinued HARO and Connectively in December 2024. In April 2025, Cision [sold HARO to Featured](https://www.prnewswire.com/news-releases/cision-announces-sale-of-help-a-reporter-out-haro-to-featuredcom-302427990.html), and Featured [relaunched the free HARO email service](https://blog.helpareporter.com/category/news/). In May 2026, Featured [revived Connectively](https://www.globenewswire.com/news-release/2026/05/26/3301366/0/en/Featured-com-Revives-Connectively-Launches-AI-Co-Pilot-for-PR.html) as the platform interface around those requests.
 
-Today, the free HARO digest and the Connectively dashboard are two ways into the same broad request stream. Connectively says members receive HARO queries in real time, while email subscribers receive three daily digests. That makes Connectively a practical alternative to the old inbox workflow, even though it is operated by HARO's owner.
+HARO remains a free email service: its [official overview](https://www.helpareporter.com/about) describes up to three weekday digests and direct email replies. Connectively also carries HARO opportunities, but it is not simply another inbox view. Its [help center distinguishes Connectively from Featured](https://docs.connectively.us/en/articles/16447181-connectively-vs-featured-what-s-the-difference-and-why-you-might-use-both/): Connectively accepts direct answers to posted source requests, including requests submitted to its own platform; Featured is a separate AI-powered PR product.
+
+### HARO, Connectively or Featured: choose the workflow
+
+- **Stay with HARO email** if you want to scan requests and respond by email without a platform subscription.
+- **Use Connectively** if you want to answer requests and track submissions in a dashboard. Check the answer allowance and alert cadence before choosing a plan; free registration does not mean unlimited answers or instant alerts.
+- **Evaluate Featured separately** if your task includes PR monitoring and proactive outreach, rather than only answering source requests. Shared ownership does not make the products interchangeable.
+
+These are request and PR workflows, not substitutes for searching published evidence. For that task, use a [source-selection workflow for writing agents](/blog/find-sources-ai-writing), with primary documentation where the claim needs it. CiteGuild offers an opted-in article corpus, not journalist access or guaranteed coverage.
 
 ## How to choose: request timing and source consumer
 
@@ -104,15 +112,15 @@ These jobs can complement each other. A founder might answer a Qwoted request pe
 
 ## 3. Connectively: best for real-time HARO access
 
-[Connectively](https://www.connectively.us/haro) is Featured's platform experience for HARO queries. Featured owns HARO and says Connectively members see queries when they go live, before the email digests are sent.
+[Connectively](https://www.connectively.us/haro) is Featured's source-request platform. Its HARO page advertises access to HARO queries before the email digests; the platform also receives its own publisher and journalist requests.
 
-**Best for:** Former HARO users who still want HARO opportunities but prefer real-time alerts, profiles, and a dashboard.
+**Best for:** Former HARO users who want early query access, expert profiles, and a dashboard for direct answers.
 
-**Pricing:** Free to join, with no credit card required, according to the current HARO-on-Connectively page.
+**Pricing:** The [official Connectively pricing page](https://www.connectively.us/pricing), checked October 27, 2026, lists a free plan with three answers per month and three keyword alerts sent daily. Paid plans offer higher allowances; check their billing terms and per-profile limits before upgrading.
 
 **Why choose it:** It addresses the main inconvenience of the free digest: scanning batches of email after opportunities have already been open. The platform adds keyword alerts, pitch tracking, placement reports, and public expert profiles.
 
-**Tradeoffs:** Connectively improves access and organization, but it does not change the reactive nature of the work. You need a relevant query, a credible response, and an editor who chooses to use it. It should be evaluated as a faster HARO interface, not as a source of guaranteed coverage or links.
+**Tradeoffs:** Early query access is not the same as real-time keyword alerts: the free plan sends those alerts daily. Connectively improves access and organization, but it does not change the reactive nature of the work. You need a relevant query, a credible response, and an editor who chooses to use it. It should be evaluated as a faster HARO interface, not as a source of guaranteed coverage or links.
 
 ## 4. MentionMatch: best for B2B and SaaS experts
 
