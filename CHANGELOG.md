@@ -1,3 +1,7 @@
+## 2026-10-28
+
+- Add an ungated editable Markdown download to the publisher research methods guide. Export its existing methods and benchmark fields from the article so they stay aligned; accept no research submissions and serve the attachment with a `noindex` header.
+
 ## 2026-10-27
 
 - Clarify HARO email, Connectively direct answers, and Featured PR workflows in the HARO alternatives guide; disclose Connectively’s free answer and daily-alert limits with current official sources. Preserve the article’s original publication date and title.

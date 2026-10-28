@@ -524,7 +524,7 @@ def test_publisher_methods_worksheet_is_rendered_and_discoverable(settings, clie
     article = next(item for item in schema["@graph"] if item["@type"] == "BlogPosting")
     assert article["url"] == f"https://citeguild.com{path}"
     assert article["datePublished"].startswith("2026-10-21")
-    assert article["dateModified"].startswith("2026-10-25")
+    assert article["dateModified"].startswith("2026-10-28")
     faq = next(item for item in schema["@graph"] if item["@type"] == "FAQPage")
     assert all(question["name"] in rendered for question in faq["mainEntity"])
     for route in ("landing", "blog_posts"):
@@ -532,6 +532,14 @@ def test_publisher_methods_worksheet_is_rendered_and_discoverable(settings, clie
     sitemap = client.get("/sitemap.xml")
     assert sitemap.status_code == 200
     assert f"<loc>https://citeguild.com{path}</loc>" in sitemap.content.decode()
+    download_path = reverse("research_methods_worksheet")
+    assert f'href="{download_path}"' in rendered
+    assert download_path not in sitemap.content.decode()
+    head = client.head(download_path)
+    assert head.status_code == 200
+    assert head.content == b""
+    assert head["X-Robots-Tag"] == "noindex"
+    assert head["Content-Disposition"].startswith("attachment;")
 
 
 @pytest.mark.django_db
