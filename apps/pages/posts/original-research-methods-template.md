@@ -2,7 +2,7 @@
 title: "Original Research Methods Template"
 description: "Publish research another writer can check: copy a methods template, trace a worked example, and keep missing answers out of unsupported claims."
 published_at: "2026-10-21"
-updated_at: "2026-10-25"
+updated_at: "2026-10-28"
 author: "CiteGuild"
 keywords: ["original research methods template", "publisher research methodology", "source-worthy research"]
 topics: ["editorial source discovery", "original research", "publisher workflows"]
@@ -24,11 +24,13 @@ faqs:
     answer: "No. Publish only material you have permission to share. Describe the method and provide suitable aggregate evidence without exposing respondents or confidential records."
 ---
 
-*Last updated October 25, 2026.*
+*Last updated October 28, 2026.*
 
 An original research methods template records what you studied, how you selected it, what you counted and where the conclusion stops. Publish that record beside the finding so another writer can inspect the evidence before quoting it. Keep exclusions and missing answers visible: neither should silently change what a percentage means.
 
 This worksheet is for independent publishers preparing a research article, not a substitute for survey-design or statistical advice. You need a specific research question and permission to use your evidence. The small dataset below is **entirely fictional teaching material**, not a CiteGuild study, a real market sample or a product benchmark.
+
+[Download the editable worksheet (.md)](/blog/original-research-methods-template/worksheet.md). Save the Markdown file and fill it in with any text editor. It contains the general methods record and an optional technical-benchmark addendum, with a link back to this guide. No signup is required, and there is no form to submit your research to CiteGuild. Completing the worksheet does not validate a study or promise a citation.
 
 The workflow:
 
@@ -116,6 +118,7 @@ The arithmetic can also reveal mistakes before publication. Counting all eight c
 
 Replace every bracketed field with what you actually did. If a field does not apply, say why rather than inventing a value. This is CiteGuild's editorial worksheet, not an AAPOR certification or a claim that the study is statistically valid.
 
+<!-- worksheet:methods:start -->
 > **Question and intended use:** We studied [specific question] to help [reader] decide [action].
 >
 > **Who conducted and funded the work:** [Publisher, research owner, sponsor and relevant conflicts].
@@ -129,6 +132,7 @@ Replace every bracketed field with what you actually did. If a field does not ap
 > **Limits and uncertainty:** The result describes [actual observed group]. It does not establish [specific broader inference]. Relevant sampling, coverage, measurement and missing-data limitations are [details].
 >
 > **Evidence and corrections:** Permitted supporting material is at [stable links]. Analysis completed [date]. Corrections and method revisions are recorded at [contact or version history].
+<!-- worksheet:methods:end -->
 
 For the fictional audit, the calculation section would say: “Eight candidates were considered; one duplicate and one out-of-category record were excluded. Six records remained. Five could be assessed, with three naming an export format. The assessable-record percentage is three divided by five, multiplied by 100: 60%. The remaining record is unknown.” That is a complete calculation, not a claim about real software.
 
@@ -156,6 +160,7 @@ Google Benchmark's [user guide](https://google.github.io/benchmark/user_guide.ht
 
 Add this record to the general methods template:
 
+<!-- worksheet:benchmark:start -->
 > **Comparison:** We compared [baseline revision] with [changed revision], changing [specific factors] and keeping [controlled factors] fixed.
 >
 > **Workload and environment:** We measured [operation, inputs and concurrency] on [hardware, OS, runtime, build and dependency versions]. The metric was [definition and unit]; setup, cache and warm-up followed [rules].
@@ -165,6 +170,7 @@ Add this record to the general methods template:
 > **Result and calculation:** The baseline was [value and unit] and the changed version was [value and unit], using [summary statistic over the stated runs]. Variation was [observed spread]; any relative change uses [formula and denominator].
 >
 > **Reproduction and limits:** Permitted code, inputs, commands and result files are at [versioned links]. This supports [bounded finding] for [tested conditions], not [untested workloads, user outcomes or causal claims]. Restricted material and reproduction limits are [details].
+<!-- worksheet:benchmark:end -->
 
 Do not silently drop failed requests from a latency result or count incorrect output as useful throughput. Brendan Gregg's [benchmarking checklist](https://www.brendangregg.com/blog/2018-06-30/benchmarking-checklist.html), checked October 25, 2026, asks whether a benchmark errors, reproduces and matters to the intended workload. His [active benchmarking method](https://www.brendangregg.com/activebenchmarking.html) also calls for observing the system during the run to understand what limits it. Report a suspected explanation as suspected unless supporting evidence establishes it.
 

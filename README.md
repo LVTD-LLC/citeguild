@@ -420,6 +420,8 @@ migrations. Do not edit historical migrations unless you intentionally need to
 change the migration history.
 
 
+The [publisher research methods guide](https://citeguild.com/blog/original-research-methods-template) includes a public editable Markdown worksheet. Its download exports the marked methods and benchmark blocks from the guide; keep those blocks intact when editing. The attachment is excluded from the sitemap and served with a `noindex` header; it accepts no research submissions and requires no signup.
+
 Blog posts are not database records. Published posts live as Markdown files in
 `apps/pages/posts`, and every `*.md` file in that directory is rendered on deploy.
 Keep drafts outside that folder until they are ready to publish.

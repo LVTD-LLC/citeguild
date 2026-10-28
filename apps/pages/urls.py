@@ -13,6 +13,11 @@ urlpatterns = [
         name="saas_link_building",
     ),
     path("blog/", views.blog_posts_view, name="blog_posts"),
+    path(
+        "blog/original-research-methods-template/worksheet.md",
+        views.research_methods_worksheet_view,
+        name="research_methods_worksheet",
+    ),
     path("blog/<slug:slug>", views.blog_post_view, name="blog_post"),
     path("docs/", views.docs_home_view, name="docs_home"),
     path("docs/<str:category>/<str:page>/", views.docs_page_view, name="docs_page"),

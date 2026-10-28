@@ -8,10 +8,11 @@ from allauth.account.views import SignupByPasskeyView, SignupView
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.template import Context, Template
 from django.urls import reverse
+from django.views.decorators.http import require_safe
 from django.views.generic import TemplateView
 
 from apps.core.analytics import SIGNUP_COMPLETED, has_analytics_consent, track_event
@@ -38,6 +39,22 @@ from apps.pages.services import (
 logger = logging.getLogger(__name__)
 DOCS_CONTENT_ROOT = Path(settings.BASE_DIR) / "apps" / "pages" / "content" / "docs"
 DOCS_NAVIGATION_PATH = DOCS_CONTENT_ROOT / "navigation.yaml"
+
+
+@require_safe
+def research_methods_worksheet_view(request):
+    from apps.pages.worksheets import research_methods_worksheet
+
+    try:
+        worksheet = research_methods_worksheet()
+    except (BlogPostNotFound, BlogPostValidationError) as exc:
+        raise Http404("Worksheet not found") from exc
+    response = HttpResponse(worksheet, content_type="text/markdown; charset=utf-8")
+    response["Content-Disposition"] = (
+        'attachment; filename="citeguild-research-methods-worksheet.md"'
+    )
+    response["X-Robots-Tag"] = "noindex"
+    return response
 
 
 class LandingPageView(TemplateView):
