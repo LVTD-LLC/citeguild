@@ -1,5 +1,6 @@
 ## 2026-10-28
 
+- Upgrade locked Authlib to 1.9.1 and dnspython to 2.9.0 to clear the dependency advisories blocking CI; retain the security gate and verify MCP/OAuth compatibility.
 - Add an ungated editable Markdown download to the publisher research methods guide. Export its existing methods and benchmark fields from the article so they stay aligned; accept no research submissions and serve the attachment with a `noindex` header.
 
 ## 2026-10-27
