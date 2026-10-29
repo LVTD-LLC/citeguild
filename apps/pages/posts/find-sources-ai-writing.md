@@ -2,7 +2,7 @@
 title: "Find Sources for AI Writing"
 description: "Find sources for AI writing, check what each article supports, and give your agent a practical evidence checklist before it adds a citation."
 published_at: "2026-10-10"
-updated_at: "2026-10-20"
+updated_at: "2026-10-29"
 author: "CiteGuild"
 keywords: ["find sources for AI writing", "AI source verification", "editorial source discovery"]
 topics: ["AI writing agents", "source selection", "editorial workflows"]
@@ -30,7 +30,7 @@ faqs:
 
 To find sources for AI writing, start with the claim you need to support. Choose the right kind of source, retrieve candidates, and read the original passage before citing it. Give your agent the source URL, relevant context, and limits of the evidence, not a list of links to decorate a finished draft.
 
-This workflow is for agents writing technical articles, SaaS guides, and other editorial content. You can use it with ordinary web research. The CiteGuild examples require an existing member account and either a connected MCP client or an installed CLI; the source-selection method does not.
+This workflow is for agents writing technical articles, SaaS guides, and other editorial content. You can use it with ordinary web research. The CiteGuild examples require an existing member account and a connected MCP client, an installed CLI, or an HTTP client such as curl; the source-selection method does not.
 
 **The short version:**
 
@@ -40,7 +40,7 @@ This workflow is for agents writing technical articles, SaaS guides, and other e
 4. Accept, narrow, or reject the claim based on what you read.
 5. Keep that decision beside the citation through the final edit.
 
-On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [choose web search or the member network](#choose-search-route), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp) or the [CLI](#search-with-cli), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
+On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [choose web search or the member network](#choose-search-route), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp), the [CLI](#search-with-cli), or the [REST API](#search-with-api), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
 
 <h2 id="frame-the-claim">1. Write the claim before the search query</h2>
 
@@ -110,7 +110,7 @@ Those capabilities were checked in the official references on October 20, 2026. 
 
 For example, suppose an article needs to explain a Django transaction hook, mention a recent release, and show a deployment lesson. Treat those as three research tasks: open the versioned Django manual for the hook, find the release announcement on the project's own site, and retrieve a relevant implementation article for the lesson. One source might help with more than one task, but a shared topic alone does not establish that it supports all three.
 
-Keep the supporting passage and its limits beside each claim. If the member search returns nothing useful, continue with the primary source or broader research; if the manual already answers the question, you do not need an extra citation. Members ready to try the editorial route can use the [MCP walkthrough](#search-with-mcp) or [CLI walkthrough](#search-with-cli) below. Check [membership access](/pricing) before planning an integration: it is free and invitation-only.
+Keep the supporting passage and its limits beside each claim. If the member search returns nothing useful, continue with the primary source or broader research; if the manual already answers the question, you do not need an extra citation. Members ready to try the editorial route can use the [MCP walkthrough](#search-with-mcp) or [CLI walkthrough](#search-with-cli) below. For an HTTP-only automation, use the [REST API example](#search-with-api). Check [membership access](/pricing) before planning an integration: it is free and invitation-only.
 
 Choose the interface your agent already uses. CiteGuild recommends MCP for Codex and Claude Code, and the CLI for OpenClaw, Hermes, and shell workflows. Both retrieve candidates from the same member article corpus; neither decides what deserves a citation.
 
@@ -150,7 +150,38 @@ Replace `your-site.example` with your own site's hostname if you want to exclude
 
 The command follows the [official CiteGuild CLI contract](https://github.com/LVTD-LLC/citeguild/blob/3f92cd8be7ebf29d948a0f7fb82f7cb741e1d8a3/cli/README.md), checked against that repository revision on October 10, 2026. It is a source-checked usage example, not a transcript of a live member search. [Member CLI setup](/docs/features/cli/) requires sign-in. MCP and API clients expose the same v1 search contract, so the review below applies to them too.
 
-### Read the response from either interface
+<h3 id="search-with-api">Run a first search through the REST API</h3>
+
+If your automation makes HTTP requests but does not use MCP or the CLI, send a member search directly to `POST https://citeguild.com/api/v1/search`. Have your environment supply `CITEGUILD_API_KEY` securely from your member settings. You can search before adding your own site; membership is still free and invitation-only.
+
+This example uses **curl 7.76.0 or newer**. Keep shell tracing and verbose request logging off so they do not reveal the authorization header.
+
+```bash
+curl --silent --show-error --fail-with-body --include \
+  --request POST 'https://citeguild.com/api/v1/search' \
+  --header "Authorization: Bearer ${CITEGUILD_API_KEY:?Set CITEGUILD_API_KEY securely}" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "query": "How do Django transaction commit hooks work?",
+    "limit": 10,
+    "language": "en",
+    "excluded_domains": ["your-site.example"]
+  }'
+```
+
+The endpoint, bearer header, and JSON fields follow CiteGuild's [v1 search implementation](https://github.com/LVTD-LLC/citeguild/blob/f6c8a7cfe4d51abb59c419df90be402722e1f2ee/apps/api/views.py#L419), [authentication contract](https://github.com/LVTD-LLC/citeguild/blob/f6c8a7cfe4d51abb59c419df90be402722e1f2ee/apps/api/auth.py), and [request schema](https://github.com/LVTD-LLC/citeguild/blob/f6c8a7cfe4d51abb59c419df90be402722e1f2ee/apps/api/schemas.py). The [official curl manual](https://curl.se/docs/manpage.html#--fail-with-body) documents the flags and minimum version. These sources were checked October 29, 2026; the command is a usage example, not a claimed live search result.
+
+Replace the question and exclusion as in the MCP example. The command displays response headers followed by the body. On success, the JSON contains `contract_version: "v1"` and a `results` list; an empty list is a valid search outcome, not an integration error. On an HTTP error, curl exits unsuccessfully but preserves the error body:
+
+- **401:** check the credential; never paste the key into a support report.
+- **403:** the account must be active before it can search.
+- **422:** correct the request fields before retrying.
+- **429:** wait for the response's `Retry-After` interval rather than looping immediately.
+- **503:** search is temporarily unavailable; it is not a zero-result response.
+
+Use `request_id` when reporting an API error, without sending the query or authorization header. Network failures also do not establish an empty result. The [member API introduction](/docs/api-reference/introduction/) explains limits and generated schemas; it requires sign-in. Continue with the same evidence review below, whichever interface you use.
+
+### Read the response from any interface
 
 Use the returned fields for their intended jobs:
 

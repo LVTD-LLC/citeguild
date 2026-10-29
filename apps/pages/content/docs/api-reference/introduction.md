@@ -55,6 +55,8 @@ and last-seen timestamp. The `relevance` value ranges from 0 to 1 and is a
 candidate-ranking signal, not an endorsement, factual guarantee, or requirement
 to cite a result.
 
+For a copy-ready first search, use the public [REST source-search walkthrough](/blog/find-sources-ai-writing#search-with-api). It covers the bearer header, JSON request, and the difference between an empty result and a failed request.
+
 Versioned endpoints return an `X-Request-ID` response header. Error bodies use
 stable `code`, `message`, `retryable`, and `request_id` fields without provider
 or application internals. Each API key has an atomic 60-request fixed-window
