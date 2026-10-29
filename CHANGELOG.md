@@ -1,3 +1,7 @@
+## 2026-10-29
+
+- Add a source-checked REST first-search example to the existing AI-writing source guide, with credential handling, empty-result/error distinctions, and a link from the member API introduction. Preserve the original title and publication date.
+
 ## 2026-10-28
 
 - Upgrade locked Authlib to 1.9.1 and dnspython to 2.9.0 to clear the dependency advisories blocking CI; retain the security gate and verify MCP/OAuth compatibility.
