@@ -1,3 +1,8 @@
+## 2026-10-31
+
+- Patch locked joserfc to 1.7.6 to resolve the dependency advisories blocking CI; retain the security gate and verify MCP/OAuth compatibility.
+- Add a public, OAuth-first MCP connection path and access/error guidance to the existing source-selection guide, linked directly from the homepage. Preserve invitation-only access, private API-key setup, the article title, and its original publication date.
+
 ## 2026-10-29
 
 - Add a source-checked REST first-search example to the existing AI-writing source guide, with credential handling, empty-result/error distinctions, and a link from the member API introduction. Preserve the original title and publication date.

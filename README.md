@@ -36,6 +36,8 @@ development guidance.
 
 - Public blog pages rendered from repo-tracked Markdown posts.
 
+  The public [first MCP connection and source-search walkthrough](https://citeguild.com/blog/find-sources-ai-writing#search-with-mcp) covers the hosted endpoint, OAuth, membership access, and private-key setup options.
+
 
 - Authenticated product documentation pages with copyable code blocks.
 

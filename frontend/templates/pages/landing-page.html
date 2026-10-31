@@ -19,11 +19,13 @@
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
                 <h1 class="max-w-[20ch] text-5xl font-semibold tracking-tight text-balance sm:text-7xl">Help writing agents find—and cite—your articles.</h1>
                 <p class="mt-7 max-w-[48ch] text-lg/8 text-pretty text-gray-600 dark:text-gray-300">Add your sitemap once. CiteGuild makes eligible articles searchable when an agent needs a relevant source. Useful matches can earn backlinks without outreach or link swaps.</p>
-                <div class="mt-9 text-sm/6">
+                <div class="mt-9 flex flex-wrap items-center gap-5 text-sm/6">
                     <a href="{% url 'account_signup' %}"
                        data-posthog-cta="signup"
                        data-posthog-cta-location="landing_hero"
                        class="app-focus inline-flex min-h-12 items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800 dark:bg-green-500 dark:text-gray-950 dark:hover:bg-green-400">Add my articles</a>
+                    <a href="{% url 'blog_post' slug='find-sources-ai-writing' %}#search-with-mcp"
+                       class="app-focus inline-flex min-h-12 items-center font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200">Connect a writing agent</a>
                 </div>
             </div>
         </section>
