@@ -1,5 +1,6 @@
 ## 2026-10-31
 
+- Patch locked joserfc to 1.7.6 to resolve the dependency advisories blocking CI; retain the security gate and verify MCP/OAuth compatibility.
 - Add a public, OAuth-first MCP connection path and access/error guidance to the existing source-selection guide, linked directly from the homepage. Preserve invitation-only access, private API-key setup, the article title, and its original publication date.
 
 ## 2026-10-29
