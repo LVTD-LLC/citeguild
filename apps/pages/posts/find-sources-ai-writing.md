@@ -2,7 +2,7 @@
 title: "Find Sources for AI Writing"
 description: "Find sources for AI writing, check what each article supports, and give your agent a practical evidence checklist before it adds a citation."
 published_at: "2026-10-10"
-updated_at: "2026-10-29"
+updated_at: "2026-10-31"
 author: "CiteGuild"
 keywords: ["find sources for AI writing", "AI source verification", "editorial source discovery"]
 topics: ["AI writing agents", "source selection", "editorial workflows"]
@@ -114,9 +114,18 @@ Keep the supporting passage and its limits beside each claim. If the member sear
 
 Choose the interface your agent already uses. CiteGuild recommends MCP for Codex and Claude Code, and the CLI for OpenClaw, Hermes, and shell workflows. Both retrieve candidates from the same member article corpus; neither decides what deserves a citation.
 
-<h3 id="search-with-mcp">Run a first search through MCP</h3>
+<h3 id="search-with-mcp" class="scroll-mt-24">Run a first search through MCP</h3>
 
-Already a member? Sign in to your [dashboard](/home) and use **Copy prompt** under **Connect an AI agent**. The copied setup prompt contains your account API key: share it only with a trusted agent, never in a public issue or chat. Follow the linked installation instructions for your client rather than adding a second connection to an already configured agent. The [member MCP setup guide](/docs/features/mcp/) requires sign-in.
+**Connect to `https://citeguild.com/mcp/` in a remote MCP client that supports OAuth, then sign in with your CiteGuild member account.** The setup instructions are public; searching requires free, invitation-only membership. You do not need to submit your own site before searching member articles.
+
+1. Check whether your agent already has a CiteGuild connection. If it does, use that connection rather than adding a duplicate.
+2. Otherwise, add a remote MCP server using the complete URL `https://citeguild.com/mcp/`, including the trailing slash. This is a server address for your client, not a search page to open in a browser.
+3. If your client supports CiteGuild's OAuth flow, follow its browser sign-in and authorization prompts. Confirm the CiteGuild domain before authorizing. Client support and configuration vary; adding the URL alone does not authenticate you.
+4. Ask the connected agent to call `get_user_info` to confirm authentication, then run `search_member_articles` with the example below. If search reports `account_inactive`, resolve account access; reconnecting or changing the query will not fix that state.
+
+These steps follow [CiteGuild's hosted MCP and authentication contract](https://github.com/LVTD-LLC/citeguild/blob/0d671b9af3a25c55fb4e385fedc846edddadc9ee/apps/pages/content/docs/features/mcp.md) and the [MCP remote-connection guide](https://modelcontextprotocol.io/docs/2026-07-28/develop/connect-remote-servers), checked October 31, 2026. They do not require publishing a server, creating an OAuth application, or sharing a key in chat.
+
+**Need the plugin or API-key setup instead?** Sign in to your [dashboard](/home) and use **Copy prompt** under **Connect an AI agent**. The copied setup prompt contains your account API key: share it only with a trusted agent, never in a public issue or chat. Follow the linked installation instructions for your client. The [member MCP setup guide](/docs/features/mcp/) requires sign-in and covers the supported credential options. Do not put a key in the MCP URL.
 
 Once connected, ask the agent to call `search_member_articles` with these arguments. This is a tool call, not text to paste into a terminal:
 
@@ -131,7 +140,7 @@ Once connected, ask the agent to call `search_member_articles` with these argume
 
 Replace the example question with your research question. Replace `your-site.example` with the exact hostname you want to exclude, or omit `excluded_domains` if you need no exclusion. Excluding `example.com` does not also exclude `blog.example.com`; list both when needed.
 
-The arguments follow [CiteGuild's MCP search implementation](https://github.com/LVTD-LLC/citeguild/blob/9279ee50f7a57cc91dbf4ede9b6ac24098736e26/apps/mcp_server/server.py#L108) and its v1 search contract, checked October 15, 2026. The JSON is a usage example, not a claimed search result. A successful call returns `contract_version: "v1"` and a `results` list. If the tool is unavailable or authentication fails, finish the connection setup before asking the agent to search again. Do not let it substitute remembered titles for retrieved sources.
+The arguments follow [CiteGuild's MCP search implementation](https://github.com/LVTD-LLC/citeguild/blob/9279ee50f7a57cc91dbf4ede9b6ac24098736e26/apps/mcp_server/server.py#L108) and its v1 search contract, checked October 15, 2026. The JSON is a usage example, not a claimed search result. A successful call returns `contract_version: "v1"` and a `results` list. An empty list is a valid search outcome: revise the question or use another source route. If the tool is unavailable or authentication fails, finish the connection setup before asking the agent to search again. An unauthenticated HTTP `401` from the MCP address is an authentication challenge, not an empty search result. Do not let the agent substitute remembered titles for retrieved sources.
 
 No account yet? [Membership is free and invitation-only](/pricing); ask an existing member for an invitation. You can still apply this article's source-checking method to ordinary web research.
 
