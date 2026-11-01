@@ -1,3 +1,7 @@
+## 2026-11-01
+
+- Explain the XML-sitemap and public-HTML inputs on the existing publisher source-readiness page, with source-checked Ghost canonical/access examples and a matching FAQ. Distinguish AI-discovery exports and protected evidence without changing ingestion behavior or promising citations.
+
 ## 2026-10-31
 
 - Patch locked joserfc to 1.7.6 to resolve the dependency advisories blocking CI; retain the security gate and verify MCP/OAuth compatibility.
