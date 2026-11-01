@@ -110,7 +110,7 @@ def test_saas_link_building_page_meets_use_case_contract(client, settings):
     graph = {item["@type"]: item for item in schema["@graph"]}
     assert set(graph) == {"SoftwareApplication", "BreadcrumbList", "FAQPage"}
     assert graph["SoftwareApplication"]["url"].endswith("/for/saas-link-building")
-    assert len(graph["FAQPage"]["mainEntity"]) == 5
+    assert len(graph["FAQPage"]["mainEntity"]) == 6
 
 
 def test_saas_source_example_has_matching_free_membership_and_content_dates(client, settings):
@@ -142,8 +142,17 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
     worksheet = client.get(worksheet_path)
     assert worksheet.status_code == 200
     assert 'id="methods-template"' in worksheet.content.decode()
-    assert faq["dateModified"] == "2026-10-24"
-    assert '<time datetime="2026-10-24">October 24, 2026</time>' in content
+    sitemap_input = next(
+        item["acceptedAnswer"]["text"]
+        for item in faq["mainEntity"]
+        if item["name"] == "Can I submit llms.txt instead of a sitemap?"
+    )
+    assert sitemap_input in visible_text
+    assert "https://ghost.org/changelog/geo/" in content
+    assert "https://ghost.org/help/post-settings/" in content
+    assert "do not remove a correct canonical" in visible_text
+    assert faq["dateModified"] == "2026-11-01"
+    assert '<time datetime="2026-11-01">November 1, 2026</time>' in content
 
     sitemap = client.get(reverse("django.contrib.sitemaps.views.sitemap"))
     root = ElementTree.fromstring(sitemap.content)
@@ -153,7 +162,7 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
         for item in root.findall("sm:url", ns)
     }
     target = next(url for url in dates if url.endswith("/for/saas-link-building"))
-    assert dates[target].text == "2026-10-24"
+    assert dates[target].text == "2026-11-01"
     homepage = next(url for url in dates if url.rstrip("/").endswith("testserver"))
     assert dates[homepage] is None
 

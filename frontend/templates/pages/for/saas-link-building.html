@@ -85,8 +85,19 @@
                     </li>
                     <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">
                         <h3 class="text-2xl font-semibold">2. Submit the public sitemap</h3>
-                        <p class="max-w-[64ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Add the sitemap for each legitimate SaaS site on your account. CiteGuild indexes eligible public articles and keeps the corpus aligned as sitemaps change. The <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+                        <div class="max-w-[64ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            <p>Add the sitemap for each legitimate SaaS site on your account. CiteGuild indexes eligible public articles and keeps the corpus aligned as sitemaps change. The <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
     href="{% url 'landing' %}#article-indexing">sitemap-backed article index</a> is deliberately narrower than an open-web crawler: publishers opt in, and private pages stay out.</p>
+                            <p class="mt-3">Submit an XML sitemap or sitemap index, not <code>llms.txt</code>, a Markdown export, or an email archive. CiteGuild discovers article URLs from the sitemap and extracts their public HTML. A file that helps another AI tool read your site is not necessarily an input CiteGuild accepts.</p>
+                            <p class="mt-3">Check one intended source before submitting: find its URL in the sitemap or a child sitemap, then open the article while signed out. The evidence a writer would need should be readable there. A public teaser cannot stand in for a finding or method available only to subscribers. Keep protected research protected; do not share subscriber credentials with CiteGuild.</p>
+                            <p class="mt-3">For example, Ghost provides <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://ghost.org/changelog/geo/">optional AI-discovery files and Markdown versions</a>, but these do not replace CiteGuild’s sitemap input.</p>
+                            <p class="mt-3">Ghost’s <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://ghost.org/help/post-settings/">post settings guidance</a> says that setting a custom canonical excludes that post from its sitemap. Check whether the original source belongs on a site you control and can submit; do not remove a correct canonical just to expose a duplicate. Ghost’s <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://ghost.org/help/protected-content/">post access levels</a> also determine what a signed-out reader can see. These settings were checked November 1, 2026; this is not a claim of a native Ghost integration.</p>
+                            <p class="mt-3">After processing, open your site’s Pages view in CiteGuild and check the article’s indexing state. Discovery alone does not mean it is active or searchable. Use the <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'blog_post' 'find-sources-ai-writing' %}">first source-search walkthrough</a> to evaluate the result. Neither sitemap inclusion nor a successful search guarantees a citation.</p>
+                        </div>
                     </li>
                     <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">
                         <h3 class="text-2xl font-semibold">3. Retrieve against the draft</h3>
@@ -256,6 +267,12 @@
                         <dt class="text-lg font-semibold">How do SaaS articles become searchable in CiteGuild?</dt>
                         <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
                             Membership is free and invitation-only. A member submits a public sitemap. CiteGuild indexes eligible articles and exposes relevance-ranked retrieval through MCP, CLI, and API.
+                        </dd>
+                    </div>
+                    <div class="py-6">
+                        <dt class="text-lg font-semibold">Can I submit llms.txt instead of a sitemap?</dt>
+                        <dd class="mt-3 text-base/7 text-pretty text-gray-600 dark:text-gray-300">
+                            No. CiteGuild requires an XML sitemap or sitemap index to discover article URLs, then extracts public HTML articles. It does not import llms.txt or Markdown exports as substitutes. Keep subscriber-only evidence private; a public preview is not the full protected article.
                         </dd>
                     </div>
                     <div class="py-6">

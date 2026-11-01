@@ -167,6 +167,13 @@ class SaasLinkBuildingView(TemplateView):
             "and API.",
         ),
         (
+            "Can I submit llms.txt instead of a sitemap?",
+            "No. CiteGuild requires an XML sitemap or sitemap index to discover "
+            "article URLs, then extracts public HTML articles. It does not import "
+            "llms.txt or Markdown exports as substitutes. Keep subscriber-only "
+            "evidence private; a public preview is not the full protected article.",
+        ),
+        (
             "Does CiteGuild automatically insert or publish a source?",
             "No. CiteGuild returns source candidates and context for evaluation. "
             "The writing agent or publisher decides whether a citation helps and "
