@@ -2,7 +2,7 @@
 title: "7 Best HARO Alternatives for 2026"
 description: "Compare seven current HARO alternatives by workflow, audience, pricing, and limitations—including when persistent agent retrieval fits better."
 published_at: 2026-08-05
-updated_at: 2026-10-27
+updated_at: 2026-11-02
 author: "LVTD LLC"
 keywords: [HARO alternatives, Help a Reporter Out alternatives, journalist request platforms]
 topics: [digital PR, source discovery, editorial citations, AI writing agents]
@@ -46,14 +46,14 @@ This guide compares seven current options using the same criteria: who sends the
 | Option | Best for | Workflow | Public starting price | Main limitation |
 | --- | --- | --- | --- | --- |
 | Source of Sources | A free, classic HARO-style digest | Journalist query → email → direct reply | Free | Email-only and reactive |
-| Qwoted | Experts and PR teams that want a dashboard | Vetted request → alert → tracked pitch | Free; Pro $149/month | Free plan has two pitches monthly and a two-hour delay |
+| Qwoted | Experts and PR teams that want a dashboard | Vetted request → alert → tracked pitch | Free; Pro $149.99/month or $1,188/year | Free plan has two pitches monthly and a two-hour delay |
 | Connectively | Early HARO access and direct expert answers | Posted query → dashboard → tracked answer | Free: three answers/month; paid plans available | Free keyword alerts are daily, not real-time |
 | MentionMatch | B2B and SaaS expertise | Writer request → expertise matching → email response | Free | Narrower subject coverage than general media services |
 | SourceBottle | Regional and lifestyle call-outs | Public call-out → targeted email alert → response | Free for call-outs and general subscribers | Interface and opportunity mix may not suit every beat |
 | ResponseSource | UK PR and communications teams | Verified enquiry → category feed → response | From £625 per category/year, excluding VAT | Paid annual category subscriptions |
 | CiteGuild | Publishers who want agents to discover existing articles | Sitemap → persistent index → agent retrieval | Free, invitation-only | Not a journalist-request or pitching service |
 
-Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing, rechecked October 23, 2026, and the HARO/Connectively/Featured workflow and Connectively free-plan limits, checked October 27, 2026. Plans change; verify the linked pricing page before buying.
+Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing and pitch rules, rechecked November 2, 2026, and the HARO/Connectively/Featured workflow and Connectively free-plan limits, checked October 27, 2026. HARO's email workflow was also rechecked November 2. Plans change; verify the linked pricing page before buying.
 
 ## First, HARO is back—and Featured now owns it
 
@@ -104,11 +104,21 @@ These jobs can complement each other. A founder might answer a Qwoted request pe
 
 **Best for:** Experts and PR teams that want alerts, profiles, media information, and tracked pitches in one place.
 
-**Pricing:** Qwoted's [official pricing page](https://www.qwoted.com/pricing/), checked October 23, 2026, lists Basic as free with two pitches per month and a two-hour delay. Pro is listed at $149 per month, with 35 monthly pitches and no delay. Teams use custom pricing. Confirm any annual billing terms directly with Qwoted; the current public comparison does not specify an annual price.
+**Pricing:** Qwoted's [official pricing page](https://www.qwoted.com/pricing/), checked November 2, 2026, lists Basic as free with two pitches per month and a two-hour delivery delay. Pro has 35 monthly pitches and instant delivery: the monthly option displays $149.99/month, while the annual option displays $1,188/year. That is an annual commitment, not a $99 month-to-month plan. Teams use custom pricing. Verify the selected billing period and checkout terms before buying.
 
 **Why choose it:** Qwoted offers more operational structure than an email digest. The free plan is enough to inspect the workflow; Pro is designed for people who pitch regularly and care about speed.
 
 **Tradeoffs:** The free allowance is restrictive, and the two-hour delay matters when journalists are working to short deadlines. Pro is also a meaningful expense for a solo expert who only sees a few relevant requests each month. Qwoted wins when its filtering and tracking save more time than the subscription costs.
+
+### Qwoted vs HARO: choose by the work you can do
+
+Choose **HARO** for a free email-based request feed; choose **Qwoted** when in-platform pitching and tracking justify its limits or subscription. Neither replaces a writing agent's search for published evidence.
+
+- **Start with the request, not the paid plan.** [HARO's official overview](https://www.helpareporter.com/about), checked November 2, 2026, describes up to three weekday digests and direct email replies. If relevant requests are occasional and email is workable, try that workflow before buying more pitch capacity.
+- **Check fit before spending a pitch credit.** Qwoted's [pitching guide](https://intercom.help/qwoted/en/articles/5187624-how-to-pitch-an-opportunity-on-qwoted), checked November 2, 2026, says opening a request with its unlock action spends a credit even if you never submit. The publication, deadline and required expertise are visible beforehand. Assess those first; save the free allowance for requests you intend to answer.
+- **Keep expert answers human-authored.** Qwoted's [AI-pitch policy](https://intercom.help/qwoted/en/articles/14809747-can-i-use-ai-to-craft-my-pitch) prohibits AI-written pitches. Its [community guidelines](https://www.qwoted.com/qwoted-community-guidelines/) also prohibit AI-generated commentary and contacting reporters outside Qwoted unless requested. These rules were checked November 2, 2026; an automated pitch-writing agent is not the workflow this recommendation supports.
+
+For a SaaS founder with an original benchmark or a technical case study, there are two separate assets: your answer to a reporter's question and the published article a writer can evaluate later. CiteGuild serves the second through member-article search, not the first. Use the [writing-agent source-selection guide](/blog/find-sources-ai-writing) to evaluate published evidence; a returned article is a candidate source, not an endorsement or a promised citation. You can maintain both workflows without turning source retrieval into automated pitching.
 
 ## 3. Connectively: best for real-time HARO access
 
