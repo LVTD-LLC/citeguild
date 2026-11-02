@@ -1,3 +1,7 @@
+## 2026-11-02
+
+- Add a source-checked Qwoted versus HARO decision guide to the existing roundup, distinguishing human expert pitches from writing-agent source retrieval. Correct Qwoted's current monthly/annual billing, explain when pitch credits are spent, and cite its AI-pitch rules without changing the article title or original publication date.
+
 ## 2026-11-01
 
 - Explain the XML-sitemap and public-HTML inputs on the existing publisher source-readiness page, with source-checked Ghost canonical/access examples and a matching FAQ. Distinguish AI-discovery exports and protected evidence without changing ingestion behavior or promising citations.

@@ -23,23 +23,35 @@
   },
   {
     "claim": "The all-state article list must not claim every found page is retrievable",
-    "paths": ["frontend/templates/pages/sitemap_articles.html"],
-    "must_not_match": ["Pages CiteGuild can retrieve as sources\\."],
-    "must_match": ["CiteGuild indexing is separate from Google indexing"]
+    "paths": [
+      "frontend/templates/pages/sitemap_articles.html"
+    ],
+    "must_not_match": [
+      "Pages CiteGuild can retrieve as sources\\."
+    ],
+    "must_match": [
+      "CiteGuild indexing is separate from Google indexing"
+    ]
   },
   {
-    "claim": "HARO comparison uses Qwoted’s current official pricing source and does not advertise the unverified historical annual offer (checked 2026-10-23)",
+    "claim": "HARO comparison uses verified Qwoted billing and pitch rules (checked 2026-11-02)",
     "paths": [
       "apps/pages/posts/haro-alternatives.md"
     ],
     "must_not_match": [
       "qwoted\\.com/pricing-toggle/",
-      "\\$99(?:/month| per month)"
+      "Pro \\$149/month",
+      "Pro is listed at \\$149 per month",
+      "comparison does not specify an annual price"
     ],
     "must_match": [
       "https://www\\.qwoted\\.com/pricing/",
-      "checked October 23, 2026",
-      "Confirm any annual billing terms directly with Qwoted"
+      "checked November 2, 2026",
+      "\\$149\\.99/month",
+      "\\$1,188/year",
+      "prohibits AI-written pitches",
+      "14809747-can-i-use-ai-to-craft-my-pitch",
+      "5187624-how-to-pitch-an-opportunity-on-qwoted"
     ]
   },
   {
