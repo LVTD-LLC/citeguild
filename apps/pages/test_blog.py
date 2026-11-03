@@ -472,12 +472,26 @@ def test_source_selection_guide_renders_indexable_metadata(settings, client, sit
     assert article["url"] == expected_url
     assert article["mainEntityOfPage"]["@id"] == expected_url
     assert article["datePublished"].startswith("2026-10-10")
-    assert article["dateModified"].startswith("2026-10-31")
+    assert article["dateModified"].startswith("2026-11-03")
     assert 'id="choose-search-route"' in rendered
     assert 'class="blog-table-scroll app-focus"' in rendered
     assert '<th scope="col">Where to start</th>' in rendered
     faq = next(item for item in schema["@graph"] if item["@type"] == "FAQPage")
     assert all(question["name"] in post.html for question in faq["mainEntity"])
+    download_path = reverse("source_evidence_worksheet")
+    assert f'href="{download_path}"' in rendered
+    assert "Check whether the sources share one origin" in rendered
+    assert "Fictional example, not a CiteGuild result" in rendered
+    download = client.get(download_path)
+    assert download.status_code == 200
+    assert download["X-Robots-Tag"] == "noindex"
+    assert download["Content-Disposition"].startswith("attachment;")
+    assert "Source relationship" in download.content.decode()
+    assert download_path not in client.get("/sitemap.xml").content.decode()
+    assert 'content="noindex"' not in rendered
+    head = client.head(download_path)
+    assert head.status_code == 200
+    assert head.content == b""
 
 
 def test_source_selection_guide_is_discoverable_from_home_blog_and_sitemap(settings, client):

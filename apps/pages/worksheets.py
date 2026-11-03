@@ -35,3 +35,22 @@ def research_methods_worksheet() -> str:
         f"## General methods record\n\n{methods}\n\n"
         f"## Optional technical-benchmark addendum\n\n{benchmark}\n"
     )
+
+
+def source_evidence_worksheet() -> str:
+    post = get_blog_post("find-sources-ai-writing")
+    evidence = _worksheet_fields(post.content, "evidence")
+    return (
+        "# CiteGuild source evidence worksheet\n\n"
+        f"Guide: {post.canonical_url}\n"
+        f"Guide updated: {post.updated_at.date().isoformat()}\n\n"
+        "Save a local copy. Repeat the record for each claim and source you inspect. "
+        "Trace repeated claims to their original evidence; do not count several "
+        "summaries of the same report as independent confirmation. Keep independence "
+        "unknown when you cannot establish the relationship.\n\n"
+        "This blank worksheet is not an automatic fact-checker and does not establish "
+        "source independence or guarantee a citation. Filling in this local file does "
+        "not submit it to CiteGuild. Keep confidential notes, personal data and "
+        "credentials out of published or shared copies.\n\n"
+        f"## Claim and evidence record\n\n{evidence}\n"
+    )

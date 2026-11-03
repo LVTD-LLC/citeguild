@@ -2,7 +2,7 @@
 title: "Find Sources for AI Writing"
 description: "Find sources for AI writing, check what each article supports, and give your agent a practical evidence checklist before it adds a citation."
 published_at: "2026-10-10"
-updated_at: "2026-10-31"
+updated_at: "2026-11-03"
 author: "CiteGuild"
 keywords: ["find sources for AI writing", "AI source verification", "editorial source discovery"]
 topics: ["AI writing agents", "source selection", "editorial workflows"]
@@ -26,6 +26,8 @@ faqs:
     answer: "No. Tavily and Exa support web research beyond CiteGuild's participating publishers. Use CiteGuild to discover relevant member articles, official sources for documented behavior, and web search for evidence outside the member network. Read the original source whichever route you use."
   - question: "What if I cannot find a supporting source?"
     answer: "Narrow or remove the claim, or label a genuinely interpretive statement as analysis. Do not attach a tangential source to make it look verified."
+  - question: "Do several citations count as independent evidence?"
+    answer: "Not necessarily. Trace each claim to the report, observation, or experiment that produced it. Articles repeating the same report do not independently corroborate that report's finding. If you cannot establish the relationship, record independence as unknown."
 ---
 
 To find sources for AI writing, start with the claim you need to support. Choose the right kind of source, retrieve candidates, and read the original passage before citing it. Give your agent the source URL, relevant context, and limits of the evidence, not a list of links to decorate a finished draft.
@@ -39,6 +41,8 @@ This workflow is for agents writing technical articles, SaaS guides, and other e
 3. Retrieve a small set of candidates and open the sources.
 4. Accept, narrow, or reject the claim based on what you read.
 5. Keep that decision beside the citation through the final edit.
+
+Need an editable record for your writer? [Download the blank evidence worksheet](/blog/find-sources-ai-writing/worksheet.md), then use the [worked source-independence example](#trace-original-evidence) to fill it in. The download is public; your completed notes stay in your own file.
 
 On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [choose web search or the member network](#choose-search-route), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp), the [CLI](#search-with-cli), or the [REST API](#search-with-api), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
 
@@ -219,25 +223,53 @@ When two sources conflict, first check whether they describe different versions,
 
 <h2 id="hand-off-evidence">5. Hand the writer an evidence record</h2>
 
-Keep research and drafting connected with a short record. This is a proposed editorial checklist, not a feature CiteGuild automatically enforces:
+Keep research and drafting connected with a short record. [Download the blank evidence worksheet](/blog/find-sources-ai-writing/worksheet.md), save a local copy, and repeat the record for each claim. No account or email is required for the download; filling it in does not submit your notes to CiteGuild. It is an editorial checklist, not an automatic fact-checker.
 
-```text
-Claim to check:
-Scope: version, date, audience, or conditions
-Source: title and original URL
-Source type: official docs, study, report, or practitioner article
-Supporting section: heading and a short paraphrase
-Limit or contradiction:
-Decision: accept, narrow, reject, or needs further checking
-Final sentence:
-Checked on:
-```
+*Worksheet and source-independence example added November 3, 2026.*
+
+<!-- worksheet:evidence:start -->
+> **Claim to check:** [one checkable statement]
+>
+> **Scope:** [version, date, audience, conditions; metric, unit, population, and experiment/run for a number]
+>
+> **Candidate source:** [title, URL, and source type]
+>
+> **Original evidence:** [report, documentation, observation, or experiment URL; unresolved if unavailable]
+>
+> **Source relationship:** [direct evidence, repeats a named origin, independent evidence with reason, or independence unknown]
+>
+> **Supporting section:** [heading and a short paraphrase; do not copy restricted material]
+>
+> **Limit or contradiction:** [what the source does not establish]
+>
+> **Decision:** [accept, narrow, reject, or needs further checking; explain why]
+>
+> **Final sentence and citation:** [bounded wording and the URL that supports it]
+>
+> **Checked on:** [date; reviewer or agent role without private identifiers]
+<!-- worksheet:evidence:end -->
 
 The critical fields are the limitation and final sentence. They keep a writer from expanding a carefully bounded finding into a stronger claim during a later rewrite. An editor should be able to open the URL and reconstruct the decision without rerunning the entire research session.
 
 Place the citation beside the sentence it supports. If a paragraph combines several distinct findings, avoid one trailing link that appears to substantiate all of them. Preserve attribution when describing someone else's experiment or opinion; make your own interpretation recognizable as interpretation.
 
 For developers connecting retrieval to a model, [Anthropic's search-result documentation](https://platform.claude.com/docs/en/build-with-claude/search-results) describes blocks containing a source, title, and text content, with citations enabled explicitly. Its [citation documentation](https://platform.claude.com/docs/en/build-with-claude/citations) describes pointers into supplied documents. Those mechanisms help preserve provenance. They do not independently establish that the original material is correct or that your whole sentence follows from it. CiteGuild does not automatically configure those model-specific citation features.
+
+<h3 id="trace-original-evidence" class="scroll-mt-24">Check whether the sources share one origin</h3>
+
+Several URLs can lead back to the same evidence. Follow the references for the specific claim, not just the articles' homepages. Record the original report or experiment beside each candidate. Different publishers do not, by themselves, establish independent corroboration. [Reuters' sourcing standards](https://reutersagency.com/about/standards-values/), checked November 3, 2026, caution against presenting one source as several and require independent verification of AI-generated facts. The worksheet applies that distinction to a writing-agent handoff; it is not a Reuters-approved tool.
+
+**Fictional example, not a CiteGuild result:** a draft says an optimization improves performance across all workloads. The agent finds a vendor benchmark, a news summary linking to it, and a tutorial repeating the summary.
+
+| Candidate | Evidence behind the performance claim | Editorial decision |
+| --- | --- | --- |
+| Vendor benchmark | Its own stated workload, environment, metric, and run | Check the method; limit the sentence to those conditions |
+| News summary | The same vendor benchmark | Not independent confirmation of that benchmark |
+| Tutorial | The news summary, with no separate test identified | Trace back to the benchmark; keep independence unknown if the trail cannot be established |
+
+The narrower sentence is: “The vendor reports an improvement for its tested workload under the stated conditions.” Cite the inspected benchmark for that result. A tutorial may still deserve a separate citation for useful implementation advice; its value is not independent confirmation of a test it did not run.
+
+If the original is unavailable, retain “needs further checking” rather than turning repetition into certainty. For numerical claims, match the metric, unit, population, and experiment/run as well as the value. Keep those limits attached when the writer edits the sentence. CiteGuild returns relevant member articles; it does not automatically establish their independence or verify their claims. Members can [run a focused source search](#search-with-mcp), then use this record to decide which results actually help.
 
 <h2 id="review-before-publishing">Review after the last rewrite</h2>
 
@@ -270,5 +302,9 @@ No. Tavily and Exa support web research beyond CiteGuild's participating publish
 ### What if I cannot find a supporting source?
 
 Narrow or remove the claim, or label a genuinely interpretive statement as analysis. Do not attach a tangential source to make it look verified.
+
+### Do several citations count as independent evidence?
+
+Not necessarily. Trace each claim to the report, observation, or experiment that produced it. Articles repeating the same report do not independently corroborate that report's finding. If you cannot establish the relationship, record independence as unknown.
 
 Already a member? [Open your dashboard](/home), connect your agent, and try one focused search. New to CiteGuild? [Membership is free and invitation-only](/pricing). An existing member can invite you. No source is owed a citation: include it only when it helps the reader.

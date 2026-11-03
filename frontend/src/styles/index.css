@@ -68,7 +68,7 @@
   }
 
   .blog-table-scroll table {
-    @apply my-0;
+    @apply my-0 text-inherit;
   }
 
   .docs-code-blocks pre {

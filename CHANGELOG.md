@@ -1,3 +1,8 @@
+## 2026-11-03
+
+- Add a public, blank source-evidence worksheet and a worked source-independence example to the existing AI-writing guide. Keep the download tied to the published fields, ungated, read-only, and outside the sitemap; preserve unknown evidence and avoid automated-verification claims.
+- Keep Markdown blog-table body text readable in dark mode by inheriting the surrounding typography color.
+
 ## 2026-11-02
 
 - Add a source-checked Qwoted versus HARO decision guide to the existing roundup, distinguishing human expert pitches from writing-agent source retrieval. Correct Qwoted's current monthly/annual billing, explain when pitch credits are spent, and cite its AI-pitch rules without changing the article title or original publication date.
