@@ -881,14 +881,33 @@ def test_recovery_finalizes_completed_page_work(sync_request, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_recovery_schedule_is_named_and_idempotent(monkeypatch):
-    monkeypatch.setattr(
-        "apps.core.management.commands.ensure_crawl_schedules.recover_crawl_jobs",
-        lambda: {},
-    )
+@pytest.mark.parametrize("schedules_only", [False, True])
+def test_recovery_schedule_is_named_and_idempotent(monkeypatch, schedules_only):
+    sweeps = []
 
-    call_command("ensure_crawl_schedules")
-    call_command("ensure_crawl_schedules")
+    def record_sweep(name):
+        def sweep():
+            sweeps.append(name)
+            return {}
+
+        return sweep
+
+    for name in (
+        "recover_project_deletions",
+        "capture_daily_metrics",
+        "recover_crawl_jobs",
+        "schedule_due_sitemap_reconciliations",
+    ):
+        monkeypatch.setattr(
+            f"apps.core.management.commands.ensure_crawl_schedules.{name}",
+            record_sweep(name),
+        )
+
+    call_command("ensure_crawl_schedules", schedules_only=schedules_only)
+    call_command("ensure_crawl_schedules", schedules_only=schedules_only)
+
+    assert len(sweeps) == (0 if schedules_only else 8)
+    assert Schedule.objects.count() == 5
 
     schedule = Schedule.objects.get(name="citeguild-crawl-recovery")
     assert schedule.func == "apps.core.crawl_jobs.recover_crawl_jobs"

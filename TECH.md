@@ -140,7 +140,15 @@ first for web, then for the matching worker after its deployment. This verifies
 readiness; it does not promise a zero-downtime rollout or strict FIFO queuing.
 
 The production worker uses `manage.py run_worker`, a thin wrapper around the
-default Django Q2 cluster. After startup it registers its release, deployment
+default Django Q2 cluster. Before starting the cluster, the entrypoint ensures
+the five existing schedules with `ensure_crawl_schedules --schedules-only`.
+Cleanup, metric capture, crawl recovery and reconciliation run on their existing
+cadences, not inline on the readiness path: recovery can finalize large sitemap
+inventories and must not prevent the queue from starting. Running the command
+without that flag retains its explicit one-off sweep behavior. No new schedules
+or probe tasks are introduced.
+
+After startup the cluster registers its release, deployment
 ID, configuration fingerprint, and cluster locator in the existing shared cache.
 `/api/healthcheck` exposes only the deployment ID and a `worker_ready` boolean,
 never worker identities or task data. Readiness requires matching registration
