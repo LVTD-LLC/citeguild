@@ -42,6 +42,22 @@ DOCS_NAVIGATION_PATH = DOCS_CONTENT_ROOT / "navigation.yaml"
 
 
 @require_safe
+def source_evidence_worksheet_view(request):
+    from apps.pages.worksheets import source_evidence_worksheet
+
+    try:
+        worksheet = source_evidence_worksheet()
+    except (BlogPostNotFound, BlogPostValidationError) as exc:
+        raise Http404("Worksheet not found") from exc
+    response = HttpResponse(worksheet, content_type="text/markdown; charset=utf-8")
+    response["Content-Disposition"] = (
+        'attachment; filename="citeguild-source-evidence-worksheet.md"'
+    )
+    response["X-Robots-Tag"] = "noindex"
+    return response
+
+
+@require_safe
 def research_methods_worksheet_view(request):
     from apps.pages.worksheets import research_methods_worksheet
 

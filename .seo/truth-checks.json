@@ -69,5 +69,20 @@
       "three keyword alerts sent daily",
       "Featured is a separate AI-powered PR product"
     ]
+  },
+  {
+    "claim": "Source-evidence worksheet is a blank record, not automatic verification (checked 2026-11-03)",
+    "paths": [
+      "apps/pages/posts/find-sources-ai-writing.md"
+    ],
+    "must_match": [
+      "not an automatic fact-checker",
+      "independence unknown",
+      "does not automatically establish their independence"
+    ],
+    "must_not_match": [
+      "worksheet automatically verifies",
+      "guarantees source independence"
+    ]
   }
 ]

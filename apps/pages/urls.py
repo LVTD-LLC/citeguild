@@ -14,6 +14,11 @@ urlpatterns = [
     ),
     path("blog/", views.blog_posts_view, name="blog_posts"),
     path(
+        "blog/find-sources-ai-writing/worksheet.md",
+        views.source_evidence_worksheet_view,
+        name="source_evidence_worksheet",
+    ),
+    path(
         "blog/original-research-methods-template/worksheet.md",
         views.research_methods_worksheet_view,
         name="research_methods_worksheet",
