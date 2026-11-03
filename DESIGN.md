@@ -304,6 +304,8 @@ Blog Markdown tables use `.blog-table-scroll` with an accessible region name,
 `tabindex="0"`, and the shared `.app-focus` treatment. Keep native table
 semantics and column headers inside the region; horizontal overflow must stay
 inside the table rather than widening the article or hiding comparison columns.
+Table text must inherit the surrounding prose color so body cells remain readable
+in both light and dark themes; verify cells as well as headers when reviewing.
 
 Before shipping generated-project UI changes:
 
