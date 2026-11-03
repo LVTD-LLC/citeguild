@@ -78,7 +78,7 @@ case "$process_type" in
         ;;
     worker)
         echo "Starting CiteGuild workers..."
-        uv run --no-sync python manage.py ensure_crawl_schedules
+        uv run --no-sync python manage.py ensure_crawl_schedules --schedules-only
         exec uv run --no-sync python manage.py run_worker
         ;;
     *)

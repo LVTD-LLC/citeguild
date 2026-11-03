@@ -15,6 +15,13 @@ from apps.search.cleanup import PROJECT_CLEANUP_TASK, recover_project_deletions
 class Command(BaseCommand):
     help = "Create idempotent worker schedules and run one startup crawl sweep."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--schedules-only",
+            action="store_true",
+            help="Ensure existing schedules without running recovery work inline.",
+        )
+
     def handle(self, *args, **options):
         Schedule.objects.update_or_create(
             name="citeguild-project-deletion-cleanup",
@@ -25,7 +32,6 @@ class Command(BaseCommand):
                 "repeats": -1,
             },
         )
-        recover_project_deletions()
         schedule, created = Schedule.objects.update_or_create(
             name="citeguild-crawl-recovery",
             defaults={
@@ -60,6 +66,13 @@ class Command(BaseCommand):
                 "repeats": -1,
             },
         )
+        if options["schedules_only"]:
+            self.stdout.write(
+                self.style.SUCCESS("Worker schedules ensured; sweeps run on cadence.")
+            )
+            return
+
+        recover_project_deletions()
         capture_daily_metrics()
         recovery = recover_crawl_jobs()
         reconciliation = schedule_due_sitemap_reconciliations()

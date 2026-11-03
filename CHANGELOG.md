@@ -1,5 +1,7 @@
 ## 2026-11-03
 
+- Unblock worker readiness by ensuring the existing schedules without synchronous recovery sweeps during deployment. Retain manual one-off sweep behavior and all existing recovery cadences; do not add schedules or weaken release checks.
+
 - Add a public, blank source-evidence worksheet and a worked source-independence example to the existing AI-writing guide. Keep the download tied to the published fields, ungated, read-only, and outside the sitemap; preserve unknown evidence and avoid automated-verification claims.
 - Keep Markdown blog-table body text readable in dark mode by inheriting the surrounding typography color.
 
