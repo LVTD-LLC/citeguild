@@ -2,7 +2,7 @@
 title: "Find Sources for AI Writing"
 description: "Find sources for AI writing, check what each article supports, and give your agent a practical evidence checklist before it adds a citation."
 published_at: "2026-10-10"
-updated_at: "2026-11-03"
+updated_at: "2026-11-04"
 author: "CiteGuild"
 keywords: ["find sources for AI writing", "AI source verification", "editorial source discovery"]
 topics: ["AI writing agents", "source selection", "editorial workflows"]
@@ -44,7 +44,7 @@ This workflow is for agents writing technical articles, SaaS guides, and other e
 
 Need an editable record for your writer? [Download the blank evidence worksheet](/blog/find-sources-ai-writing/worksheet.md), then use the [worked source-independence example](#trace-original-evidence) to fill it in. The download is public; your completed notes stay in your own file.
 
-On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [choose web search or the member network](#choose-search-route), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp), the [CLI](#search-with-cli), or the [REST API](#search-with-api), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
+On this page: [frame the claim](#frame-the-claim), [choose sources](#choose-sources), [choose web search or the member network](#choose-search-route), [search with an agent](#search-with-an-agent) using [MCP](#search-with-mcp), the [CLI](#search-with-cli), or the [REST API](#search-with-api), [recover from an empty search](#recover-empty-results), [check support](#check-support), [hand off evidence](#hand-off-evidence), and [review before publishing](#review-before-publishing).
 
 <h2 id="frame-the-claim">1. Write the claim before the search query</h2>
 
@@ -203,7 +203,23 @@ Use the returned fields for their intended jobs:
 - `relevance` orders candidate matches. It is not a probability that a sentence is true or a citation is appropriate.
 - `last_seen_at` records when CiteGuild observed the article. It is not the author's publication date or proof that the facts are current.
 
-**Done looks like:** a small reading list with actual URLs. Check that the command succeeded first: an authentication, network, or rate-limit failure is not an empty search. A successful response with no results means this search did not find a candidate in this corpus. Broaden the question if appropriate, use primary documentation, or search elsewhere. Never turn an empty response into invented references.
+**Done looks like:** a small reading list with actual URLs. A successful search is still only discovery; an empty result or an irrelevant reading list needs a different next step.
+
+<h3 id="recover-empty-results">When CiteGuild search returns no results</h3>
+
+A successful response with `results: []` means this request returned no candidates from the eligible member corpus. It does not establish that no supporting source exists. First separate an empty search from an authentication, network, rate-limit, or service error; use the error guidance above for a failed request.
+
+Before searching again, check what you asked the tool to include:
+
+- **Language is an exact tag filter, not a translation request.** `en` does not also match an article tagged `en-us`. If language was only a preference, you can omit the filter for a diagnostic search, then inspect each result's language. Keep it when the assignment requires that restriction.
+- **Excluded domains are exact indexed site hosts.** Excluding `example.com` does not also exclude `blog.example.com` or `www.example.com`. List each relevant host separately when excluding your own sites. Use hostnames, not full URLs or wildcard patterns, and do not remove required exclusions merely to get results.
+- **The question may need a clearer focus.** Instead of a whole article brief, ask the one implementation question whose evidence you need. A different wording may help discovery; it does not expand the member corpus or guarantee a useful source.
+
+Choose one appropriate change and retry once, keeping the claim's version, date, and evidence requirements intact. This is an editorial stopping rule, not an API limit. If that search is also empty—or its results do not support the claim—continue with the [primary-source or broader web route](#choose-search-route). Do not repeatedly loosen constraints until something appears.
+
+Record the outcome narrowly: “No supporting member article found in these searches; primary-source review still needed.” Do not turn it into “no evidence exists,” cite an unrelated result, or invent a reference. If you expected your own submitted article, [check its CiteGuild page status](/for/saas-link-building#source-readiness) before assuming that search or Google indexing failed.
+
+Filter behavior follows CiteGuild's [v1 input normalization](https://github.com/LVTD-LLC/citeguild/blob/e3969d6ebc599cac77c72284f689b75995527d4a/apps/search/service.py) and [exact-match search filters](https://github.com/LVTD-LLC/citeguild/blob/e3969d6ebc599cac77c72284f689b75995527d4a/apps/search/qdrant.py), checked November 4, 2026. The examples explain the contract; they are not reported live search results.
 
 <h2 id="check-support">4. Accept, narrow, or reject the claim</h2>
 

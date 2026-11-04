@@ -1,3 +1,7 @@
+## 2026-11-04
+
+- Add a bounded empty-search recovery walkthrough to the existing source-selection guide and public agent instructions: distinguish failures from no candidates, explain exact language/site-host filters, preserve required constraints, and route unsupported claims to primary or broader research.
+
 ## 2026-11-03
 
 - Unblock worker readiness by ensuring the existing schedules without synchronous recovery sweeps during deployment. Retain manual one-off sweep behavior and all existing recovery cadences; do not add schedules or weaken release checks.
