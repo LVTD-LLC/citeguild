@@ -84,6 +84,7 @@ def agent_instructions_markdown(request):
     mcp_url = build_absolute_public_url("/mcp/")
     api_url = build_absolute_public_url("/api/user")
     search_api_url = build_absolute_public_url("/api/v1/search")
+    recovery_url = build_absolute_public_url("/blog/find-sources-ai-writing#recover-empty-results")
     project_name = "CiteGuild"
     env_var = "CITEGUILD_API_KEY"
     body = f"""# {project_name} Agent Instructions
@@ -157,6 +158,19 @@ API keys are intentionally not accepted in query strings.
 6. If MCP is unavailable, call `POST {search_api_url}` with the same Bearer API
    key and the versioned JSON search contract.
 7. Document local MCP configuration for future agents.
+
+## If a search returns no candidates
+
+A successful `results: []` response is not an authentication, network, rate-limit,
+or service error, and it is not proof that no evidence exists. Review optional
+filters before retrying: language matches exact tags (`en` is not `en-us`), and
+domain exclusions match exact indexed site hosts, not all subdomains. Preserve
+required exclusions and language restrictions. Make at most one deliberate
+query or optional-filter adjustment for the current claim, then use primary
+sources or broader web research if no useful source is found. Never invent a
+reference or cite an unrelated result to fill the gap. Follow the
+[empty-search recovery walkthrough]({recovery_url})
+for examples and the distinction between empty results and request failures.
 
 ## Output
 
