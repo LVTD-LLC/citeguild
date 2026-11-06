@@ -538,7 +538,7 @@ def test_publisher_methods_worksheet_is_rendered_and_discoverable(settings, clie
     article = next(item for item in schema["@graph"] if item["@type"] == "BlogPosting")
     assert article["url"] == f"https://citeguild.com{path}"
     assert article["datePublished"].startswith("2026-10-21")
-    assert article["dateModified"].startswith("2026-10-28")
+    assert article["dateModified"].startswith("2026-11-06")
     faq = next(item for item in schema["@graph"] if item["@type"] == "FAQPage")
     assert all(question["name"] in rendered for question in faq["mainEntity"])
     for route in ("landing", "blog_posts"):

@@ -1,3 +1,7 @@
+## 2026-11-06
+
+- Add an optional, source-checked survey record to the existing publisher methods guide and ungated Markdown worksheet. Keep recruitment, exact question context, question-level counts, calculations, and limits together without collecting respondent data or creating a competing article.
+
 ## 2026-11-04
 
 - Add a bounded empty-search recovery walkthrough to the existing source-selection guide and public agent instructions: distinguish failures from no candidates, explain exact language/site-host filters, preserve required constraints, and route unsupported claims to primary or broader research.

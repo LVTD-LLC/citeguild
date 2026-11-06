@@ -35,6 +35,8 @@ def test_public_worksheet_download_uses_published_fields(rf, settings, tmp_path,
     settings.SITE_URL = "https://canonical.example"
     source = (settings.BASE_DIR / f"apps/pages/posts/{slug}.md").read_text()
     source = source.replace(field, "[a revised question or claim]")
+    if section == "methods":
+        source = source.replace("[wording]", "[a revised survey question]")
     (tmp_path / f"{slug}.md").write_text(source)
     settings.BLOG_POSTS_DIR = tmp_path
     path = reverse(route)
@@ -51,6 +53,8 @@ def test_public_worksheet_download_uses_published_fields(rf, settings, tmp_path,
     assert "[a revised question or claim]" in content
     if section == "methods":
         assert "[completed runs, errors and timeouts]" in content
+        assert "[a revised survey question]" in content
+        assert "[unweighted eligible count]" in content
         assert "does not validate a study" in content
     else:
         assert "independence unknown" in content
