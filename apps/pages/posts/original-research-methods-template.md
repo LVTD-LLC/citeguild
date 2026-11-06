@@ -2,7 +2,7 @@
 title: "Original Research Methods Template"
 description: "Publish research another writer can check: copy a methods template, trace a worked example, and keep missing answers out of unsupported claims."
 published_at: "2026-10-21"
-updated_at: "2026-10-28"
+updated_at: "2026-11-06"
 author: "CiteGuild"
 keywords: ["original research methods template", "publisher research methodology", "source-worthy research"]
 topics: ["editorial source discovery", "original research", "publisher workflows"]
@@ -24,13 +24,13 @@ faqs:
     answer: "No. Publish only material you have permission to share. Describe the method and provide suitable aggregate evidence without exposing respondents or confidential records."
 ---
 
-*Last updated October 28, 2026.*
+*Last updated November 6, 2026.*
 
 An original research methods template records what you studied, how you selected it, what you counted and where the conclusion stops. Publish that record beside the finding so another writer can inspect the evidence before quoting it. Keep exclusions and missing answers visible: neither should silently change what a percentage means.
 
 This worksheet is for independent publishers preparing a research article, not a substitute for survey-design or statistical advice. You need a specific research question and permission to use your evidence. The small dataset below is **entirely fictional teaching material**, not a CiteGuild study, a real market sample or a product benchmark.
 
-[Download the editable worksheet (.md)](/blog/original-research-methods-template/worksheet.md). Save the Markdown file and fill it in with any text editor. It contains the general methods record and an optional technical-benchmark addendum, with a link back to this guide. No signup is required, and there is no form to submit your research to CiteGuild. Completing the worksheet does not validate a study or promise a citation.
+[Download the editable worksheet (.md)](/blog/original-research-methods-template/worksheet.md). Save the Markdown file and fill it in with any text editor. It contains the general methods record and optional survey and technical-benchmark addenda, with a link back to this guide. No signup is required, and there is no form to submit your research to CiteGuild. Completing the worksheet does not validate a study or promise a citation.
 
 The workflow:
 
@@ -149,6 +149,24 @@ For example, someone may complete a survey but skip the question behind your hea
 An opt-in reader poll does not automatically describe the wider industry. Do not attach a conventional population margin of error just because a calculator accepts the response count. AAPOR's disclosure standards distinguish probability and nonprobability recruitment and require additional explanation for precision measures in nonprobability studies. Get appropriate methodological help before making those inferences.
 
 **Done looks like:** the published statement identifies the actual respondent group, the question's counting base and the limits of recruitment. A large response count is not permission to omit those details.
+
+### Copy a record for each survey finding
+
+Complete the general methods record above, then repeat this addendum for each reported question. It keeps the question's counting base beside the claim rather than leaving a writer to infer it from total completions. The [downloadable worksheet](/blog/original-research-methods-template/worksheet.md) includes these same fields.
+
+<!-- worksheet:survey:start -->
+> **Recruitment and eligibility:** We recruited [actual channels or panel] using [survey mode, eligibility and selection rules], with [incentives, if any]. The observed group was [who actually participated], not automatically [the broader industry].
+>
+> **Question and context:** The exact question was [wording], with [answer choices, their order and relevant preceding questions]. Respondents could select [one/several options].
+>
+> **Question counts:** There were [total completions]. For this question, [unweighted eligible count] were eligible, [unweighted count] answered, and [unweighted count] had missing answers. We excluded [count and reasons]. State where exclusions enter these counts.
+>
+> **Calculation:** This finding uses [numerator] divided by [explicit counting base], with [missing-answer rule]. For multiple selections, [explain the counting rule and whether percentages can exceed 100% in total].
+>
+> **Weighting and limits:** [No weights used / variables, procedure and permitted documentation]. The finding describes [actual respondent group and dates]. Relevant recruitment, coverage and measurement limits are [details]. Any precision estimate uses [method and justified assumptions / not reported].
+<!-- worksheet:survey:end -->
+
+These fields are CiteGuild's editorial aid, informed by [AAPOR's disclosure standards](https://aapor.org/standards-and-ethics/disclosure-standards/), checked November 6, 2026. They are not a complete standards checklist or a survey-quality certification. Keep the full questionnaire and suitable aggregate evidence where you have permission to share them; do not attach private respondent records.
 
 <h2 class="scroll-mt-24" id="technical-benchmark">Adapt the record for a technical benchmark</h2>
 
