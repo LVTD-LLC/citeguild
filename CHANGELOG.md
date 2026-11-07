@@ -1,3 +1,7 @@
+## 2026-11-07
+
+- Add a publisher checklist for revised articles: accurate sitemap dates, refresh versus discovery, and checking the current source before citing; retain the existing SaaS workflow URL and update its content date.
+
 ## 2026-11-06
 
 - Add an optional, source-checked survey record to the existing publisher methods guide and ungated Markdown worksheet. Keep recruitment, exact question context, question-level counts, calculations, and limits together without collecting respondent data or creating a competing article.
