@@ -39,6 +39,8 @@
                        class="app-focus inline-flex min-h-12 items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800 dark:bg-green-500 dark:text-gray-950 dark:hover:bg-green-400">Make my articles searchable</a>
                     <a href="#source-readiness"
                        class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200">See the source-readiness loop</a>
+                    <a href="#update-published-articles"
+                       class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200">Updating an existing article?</a>
                 </div>
             </div>
         </section>
@@ -97,6 +99,18 @@
     href="https://ghost.org/help/protected-content/">post access levels</a> also determine what a signed-out reader can see. These settings were checked November 1, 2026; this is not a claim of a native Ghost integration.</p>
                             <p class="mt-3">After processing, open your site’s Pages view in CiteGuild and check the article’s indexing state. Discovery alone does not mean it is active or searchable. Use the <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
     href="{% url 'blog_post' 'find-sources-ai-writing' %}">first source-search walkthrough</a> to evaluate the result. Neither sitemap inclusion nor a successful search guarantees a citation.</p>
+                            <h4 id="update-published-articles"
+                                class="mt-7 scroll-mt-24 text-lg font-semibold text-gray-950 dark:text-white">After updating an article indexed by CiteGuild</h4>
+                            <p class="mt-3">Keep revised evidence useful to the next writer. Updating your website does not instantly update CiteGuild’s search index, and CiteGuild indexing is separate from Google indexing.</p>
+                            <ol class="mt-4 list-decimal space-y-3 pl-6">
+                                <li><strong>Publish the corrected evidence.</strong> Keep the method, result, and limitations readable at the public article URL. If the URL changes, check the new canonical and the sitemap entry rather than leaving only the old address.</li>
+                                <li><strong>Check the sitemap’s change date.</strong> If your sitemap includes <code>lastmod</code>, make it reflect the article’s real content update. Do not stamp every URL with today’s date on each build. CiteGuild’s approximately daily reconciliation uses changed, valid <code>lastmod</code> values to choose which existing articles to fetch again; unchanged or missing dates can leave them for a later periodic refresh.</li>
+                                <li><strong>Check processing, not just discovery.</strong> Review the site’s latest sync on the dashboard and its Pages view. A found-page count does not prove the revised article text is searchable. Processing or service failures can delay retrieval.</li>
+                                <li><strong>Review the source again.</strong> After CiteGuild processes the update, try a question the revised article actually answers. Open the original and check the new passage before citing it. An indexed article may not appear for every query, and a search result is not proof that an older draft’s claim is still supported.</li>
+                            </ol>
+                            <p class="mt-4 text-sm/6">Refresh behavior checked November 7, 2026 against <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://github.com/LVTD-LLC/citeguild/blob/3423fa43a8986172ec70c203ea8d07fdf045953c/apps/core/crawl_jobs.py">CiteGuild’s reconciliation implementation</a>. This describes the normal workflow, not a guaranteed refresh deadline. Google’s separate <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap#lastmod">sitemap guidance</a> also calls for accurate modification dates; submitting to Google does not refresh CiteGuild.</p>
                         </div>
                     </li>
                     <li class="grid gap-4 py-7 md:grid-cols-[3fr_7fr]">

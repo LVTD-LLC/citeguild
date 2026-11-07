@@ -151,8 +151,8 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
     assert "https://ghost.org/changelog/geo/" in content
     assert "https://ghost.org/help/post-settings/" in content
     assert "do not remove a correct canonical" in visible_text
-    assert faq["dateModified"] == "2026-11-01"
-    assert '<time datetime="2026-11-01">November 1, 2026</time>' in content
+    assert faq["dateModified"] == "2026-11-07"
+    assert '<time datetime="2026-11-07">November 7, 2026</time>' in content
 
     sitemap = client.get(reverse("django.contrib.sitemaps.views.sitemap"))
     root = ElementTree.fromstring(sitemap.content)
@@ -162,7 +162,7 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
         for item in root.findall("sm:url", ns)
     }
     target = next(url for url in dates if url.endswith("/for/saas-link-building"))
-    assert dates[target].text == "2026-11-01"
+    assert dates[target].text == "2026-11-07"
     homepage = next(url for url in dates if url.rstrip("/").endswith("testserver"))
     assert dates[homepage] is None
 
