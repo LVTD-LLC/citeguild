@@ -8,6 +8,8 @@
 
 Recheck when product or domain changes. Historical canonical-repair note: competitor prices remained dated August 5 at that point; the canonical repair was not a fresh competitor review. The selective Qwoted and Connectively rechecks below supersede only their named claims.
 
+- Checked 2026-11-09: SourceBottle's official https://www.sourcebottle.com/pricing.asp lists free expert profiles, directory listings, inbox call-outs, and unlimited replies to call-outs in Drink Up! alerts. Optional paid plans add human-run staff pitching of expert profiles; the per-pitch option covers up to three relevant call-outs per month. This is separate from paid sample/giveaway/case-study requests described at https://www.sourcebottle.com/what-is-source.asp. No currency/price, staff answer-writing, coverage guarantee, or end-to-end automation claim was verified or added. Other vendors' verification dates remain unchanged.
+
 - Checked 2026-10-19: the owner-scoped page list includes discovered and inactive article records as well as active articles; finding a page is not proof it is indexed. CiteGuild indexing is separate from Google indexing and does not guarantee retrieval or citation. Sources: apps/core/sitemap_details.py, apps/core/article_ingestion.py, apps/search/qdrant.py and PRODUCT.md. Page-status guidance is read-only; it does not resubmit, reactivate or change indexing directives.
 
 - Historical check 2026-10-23: Qwoted's comparison then displayed Pro $149/month and no specified annual price. Superseded by the November 2 check below; preserve the August 5 source date for untouched HARO comparisons.

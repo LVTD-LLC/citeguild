@@ -84,5 +84,22 @@
       "worksheet automatically verifies",
       "guarantees source independence"
     ]
+  },
+  {
+    "claim": "HARO comparison separates free SourceBottle replies from human-run profile pitching (checked 2026-11-09)",
+    "paths": [
+      "apps/pages/posts/haro-alternatives.md"
+    ],
+    "must_match": [
+      "https://www\\.sourcebottle\\.com/pricing\\.asp",
+      "checked November 9, 2026",
+      "unlimited replies to call-outs in Drink Up! alerts",
+      "human-run",
+      "Paid plans cover pitching help, not guaranteed coverage"
+    ],
+    "must_not_match": [
+      "SourceBottle guarantees coverage",
+      "SourceBottle requires payment to answer call-outs"
+    ]
   }
 ]

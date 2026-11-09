@@ -132,6 +132,10 @@
 
 # Changelog
 
+## 2026-11-09
+
+- Clarified SourceBottle's free replies versus optional human-run profile pitching in the existing HARO comparison, with dated official sources and no coverage guarantees.
+
 ## 2026-10-08
 
 - Send transactional and error emails from `rasul@citeguild.dev` via the dedicated Mailgun domain `mg.citeguild.dev`; align production sender defaults and local environment examples.
