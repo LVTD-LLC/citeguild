@@ -2,7 +2,7 @@
 title: "7 Best HARO Alternatives for 2026"
 description: "Compare seven current HARO alternatives by workflow, audience, pricing, and limitations—including when persistent agent retrieval fits better."
 published_at: 2026-08-05
-updated_at: 2026-11-02
+updated_at: 2026-11-09
 author: "LVTD LLC"
 keywords: [HARO alternatives, Help a Reporter Out alternatives, journalist request platforms]
 topics: [digital PR, source discovery, editorial citations, AI writing agents]
@@ -49,11 +49,11 @@ This guide compares seven current options using the same criteria: who sends the
 | Qwoted | Experts and PR teams that want a dashboard | Vetted request → alert → tracked pitch | Free; Pro $149.99/month or $1,188/year | Free plan has two pitches monthly and a two-hour delay |
 | Connectively | Early HARO access and direct expert answers | Posted query → dashboard → tracked answer | Free: three answers/month; paid plans available | Free keyword alerts are daily, not real-time |
 | MentionMatch | B2B and SaaS expertise | Writer request → expertise matching → email response | Free | Narrower subject coverage than general media services |
-| SourceBottle | Regional and lifestyle call-outs | Public call-out → targeted email alert → response | Free for call-outs and general subscribers | Interface and opportunity mix may not suit every beat |
+| SourceBottle | Regional and lifestyle call-outs | Free alerts and self-service replies; optional staff pitching | Free alerts and replies; paid profile pitching available | Paid pitching still depends on relevant call-outs |
 | ResponseSource | UK PR and communications teams | Verified enquiry → category feed → response | From £625 per category/year, excluding VAT | Paid annual category subscriptions |
 | CiteGuild | Publishers who want agents to discover existing articles | Sitemap → persistent index → agent retrieval | Free, invitation-only | Not a journalist-request or pitching service |
 
-Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing and pitch rules, rechecked November 2, 2026, and the HARO/Connectively/Featured workflow and Connectively free-plan limits, checked October 27, 2026. HARO's email workflow was also rechecked November 2. Plans change; verify the linked pricing page before buying.
+Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing and pitch rules, rechecked November 2, 2026; the HARO/Connectively/Featured workflow and Connectively free-plan limits, checked October 27, 2026; and SourceBottle's free-response and paid-pitching options, checked November 9, 2026. HARO's email workflow was also rechecked November 2. Plans change; verify the linked pricing page before buying.
 
 ## First, HARO is back—and Featured now owns it
 
@@ -150,9 +150,11 @@ For a SaaS founder with an original benchmark or a technical case study, there a
 
 **Best for:** Sources interested in regional, consumer, lifestyle, case-study, and product-related media opportunities.
 
-**Pricing:** Posting journalistic call-outs and receiving general subscriber alerts are free. SourceBottle separately charges for certain requests involving samples, prizes, giveaways, or case studies for media pitches.
+**Pricing:** Posting journalistic call-outs and receiving general subscriber alerts are free. SourceBottle's [official plan comparison](https://www.sourcebottle.com/pricing.asp), checked November 9, 2026, also lists a free expert profile, directory listing, and unlimited replies to call-outs in Drink Up! alerts. Paid plans add staff pitching of your expert profile. Charges for [sample, giveaway, and case-study requests](https://www.sourcebottle.com/what-is-source.asp) are a separate service.
 
 **Why choose it:** Sources can select topics, receive the Drink Up! alert, and browse call-outs publicly. Its geographic history makes it worth checking when a US-centered HARO list does not reflect your market.
+
+**Reply yourself or delegate profile pitching?** Start with free alerts if you can assess requests and answer them yourself. Consider paid pitching when you want SourceBottle's team to put your expert profile forward for matching call-outs. Its pricing page describes that service as human-run; the per-pitch option covers up to three relevant call-outs per month. Paid plans cover pitching help, not guaranteed coverage. You can still reply to call-outs for free. Keep your profile specific to expertise you can substantiate.
 
 **Tradeoffs:** Opportunity relevance depends heavily on your location and beat. The service mixes conventional expert requests with case-study and product-oriented opportunities, so subscribers need to filter carefully. SourceBottle wins for some regional and consumer categories; it is not automatically the best general-purpose option.
 
