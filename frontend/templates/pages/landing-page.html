@@ -25,6 +25,8 @@
                        data-posthog-cta-location="landing_hero"
                        class="app-focus inline-flex min-h-12 items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800 dark:bg-green-500 dark:text-gray-950 dark:hover:bg-green-400">Add my articles</a>
                     <a href="{% url 'blog_post' slug='find-sources-ai-writing' %}#search-with-mcp"
+                       data-posthog-cta="source_search_mcp"
+                       data-posthog-cta-location="landing_hero"
                        class="app-focus inline-flex min-h-12 items-center font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200">Connect a writing agent</a>
                 </div>
             </div>
@@ -46,6 +48,26 @@
                         <p class="max-w-[56ch] text-base/7 text-pretty text-gray-600 dark:text-gray-300">Active member articles ranked by relevance to the agent’s draft. Learn how to <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
     href="{% url 'blog_post' slug='find-sources-ai-writing' %}">find and verify sources for AI writing</a>, or see how retrieval supports <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
     href="{% url 'saas_link_building' %}">SaaS link building without forced swaps</a>.</p>
+                        <div class="max-w-[56ch] text-base/7 text-gray-600 md:col-start-2 dark:text-gray-300">
+                            <p>Looking for sources? Members can search without adding a site of their own. Choose a first-search walkthrough for your agent:</p>
+                            <ul class="mt-3 flex flex-wrap gap-x-6 gap-y-2"
+                                aria-label="First-search walkthroughs">
+                                <li><a class="app-focus inline-flex min-h-12 items-center font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+   href="{% url 'blog_post' slug='find-sources-ai-writing' %}#search-with-mcp"
+   data-posthog-cta="source_search_mcp"
+   data-posthog-cta-location="landing_source_search">MCP for Codex or Claude Code</a></li>
+                                <li><a class="app-focus inline-flex min-h-12 items-center font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+   href="{% url 'blog_post' slug='find-sources-ai-writing' %}#search-with-cli"
+   data-posthog-cta="source_search_cli"
+   data-posthog-cta-location="landing_source_search">CLI for OpenClaw or Hermes</a></li>
+                                <li><a class="app-focus inline-flex min-h-12 items-center font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+   href="{% url 'blog_post' slug='find-sources-ai-writing' %}#search-with-api"
+   data-posthog-cta="source_search_api"
+   data-posthog-cta-location="landing_source_search">REST API for HTTP workflows</a></li>
+                            </ul>
+                            <p class="mt-3">The walkthroughs are public. Running a search requires a <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'pricing' %}">free, invitation-only member account</a>.</p>
+                        </div>
                     </div>
                     <div id="citation-observation"
                          class="scroll-mt-24 grid gap-3 py-6 md:grid-cols-[7fr_13fr]">

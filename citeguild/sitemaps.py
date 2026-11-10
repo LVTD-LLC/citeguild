@@ -58,8 +58,10 @@ class StaticViewSitemap(ConfiguredSitemapMixin, sitemaps.Sitemap):
         ]
 
     def lastmod(self, item):
+        if item == "landing":
+            return date(2026, 11, 10)
         if item == "pricing":
-            return date(2026, 10, 22)
+            return date(2026, 11, 10)
         return SAAS_LINK_BUILDING_UPDATED_AT if item == "saas_link_building" else None
 
     def location(self, item):
