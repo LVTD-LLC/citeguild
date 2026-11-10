@@ -1,3 +1,9 @@
+## 2026-11-10
+
+- Give source-seeking visitors direct MCP, CLI, and REST walkthrough links on
+  the homepage and membership page, clarify that members can search without
+  adding a site, and reuse consent-gated CTA analytics for navigation intent.
+
 ## 2026-11-07
 
 - Add a publisher checklist for revised articles: accurate sitemap dates, refresh versus discovery, and checking the current source before citing; retain the existing SaaS workflow URL and update its content date.

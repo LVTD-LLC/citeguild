@@ -164,7 +164,7 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
     target = next(url for url in dates if url.endswith("/for/saas-link-building"))
     assert dates[target].text == "2026-11-07"
     homepage = next(url for url in dates if url.rstrip("/").endswith("testserver"))
-    assert dates[homepage] is None
+    assert dates[homepage].text == "2026-11-10"
 
 
 def test_saas_link_building_page_has_two_public_inbound_links(client):
@@ -847,7 +847,9 @@ def test_mailgun_sender_defaults_are_configurable():
     assert settings.ANYMAIL["MAILGUN_SENDER_DOMAIN"] == "mg.citeguild.com"
 
 
-@pytest.mark.parametrize("route", ["pricing", "account_signup", "account_signup_by_passkey"])
+@pytest.mark.parametrize(
+    "route", ["landing", "pricing", "account_signup", "account_signup_by_passkey"]
+)
 def test_membership_entry_reaches_public_first_search_without_an_account(client, route):
     from html.parser import HTMLParser
     from urllib.parse import urlsplit
@@ -870,6 +872,12 @@ def test_membership_entry_reaches_public_first_search_without_an_account(client,
     assert guide.status_code == 200
     assert f'id="{target.fragment}"' in guide.content.decode()
     assert "Copy prompt" in guide.content.decode()
-    if route != "pricing":
+    if route in {"landing", "pricing"}:
+        # Public entry points must not funnel shell/HTTP clients into MCP setup.
+        for interface in ("mcp", "cli", "api"):
+            anchor = f"search-with-{interface}"
+            assert f'#{anchor}"' in response.content.decode()
+            assert f'id="{anchor}"' in guide.content.decode()
+    else:
         assert 'name="invitation_code"' in response.content.decode()
         assert 'content="noindex, nofollow"' in response.content.decode()
