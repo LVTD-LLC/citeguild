@@ -142,6 +142,24 @@ lifespan drains pending MCP events during graceful shutdown.
 
 ## Public content and service-host coverage (2026-10-12)
 
+### First-search discovery links (2026-11-10)
+
+Homepage and pricing links to the existing public MCP, CLI, and REST
+walkthroughs reuse `citeguild_marketing_cta_clicked`. Fixed `cta_name` values
+are `source_search_mcp`, `source_search_cli`, and `source_search_api`;
+`cta_location` is `landing_source_search`, `pricing_source_search`, or
+`landing_hero` (MCP only). The existing `destination` is the public guide path
+without its fragment or query string. Consent defaults and event version 1
+are unchanged. No new tracker, person property, query text, or credential is
+collected.
+
+These events measure consented walkthrough-navigation intent, not successful
+searches, source use, citations, or organic attribution. Compare them separately
+with host-scoped backend retrieval truth below; a shared profile does not prove
+a browser-session or acquisition join. Missing browser consent means missing
+observations, not lack of interest. Do not add a citation or search-success event
+when someone only follows a guide link.
+
 Existing opted-in `$pageview` events may include `public_content_id`, in the
 form `blog:<published-repository-slug>`. Only a successfully loaded public blog
 view supplies it. Unknown posts, private routes, docs, and non-blog pages do
