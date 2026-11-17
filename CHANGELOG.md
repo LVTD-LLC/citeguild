@@ -1,3 +1,8 @@
+## 2026-11-17
+
+- Explain member invitation links, codes, rejected-code recovery and existing-account sign-in on the membership page. Link signup to that help in a new tab so entered form details remain in place; invitation checks, registration controls and analytics consent stay unchanged.
+- Patch the locked dnspython and OpenTelemetry dependency family to clear existing CI security advisories without weakening the audit gate.
+
 ## 2026-11-10
 
 - Give source-seeking visitors direct MCP, CLI, and REST walkthrough links on
