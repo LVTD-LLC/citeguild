@@ -16,6 +16,18 @@
         {% else %}
             <a href="{% url 'account_signup' %}" class="app-button-primary mt-8">Join with an invitation</a>
         {% endif %}
+        <section aria-labelledby="membership-invitations"
+                 class="mt-12 border-t border-gray-200 pt-8 text-left dark:border-gray-700">
+            <h2 id="membership-invitations" class="text-2xl font-semibold">How to join with an invitation</h2>
+            <ol class="app-text-muted mt-4 list-decimal space-y-3 pl-6">
+                <li>Ask an existing member for their invitation link or code. Members can find both in Settings.</li>
+                <li>Open the invitation link to fill the code into signup, or paste just the code into the Invitation code field.</li>
+                <li>Create your account and verify your email. Membership is free; you do not need to buy a plan.</li>
+            </ol>
+            <p class="app-text-muted mt-4">Code not accepted? Ask the member who shared it to check the code in Settings and confirm their account is active. An invitation cannot override a temporary registration pause.</p>
+            <p class="app-text-muted mt-4">Already a member? <a class="app-focus font-semibold text-green-700 underline hover:text-green-800 dark:text-green-300 dark:hover:text-green-200"
+    href="{% url 'account_login' %}">Sign in to your existing account</a>; you do not need another invitation.</p>
+        </section>
         <section aria-labelledby="first-search-heading"
                  class="mt-12 border-t border-gray-200 pt-8 text-left dark:border-gray-700">
             <h2 id="first-search-heading" class="text-2xl font-semibold">Start with a source search</h2>

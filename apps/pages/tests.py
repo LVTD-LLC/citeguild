@@ -881,3 +881,36 @@ def test_membership_entry_reaches_public_first_search_without_an_account(client,
     else:
         assert 'name="invitation_code"' in response.content.decode()
         assert 'content="noindex, nofollow"' in response.content.decode()
+
+
+@pytest.mark.parametrize("route", ["account_signup", "account_signup_by_passkey"])
+def test_invitation_help_reaches_public_owner_without_carrying_form_data(client, route):
+    from html.parser import HTMLParser
+    from urllib.parse import urlsplit
+
+    class InvitationHelp(HTMLParser):
+        links = []
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "a" and attrs.get("href", "").endswith("#membership-invitations"):
+                self.links.append(attrs)
+
+    response = client.get(reverse(route))
+    assert response.status_code == 200
+    parser = InvitationHelp()
+    parser.links = []
+    parser.feed(response.content.decode())
+    assert len(parser.links) == 1
+    link = parser.links[0]
+    assert link["target"] == "_blank"
+    assert "noopener" in link["rel"].split()
+    target = urlsplit(link["href"])
+    assert not target.query
+    assert target.path == reverse("pricing")
+    help_page = client.get(target.path)
+    assert help_page.status_code == 200
+    assert f'id="{target.fragment}"' in help_page.content.decode()
+    assert "Sign in to your existing account" in help_page.content.decode()
+    assert 'name="invitation_code"' in response.content.decode()
+    assert 'content="noindex, nofollow"' in response.content.decode()

@@ -14,6 +14,14 @@ without a valid invitation is blocked, including automatic account creation.
 Existing social login and account connection are unchanged. Email verification
 remains mandatory. Invitations confer no ownership of the inviter's sites.
 
+## Invitation help
+
+The public [membership page](https://citeguild.com/pricing#membership-invitations)
+explains how to use a member's link or paste the code, recover when a code is
+rejected, and sign in to an existing account. Password and passkey signup link
+to this help in a new tab so readers keep their entered form details. The help
+does not supply invitations or override registration checks or pauses.
+
 Active accounts may submit/manage sites and search via API, CLI, and MCP without
 Stripe status checks. Disabled users and suspended projects remain excluded from
 indexing and retrieval. Billing status fields in existing APIs remain billing

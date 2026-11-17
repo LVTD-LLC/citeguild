@@ -30,6 +30,7 @@
                         <p class="mt-2 text-sm text-red-700 dark:text-red-300">{{ error }}</p>
                     {% endfor %}
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Free to use. Ask an existing member for an invitation code or link.</p>
+                    {% include "account/partials/invitation_help.html" %}
                 </div>
                 <input type="hidden" name="remember" value="true" />
                 <div class="-space-y-px rounded-md shadow-sm">
