@@ -2,7 +2,7 @@
 title: "7 Best HARO Alternatives for 2026"
 description: "Compare seven current HARO alternatives by workflow, audience, pricing, and limitations—including when persistent agent retrieval fits better."
 published_at: 2026-08-05
-updated_at: 2026-11-09
+updated_at: 2026-11-18
 author: "LVTD LLC"
 keywords: [HARO alternatives, Help a Reporter Out alternatives, journalist request platforms]
 topics: [digital PR, source discovery, editorial citations, AI writing agents]
@@ -41,11 +41,13 @@ There is also a second category worth separating from journalist-request platfor
 
 This guide compares seven current options using the same criteria: who sends the request, who responds, how opportunities arrive, public pricing, and the limitation that matters most.
 
-## The best HARO alternatives at a glance
+On this page: [compare the options](#compare-options), [Source of Sources workflows](#source-of-sources-workflows), [choose a service](#choose-a-service), and [frequently asked questions](#frequently-asked-questions).
+
+<h2 id="compare-options">The best HARO alternatives at a glance</h2>
 
 | Option | Best for | Workflow | Public starting price | Main limitation |
 | --- | --- | --- | --- | --- |
-| Source of Sources | A free, classic HARO-style digest | Journalist query → email → direct reply | Free | Email-only and reactive |
+| Source of Sources | A free, classic HARO-style digest | Journalist query → email → direct reply | Free | Requires timely email replies |
 | Qwoted | Experts and PR teams that want a dashboard | Vetted request → alert → tracked pitch | Free; Pro $149.99/month or $1,188/year | Free plan has two pitches monthly and a two-hour delay |
 | Connectively | Early HARO access and direct expert answers | Posted query → dashboard → tracked answer | Free: three answers/month; paid plans available | Free keyword alerts are daily, not real-time |
 | MentionMatch | B2B and SaaS expertise | Writer request → expertise matching → email response | Free | Narrower subject coverage than general media services |
@@ -53,7 +55,7 @@ This guide compares seven current options using the same criteria: who sends the
 | ResponseSource | UK PR and communications teams | Verified enquiry → category feed → response | From £625 per category/year, excluding VAT | Paid annual category subscriptions |
 | CiteGuild | Publishers who want agents to discover existing articles | Sitemap → persistent index → agent retrieval | Free, invitation-only | Not a journalist-request or pitching service |
 
-Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing and pitch rules, rechecked November 2, 2026; the HARO/Connectively/Featured workflow and Connectively free-plan limits, checked October 27, 2026; and SourceBottle's free-response and paid-pitching options, checked November 9, 2026. HARO's email workflow was also rechecked November 2. Plans change; verify the linked pricing page before buying.
+Pricing and product details were checked against official pages on August 5, 2026, except Qwoted pricing and pitch rules, rechecked November 2, 2026; the HARO/Connectively/Featured workflow and Connectively free-plan limits, checked October 27, 2026; SourceBottle's free-response and paid-pitching options, checked November 9, 2026; and Source of Sources' subscription, reply, and reporter-submission workflow, checked November 18, 2026. HARO's email workflow was also rechecked November 2. Plans change; verify the linked pricing page before buying.
 
 ## First, HARO is back—and Featured now owns it
 
@@ -92,11 +94,17 @@ These jobs can complement each other. A founder might answer a Qwoted request pe
 
 **Best for:** Experts who want a free, simple request digest without learning another dashboard.
 
-**Pricing:** Free. The official site says neither sources nor journalists pay to participate.
+**Pricing:** The [official homepage](https://www.sourceofsources.com/) offers the email digest free of charge.
 
-**Why choose it:** The workflow is familiar, the rules strongly discourage off-topic pitching, and journalists using personal email addresses are verified before their first query is distributed.
+**Why choose it:** The workflow is familiar, with a firm relevance rule: the service says sources can be removed for an off-topic reply. Read the request before deciding whether your experience actually answers it.
 
-**Tradeoffs:** There is no searchable opportunity dashboard, pitch tracker, or persistent source library. You still need to monitor email, judge fit quickly, and reply before the deadline. Source of Sources wins on simplicity; it is less suitable for teams that need reporting and workflow controls.
+<h3 id="source-of-sources-workflows">Source of Sources: subscribe, reply, or submit a request?</h3>
+
+- **You have expertise to offer:** Subscribe to the digest on the homepage. When a relevant request arrives, reply directly to the journalist using the request's instructions. Receiving the digest is not a reason to send an unrelated sales pitch.
+- **You are reporting a story:** Use the separate [journalist query form](https://www.sourceofsources.com/reporter/), not the expert-subscription form. It asks for the outlet, question, and deadline with a time zone. The instructions recommend an outlet-domain email; a first submission from a personal address requires identity verification before release. Allow for that step rather than assuming immediate distribution.
+- **You need published evidence for a draft:** A journalist request asks people to respond; it does not retrieve an existing article for you. Use the [writing-agent source-selection guide](/blog/find-sources-ai-writing#search-with-an-agent) to search and evaluate published sources instead. Use primary documentation when the claim requires it.
+
+**Tradeoffs:** This email workflow still requires you to monitor requests, judge fit, and respond before the deadline. Source of Sources is a sensible starting point for a human expert seeking timely quote opportunities—not a replacement for persistent article retrieval. A reply is not an accepted quote or a guaranteed link.
 
 ## 2. Qwoted: best for a vetted marketplace and pitch tracking
 
@@ -184,7 +192,7 @@ Members submit public sitemaps. CiteGuild indexes eligible articles and exposes 
 
 **Tradeoffs:** CiteGuild does not arrange interviews, distribute journalist queries, run outreach, or guarantee citations. It requires source-worthy published content and an agent that chooses to search and evaluate results. If your goal is a personal quote in tomorrow's newspaper, use a request platform. If your goal is persistent discovery of your article library, CiteGuild addresses a different problem.
 
-## Which HARO alternative should you choose?
+<h2 id="choose-a-service">Which HARO alternative should you choose?</h2>
 
 Choose the service that matches your actual work, not the longest feature list.
 
@@ -198,7 +206,7 @@ Choose the service that matches your actual work, not the longest feature list.
 
 A small combination is often more rational than a single winner. Use one broad or niche request platform for timely expert commentary, then use a persistent index for your evergreen content. Keep the measurement honest: track replies, accepted quotes, published mentions, referral traffic, and [detected citations](/#citation-observation) separately. A submitted pitch is not a backlink, and an indexed article is not a promised citation.
 
-## Frequently asked questions
+<h2 id="frequently-asked-questions">Frequently asked questions</h2>
 
 ### Is HARO still active in 2026?
 
