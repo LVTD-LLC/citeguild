@@ -1,3 +1,7 @@
+## 2026-11-18
+
+- Clarify Source of Sources' expert replies and separate journalist-submission path in the existing HARO comparison, including the first personal-email verification step. Replace unsupported feature-absence claims with sourced workflow tradeoffs and route published-evidence seekers to the existing agent guide; retain the title and original publication date.
+
 ## 2026-11-17
 
 - Explain member invitation links, codes, rejected-code recovery and existing-account sign-in on the membership page. Link signup to that help in a new tab so entered form details remain in place; invitation checks, registration controls and analytics consent stay unchanged.

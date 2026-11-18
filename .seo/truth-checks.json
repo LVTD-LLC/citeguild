@@ -101,5 +101,21 @@
       "SourceBottle guarantees coverage",
       "SourceBottle requires payment to answer call-outs"
     ]
+  },
+  {
+    "claim": "Source of Sources role routing follows official subscription and reporter instructions (checked2026-11-18)",
+    "paths": [
+      "apps/pages/posts/haro-alternatives.md"
+    ],
+    "must_match": [
+      "https://www\\.sourceofsources\\.com/reporter/",
+      "checked November 18, 2026",
+      "first submission from a personal address requires identity verification",
+      "writing-agent source-selection guide"
+    ],
+    "must_not_match": [
+      "There is no searchable opportunity dashboard",
+      "neither sources nor journalists pay to participate"
+    ]
   }
 ]
