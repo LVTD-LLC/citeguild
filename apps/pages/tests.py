@@ -148,11 +148,18 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
         if item["name"] == "Can I submit llms.txt instead of a sitemap?"
     )
     assert sitemap_input in visible_text
-    assert "https://ghost.org/changelog/geo/" in content
+    assert 'href="#missing-from-sitemap"' in content
+    assert content.count('id="missing-from-sitemap"') == 1
+    assert "https://developer.yoast.com/features/xml-sitemaps/functional-specification/" in content
+    assert "Not listed in the sitemap:" in visible_text
+    assert "Listed, but not indexed in CiteGuild:" in visible_text
+    assert "Marked Active in Pages, but missing from search:" in visible_text
+    writer_guide = reverse("blog_post", args=["find-sources-ai-writing"])
+    assert f'href="{writer_guide}#search-with-an-agent"' in content
     assert "https://ghost.org/help/post-settings/" in content
-    assert "do not remove a correct canonical" in visible_text
-    assert faq["dateModified"] == "2026-11-07"
-    assert '<time datetime="2026-11-07">November 7, 2026</time>' in content
+    assert "Do not remove a correct canonical" in visible_text
+    assert faq["dateModified"] == "2026-11-19"
+    assert '<time datetime="2026-11-19">November 19, 2026</time>' in content
 
     sitemap = client.get(reverse("django.contrib.sitemaps.views.sitemap"))
     root = ElementTree.fromstring(sitemap.content)
@@ -162,7 +169,7 @@ def test_saas_source_example_has_matching_free_membership_and_content_dates(clie
         for item in root.findall("sm:url", ns)
     }
     target = next(url for url in dates if url.endswith("/for/saas-link-building"))
-    assert dates[target].text == "2026-11-07"
+    assert dates[target].text == "2026-11-19"
     homepage = next(url for url in dates if url.rstrip("/").endswith("testserver"))
     assert dates[homepage].text == "2026-11-10"
 

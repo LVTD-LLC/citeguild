@@ -49,6 +49,9 @@ The SaaS source-readiness workflow at `/for/saas-link-building` links its
 original-research step directly to the existing publisher methods worksheet at
 `/blog/original-research-methods-template#methods-template`. Keep that anchor
 usable and the worksheet's fictional-example and study-validation limits clear.
+The same publisher page's `#missing-from-sitemap` section separates XML sitemap
+inclusion, the site's Pages status, and query relevance. Keep this read-only
+diagnosis distinct from the checklist for updating an already-indexed article.
 
 ## Member first-search path
 
