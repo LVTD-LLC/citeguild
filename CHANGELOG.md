@@ -1,3 +1,7 @@
+## 2026-11-19
+
+- Help publishers diagnose one missing article in the existing SaaS source-readiness guide: check the submitted XML sitemap, confirm the CiteGuild Pages status, then test a relevant query. Preserve intentional exclusions and existing indexing behavior.
+
 ## 2026-11-18
 
 - Clarify Source of Sources' expert replies and separate journalist-submission path in the existing HARO comparison, including the first personal-email verification step. Replace unsupported feature-absence claims with sourced workflow tradeoffs and route published-evidence seekers to the existing agent guide; retain the title and original publication date.
