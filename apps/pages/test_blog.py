@@ -538,7 +538,7 @@ def test_publisher_methods_worksheet_is_rendered_and_discoverable(settings, clie
     article = next(item for item in schema["@graph"] if item["@type"] == "BlogPosting")
     assert article["url"] == f"https://citeguild.com{path}"
     assert article["datePublished"].startswith("2026-10-21")
-    assert article["dateModified"].startswith("2026-11-06")
+    assert article["dateModified"].startswith("2026-11-20")
     faq = next(item for item in schema["@graph"] if item["@type"] == "FAQPage")
     assert all(question["name"] in rendered for question in faq["mainEntity"])
     for route in ("landing", "blog_posts"):
@@ -546,6 +546,12 @@ def test_publisher_methods_worksheet_is_rendered_and_discoverable(settings, clie
     sitemap = client.get("/sitemap.xml")
     assert sitemap.status_code == 200
     assert f"<loc>https://citeguild.com{path}</loc>" in sitemap.content.decode()
+    assert 'href="/sitemap.xml"' in rendered
+    publisher_path = reverse("saas_link_building")
+    assert f'href="{publisher_path}#missing-from-sitemap"' in rendered
+    publisher_guide = client.get(publisher_path)
+    assert publisher_guide.status_code == 200
+    assert b'id="missing-from-sitemap"' in publisher_guide.content
     download_path = reverse("research_methods_worksheet")
     assert f'href="{download_path}"' in rendered
     assert download_path not in sitemap.content.decode()

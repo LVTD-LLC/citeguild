@@ -1,3 +1,7 @@
+## 2026-11-20
+
+- Show publishers where to go after completing the research methods worksheet: verify one public article, submit the site sitemap as a member, and check the article in CiteGuild Pages.
+
 ## 2026-11-19
 
 - Help publishers diagnose one missing article in the existing SaaS source-readiness guide: check the submitted XML sitemap, confirm the CiteGuild Pages status, then test a relevant query. Preserve intentional exclusions and existing indexing behavior.
