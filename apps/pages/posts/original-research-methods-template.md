@@ -2,7 +2,7 @@
 title: "Original Research Methods Template"
 description: "Publish research another writer can check: copy a methods template, trace a worked example, and keep missing answers out of unsupported claims."
 published_at: "2026-10-21"
-updated_at: "2026-11-06"
+updated_at: "2026-11-20"
 author: "CiteGuild"
 keywords: ["original research methods template", "publisher research methodology", "source-worthy research"]
 topics: ["editorial source discovery", "original research", "publisher workflows"]
@@ -24,7 +24,7 @@ faqs:
     answer: "No. Publish only material you have permission to share. Describe the method and provide suitable aggregate evidence without exposing respondents or confidential records."
 ---
 
-*Last updated November 6, 2026.*
+*Last updated November 20, 2026.*
 
 An original research methods template records what you studied, how you selected it, what you counted and where the conclusion stops. Publish that record beside the finding so another writer can inspect the evidence before quoting it. Keep exclusions and missing answers visible: neither should silently change what a percentage means.
 
@@ -202,7 +202,9 @@ Keep findings separate from interpretation. “The inspected documentation names
 
 Publish the finding, date, method and appropriate supporting material together. Retain a correction route and a dated account of changes. If a source changes or an error is found, explain what changed in the result. When repeating a study, preserve comparable rules or disclose the differences before presenting a trend.
 
-Once you have a useful public article, the [publisher source-readiness workflow](/for/saas-link-building) explains how it can fit into CiteGuild's sitemap-backed article network. [Membership is free and invitation-only](/pricing). Eligible member articles can be discovered by writing agents, but this template does not validate a study, guarantee retrieval or promise that anyone will cite it. Publish something worth checking first.
+When the research is public, open the finished article while signed out. Check that the finding and method are readable, then look for the full article URL in your site's public XML sitemap. For example, you can find this article's full URL in [CiteGuild's public sitemap](/sitemap.xml). The sitemap is the list; the article is the evidence.
+
+Already a CiteGuild member? In the dashboard, choose **Add site** and paste your own site's public XML sitemap URL into **Sitemap URL**, not the article URL or the completed worksheet. Then follow the publisher guide to [check the article in Pages](/for/saas-link-building#missing-from-sitemap) after the sync. A sitemap entry alone does not make an article searchable or guarantee a citation. If you're not a member, you can still do the public checks above; [membership is free and invitation-only](/pricing).
 
 <h2 class="scroll-mt-24" id="questions">Questions about using the template</h2>
 
