@@ -27,7 +27,7 @@ const (
 	ExitServer      = 5
 	ExitInterrupted = 130
 
-	DefaultAPIBase = "https://citeguild.lvtd.dev/api"
+	DefaultAPIBase = "https://citeguild.com/api"
 	DefaultTimeout = 15 * time.Second
 )
 

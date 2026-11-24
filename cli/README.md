@@ -7,22 +7,19 @@ force a link.
 
 ## Install
 
-Release archives are published for Linux amd64 and macOS arm64 on the
-[CiteGuild releases page](https://github.com/LVTD-LLC/citeguild/releases).
-Each `cli/vX.Y.Z` release includes SHA-256 checksums.
-
-With Go 1.25 or newer, install a pinned source release:
+With Go 1.25 or newer, install this pinned source revision in Bash:
 
 ```bash
-go install github.com/LVTD-LLC/citeguild/cli/cmd/citeguild@v0.1.0
+mkdir -p "$HOME/.local/bin"
+GOBIN="$HOME/.local/bin" go install github.com/LVTD-LLC/citeguild/cli/cmd/citeguild@v0.0.0-20260804142406-836452f5fbc0
+export PATH="$HOME/.local/bin:$PATH"
+export CITEGUILD_API_BASE=https://citeguild.com/api
+citeguild config status
 ```
 
-From a source checkout, verify a clean install without changing your normal Go
-binary directory:
-
-```bash
-make cli-install-smoke
-```
+Check that the API base is `https://citeguild.com/api` before supplying a key.
+This pinned build defaults to the former host. Keep the API base and PATH in
+the environment that starts your agent.
 
 ## Authenticate
 
@@ -30,13 +27,17 @@ Create or rotate an API key from CiteGuild settings. The key is shown once.
 Export it in the shell that runs the agent; do not pass it as a flag, put it in
 a URL, or commit it to a config file.
 
+Paste the key at the prompt and press Enter. The terminal will not echo it.
+
 ```bash
-export CITEGUILD_API_KEY="<copy the key from CiteGuild settings>"
+read -rsp "CiteGuild API key: " CITEGUILD_API_KEY
+printf '\n'
+export CITEGUILD_API_KEY
 citeguild config status
 citeguild auth status
 ```
 
-The production API is the default. Override it for a trusted development or
+The current source defaults to the production API. Override it for a trusted development or
 staging service with `--api-base` or `CITEGUILD_API_BASE`. Explicit flags win
 over environment values; environment values win over built-in defaults.
 
@@ -80,6 +81,8 @@ Errors may include a safe request ID for support. The CLI never prints the API
 key, Authorization header, search request body, or raw unexpected server body.
 
 ## Develop and release
+
+From a source checkout, run `make cli-install-smoke` to test installation without changing your normal Go binary directory.
 
 ```bash
 make cli-quality

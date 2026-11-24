@@ -13,23 +13,31 @@ result before citing it; never force a link because CiteGuild returned it.
 
 ## Install the command
 
-Download the archive for Linux amd64 or macOS arm64 from the
-[CiteGuild releases page](https://github.com/LVTD-LLC/citeguild/releases) and
-verify it with the published `checksums.txt` file.
-
-With Go 1.25 or newer, you can install a pinned release directly:
+With Go 1.25 or newer, install this pinned source revision in Bash:
 
 ```bash
-go install github.com/LVTD-LLC/citeguild/cli/cmd/citeguild@v0.1.0
+mkdir -p "$HOME/.local/bin"
+GOBIN="$HOME/.local/bin" go install github.com/LVTD-LLC/citeguild/cli/cmd/citeguild@v0.0.0-20260804142406-836452f5fbc0
+export PATH="$HOME/.local/bin:$PATH"
+export CITEGUILD_API_BASE=https://citeguild.com/api
+citeguild config status
 ```
+
+Check that the API base is `https://citeguild.com/api` before supplying a key.
+This pinned build defaults to the former host. Keep the API base and PATH in
+the environment that starts your agent.
 
 ## Keep authentication out of command history
 
 Create or rotate an API key in **Settings**. The key is shown once. Export it in
 the shell that starts your agent:
 
+Paste the key at the prompt and press Enter. The terminal will not echo it.
+
 ```bash
-export CITEGUILD_API_KEY="<copy the key from CiteGuild settings>"
+read -rsp "CiteGuild API key: " CITEGUILD_API_KEY
+printf '\n'
+export CITEGUILD_API_KEY
 citeguild config status
 citeguild auth status
 ```
