@@ -219,7 +219,7 @@ func TestAuthStatusChecksCredential(t *testing.T) {
 	if !h.client.authChecked {
 		t.Fatal("authentication was not checked")
 	}
-	if got := h.stdout.String(); got != `{"authenticated":true,"api_base":"https://citeguild.lvtd.dev/api"}`+"\n" {
+	if got := h.stdout.String(); got != `{"authenticated":true,"api_base":"https://citeguild.com/api"}`+"\n" {
 		t.Fatalf("stdout = %q", got)
 	}
 }

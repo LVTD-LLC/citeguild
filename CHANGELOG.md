@@ -1,3 +1,7 @@
+## 2026-11-24
+
+- Repair CLI onboarding: install a pinned Go module revision, select the .com API before authentication, and enter the member key without putting it in shell history. New source builds default to the .com API.
+
 ## 2026-11-20
 
 - Show publishers where to go after completing the research methods worksheet: verify one public article, submit the site sitemap as a member, and check the article in CiteGuild Pages.
