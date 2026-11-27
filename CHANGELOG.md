@@ -1,3 +1,7 @@
+## 2026-11-27
+
+- Show the latest sitemap sync state in site details instead of labeling a newly queued request as updated. Point publishers to Pages after processing or to the dashboard for recovery.
+
 ## 2026-11-24
 
 - Repair CLI onboarding: install a pinned Go module revision, select the .com API before authentication, and enter the member key without putting it in shell history. New source builds default to the .com API.

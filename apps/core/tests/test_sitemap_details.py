@@ -457,3 +457,24 @@ def test_user_cannot_update_or_delete_another_accounts_sitemap(auth_client, prof
     assert delete_response.status_code == 404
     project.refresh_from_db()
     assert project.normalized_host == "private-manager.example"
+
+
+@pytest.mark.django_db
+def test_site_details_distinguishes_pending_sync_from_failure(auth_client, profile):
+    project = create_project(profile, "sync-status.example")
+    sync = project.sync_requests.create(sitemap_kind="url_set")
+    url = reverse("sitemap_details", args=[project.uuid])
+
+    pending = auth_client.get(url).content.decode()
+    assert "Latest sync: Queued." in pending
+    assert "Check Pages after the sync finishes" in pending
+    assert "retry on your dashboard" not in pending
+
+    sync.state = ProjectSyncStates.FAILED
+    sync.error_code = "fetch_failed"
+    sync.save()
+    failed = auth_client.get(url).content.decode()
+    assert "Latest sync: Failed." in failed
+    assert "Check Pages after the sync finishes" not in failed
+    assert f'href="{reverse("home")}#site-list-heading"' in failed
+    assert "retry on your dashboard" in failed
